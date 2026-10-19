@@ -10,3 +10,5 @@
 - Nueve idiomas, 1.853 mensajes por idioma: claves, interpolaciones y atributos accesibles verificados. Los catálogos de traducción automática requieren revisión lingüística adicional para publicación comercial.
 
 La ejecución de la nueva aplicación nativa fue bloqueada por la revisión automática de herramientas («bloqueado por política»). No se eludió ese bloqueo. Las pruebas de escritorio cubren el servidor, persistencia y controles por código; no se ejecutó una instalación real de una actualización ni una prueba con un mando físico. El tiempo de juego se registra por sesiones que se terminan explícitamente.
+
+Publicación final: [Zenty 1.1.1](https://github.com/Yiyeh/Zenty/releases/tag/v1.1.1). Se descargaron los archivos públicos y se verificó que el SHA-512 de latest.yml coincide con el instalador. La copia en releases/Zenty-Installer corresponde a esos mismos archivos. La revisión 1.1.1 permite recorrer y cerrar las fichas de juegos con el mando.

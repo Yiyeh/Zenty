@@ -15,6 +15,6 @@
 - [x] Precarga limitada, ajustes por libro y descargas sin conexión para fuentes compatibles.
 - [x] Sesiones y tiempo de juego, estados y navegación con mando.
 - [x] Personalización visual por dispositivo manteniendo el contenido compartido.
-- [ ] Traducciones, comprobaciones y publicación de la siguiente versión.
+- [x] Traducciones, comprobaciones y publicación de Zenty 1.1.1; archivos públicos descargados y SHA-512 del instalador verificado.
 
 Cada bloque se marcará únicamente tras implementar y verificar el comportamiento.
