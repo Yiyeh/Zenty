@@ -28,13 +28,8 @@ jobs:
           if ($env:GITHUB_REF_NAME -ne "v$version") { throw "El tag debe coincidir con package.json" }
       - run: npm test
       - run: npm run lint
-      - name: Compilar y publicar instalador y metadatos de actualización
+      - name: Compilar, verificar y publicar todos los archivos en una sola release
         run: npm run desktop:publish
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publicar la release cuando todos los archivos están listos
-        shell: pwsh
-        run: gh release edit $env:GITHUB_REF_NAME --draft=false --repo $env:GITHUB_REPOSITORY
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v7.0.2
@@ -44,3 +39,4 @@ jobs:
             releases/Zenty-Installer/*.exe
             releases/Zenty-Installer/*.blockmap
             releases/Zenty-Installer/latest.yml
+            releases/Zenty-Installer/*.ico

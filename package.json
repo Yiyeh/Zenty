@@ -17,7 +17,7 @@
     "desktop": "npm run desktop:build && node scripts/launch-desktop.mjs",
     "desktop:package": "npm run desktop:build && node scripts/package-desktop.mjs",
     "desktop:installer": "npm run desktop:build && electron-builder --config electron-builder.config.mjs --win nsis --x64 --publish never",
-    "desktop:publish": "npm run desktop:build && electron-builder --config electron-builder.config.mjs --win nsis --x64 --publish always",
+    "desktop:publish": "npm run desktop:installer && node scripts/publish-release.mjs",
     "locales:check": "node scripts/check-locales.mjs"
   },
   "dependencies": {

@@ -2,7 +2,7 @@
 
 ## Entrega inicial en GitHub
 
-- [ ] Publicar y verificar instalador con actualizador, nueve idiomas, bienvenida con idioma/nombre, PIN opcional e icono.
+- [x] Publicar y verificar instalador con actualizador, nueve idiomas, bienvenida con idioma/nombre, PIN opcional e icono.
 
 ## Siguiente versión
 
