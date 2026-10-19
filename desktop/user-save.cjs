@@ -1,3 +1,4 @@
+const { tr } = require("./locale.cjs");
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { createReadStream } = require('node:fs');
@@ -16,7 +17,7 @@ async function inventory(root) {
       if (error.code === 'ENOENT') return;
       throw error;
     }
-    if (stat.isSymbolicLink()) throw new Error('El save contiene un enlace externo: ' + relative);
+    if (stat.isSymbolicLink()) throw new Error(tr("user_save.8e202e315b") + relative);
     if (stat.isDirectory()) {
       for (const name of (await fs.readdir(absolute)).sort()) await visit(path.join(relative, name));
     } else if (stat.isFile() && !relative.endsWith('.tmp'))
@@ -28,7 +29,7 @@ async function inventory(root) {
 async function exportUserSave(profile, destination, snapshot, name) {
   profile = await fs.realpath(profile);
   destination = await fs.realpath(destination);
-  if (inside(profile, destination)) throw new Error('Elige una carpeta fuera del save de la aplicación.');
+  if (inside(profile, destination)) throw new Error(tr("user_save.d0779473c8"));
   const folder = path.join(destination, `${name}-save-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`);
   const staging = folder + '.partial';
   await fs.mkdir(staging);
@@ -40,7 +41,7 @@ async function exportUserSave(profile, destination, snapshot, name) {
       await fs.copyFile(path.join(profile, file.path), target);
     }
     if (JSON.stringify(before) !== JSON.stringify(await inventory(profile)))
-      throw new Error('El save cambió durante la copia. Espera a que terminen las descargas y vuelve a exportar.');
+      throw new Error(tr("user_save.012a06d204"));
     const dashboard = path.join(staging, 'data', 'dashboard-data', 'dashboard.json');
     await fs.mkdir(path.dirname(dashboard), { recursive: true });
     await fs.writeFile(dashboard, snapshot);
@@ -51,7 +52,7 @@ async function exportUserSave(profile, destination, snapshot, name) {
       files.push({ path: file.path.split(path.sep).join('/'), bytes: file.size, sha256: hash.digest('hex') });
     }
     await fs.writeFile(path.join(staging, 'save-manifest.json'), JSON.stringify({ version: 1, app: name, createdAt: new Date().toISOString(), files }, null, 2));
-    await fs.writeFile(path.join(staging, 'LEEME.txt'), `Respaldo de ${name}.\nPara restaurar: cierra la aplicación y copia data, reminders, audio.json, window.json y startup.json de este respaldo a %APPDATA%\\${name}. Conserva una copia del save anterior.\nEl inicio con Windows se activa manualmente desde Ajustes en cada equipo; restaurar el respaldo no registra un inicio automático.\nIncluye documentos, progreso, preferencias, alarmas, biblioteca gamer y caché. No incluye juegos instalados, ROMs externos, páginas de manga en línea ni sesiones de acceso.\n`);
+    await fs.writeFile(path.join(staging, 'LEEME.txt'), tr("user_save.de193c3210", { v0: name, v1: name }));
     await fs.rename(staging, folder);
     return { path: folder, files: files.length, bytes: files.reduce((sum, file) => sum + file.bytes, 0) };
   } catch (error) {

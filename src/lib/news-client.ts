@@ -1,3 +1,4 @@
+import { tr } from "./i18n.ts";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   normalizeNewsFeed,
@@ -38,7 +39,7 @@ export function createNewsFeedClient(
       });
       if (!response.ok)
         throw new Error(
-          "No se pudieron actualizar las noticias. Vuelve a intentarlo.",
+          tr("news_client.fc4da6a814"),
         );
       const data = normalizeNewsFeed(await response.json());
       if (cached.size >= 20) cached.delete(cached.keys().next().value!);
@@ -83,7 +84,7 @@ export function useNewsFeed() {
         setError(
           err instanceof Error
             ? err.message
-            : "No se pudieron obtener las noticias.",
+            : tr("news_client.29f16046d0"),
         );
     } finally {
       if (version === sequence.current) {

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, readFile, rm, realpath } from "node:fs/promises";
 import { join, resolve, sep } from "node:path";
 import { tmpdir } from "node:os";
 import { createServer } from "node:http";
@@ -266,7 +266,7 @@ test("emuladores: extensiones, carpetas, nombres limpios y argumentos con espaci
   const game = entries.find((g) => g.game.title.includes("&"))!;
   assert.deepEqual((game.launch as { args: string[] }).args, [
     "-e",
-    join(folder, "Otra & aventura.iso"),
+    await realpath(join(folder, "Otra & aventura.iso")),
   ]);
   assert.equal((await scanRoms({ ...config, recursive: true })).length, 3);
   assert.equal((await scanRoms({ ...config, enabled: false })).length, 0);

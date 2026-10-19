@@ -1,3 +1,4 @@
+import { tr } from "../lib/i18n.ts";
 import { APP_NAME, APP_SLUG } from "../lib/brand.ts";
 import { Component } from "react";
 import type { ReactNode } from "react";
@@ -13,13 +14,11 @@ export class AppErrorBoundary extends Component<
     if (!this.state.failed) return this.props.children;
     return (
       <main className="empty-dashboard" style={{ minHeight: "100vh" }}>
-        <h1>Tu espacio necesita una pausa.</h1>
+        <h1>{tr("AppErrorBoundary.d8460949f3")}</h1>
         <p>
-          Ocurrió un error al mostrar la página. Tus datos guardados no se han
-          borrado.
-        </p>
+          {tr("AppErrorBoundary.a889ebb810")}</p>
         <button className="primary-button" onClick={() => location.reload()}>
-          Volver a cargar {APP_NAME}
+          {tr("AppErrorBoundary.780d4d88b9")}{APP_NAME}
         </button>
         <button
           className="secondary-button"
@@ -50,8 +49,7 @@ export class AppErrorBoundary extends Component<
             }
           }}
         >
-          Descargar mis datos para recuperarlos
-        </button>
+          {tr("AppErrorBoundary.4ae2e13e0d")}</button>
       </main>
     );
   }

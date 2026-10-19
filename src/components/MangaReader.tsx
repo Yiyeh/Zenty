@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr } from "../lib/i18n.ts";
 import { mangaSwipe } from "../lib/manga-gestures";
 import { useReaderPreference } from "../lib/useReaderPreference";
 import { MangaSources } from "./MangaSources";
@@ -44,6 +46,7 @@ export function MangaReader({
   onUpdate,
   onClose,
 }: MangaReaderProps) {
+  useInterfaceLocale();
   const mangaMeta = document.manga;
   const mangaId = mangaMeta?.mangadexId || "";
 
@@ -75,7 +78,7 @@ export function MangaReader({
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [chapterSearch, setChapterSearch] = useState("");
-  const [saveStatus, setSaveStatus] = useState("Guardado");
+  const [saveStatus, setSaveStatus] = useState(tr("MangaReader.3a660ff5fb"));
   const [fullscreen, setFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
 
@@ -120,7 +123,7 @@ export function MangaReader({
   // 1. Fetch chapters on mount or when language changes
   useEffect(() => {
     if (!mangaId) {
-      setChapterError("Identificador de manga no encontrado.");
+      setChapterError(tr("MangaReader.80d51dab7d"));
       setLoadingChapters(false);
       return;
     }
@@ -135,7 +138,7 @@ export function MangaReader({
         setChapters(data.chapters);
 
         if (data.chapters.length === 0) {
-          setChapterError("No se encontraron capítulos en este idioma para este manga.");
+          setChapterError(tr("MangaReader.84e69f48ee"));
         } else {
           // Find matching chapter from saved metadata or index
           let idx = 0;
@@ -156,7 +159,7 @@ export function MangaReader({
       })
       .catch((err) => {
         if (!cancelled) {
-          setChapterError((err as Error).message || "No se pudieron cargar los capítulos.");
+          setChapterError((err as Error).message || tr("MangaReader.32ca824645"));
         }
       })
       .finally(() => {
@@ -205,7 +208,7 @@ export function MangaReader({
       })
       .catch((err) => {
         if (!cancelled) {
-          setPagesError((err as Error).message || "Error al descargar las páginas del capítulo.");
+          setPagesError((err as Error).message || tr("MangaReader.86cb7c5de6"));
         }
       })
       .finally(() => {
@@ -245,7 +248,7 @@ export function MangaReader({
 
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
 
-      setSaveStatus("Guardando…");
+      setSaveStatus(tr("MangaReader.3c8dc4dc7a"));
       saveTimeoutRef.current = setTimeout(async () => {
         try {
           const updated = await updateDocument(document.id, {
@@ -268,9 +271,9 @@ export function MangaReader({
             },
           });
           onUpdateRef.current(updated);
-          setSaveStatus("Guardado");
+          setSaveStatus(tr("MangaReader.3a660ff5fb"));
         } catch {
-          setSaveStatus("Error al guardar");
+          setSaveStatus(tr("MangaReader.cfbf315662"));
         }
       }, 400);
     },
@@ -421,7 +424,7 @@ export function MangaReader({
   // Add bookmark
   const handleAddBookmark = async () => {
     const ch = chapters[currentChapterIndex];
-    const label = `Cap. ${ch?.chapter || currentChapterIndex + 1}, Pág. ${currentPageIndex + 1}`;
+    const label = tr("MangaReader.5b49535fc8", { v0: ch?.chapter || currentChapterIndex + 1, v1: currentPageIndex + 1 });
     try {
       const updated = await updateDocument(document.id, {
         bookmark: {
@@ -435,10 +438,10 @@ export function MangaReader({
         },
       });
       onUpdateRef.current(updated);
-      setSaveStatus("Marcador guardado");
-      setTimeout(() => setSaveStatus("Guardado"), 2000);
+      setSaveStatus(tr("MangaReader.b029606d1f"));
+      setTimeout(() => setSaveStatus(tr("MangaReader.3a660ff5fb")), 2000);
     } catch {
-      setSaveStatus("Error al guardar marcador");
+      setSaveStatus(tr("MangaReader.14432a6325"));
     }
   };
 
@@ -469,7 +472,7 @@ export function MangaReader({
     <dialog
       ref={dialogRef}
       className={`manga-reader-dialog theme-${theme}`}
-      aria-label={`Lector de ${document.title}`}
+      aria-label={tr("a11y.MangaReader.475", { v0: document.title })}
     >
       {/* Top Header Bar */}
       <header className={`manga-reader-header ${showControls ? "visible" : "hidden"}`}>
@@ -477,8 +480,8 @@ export function MangaReader({
           <button
             className="icon-button manga-back-btn"
             onClick={onClose}
-            aria-label="Volver a la biblioteca"
-            title="Volver a la biblioteca"
+            aria-label={tr("MangaReader.183b5a7e67")}
+            title={tr("MangaReader.183b5a7e67")}
           >
             <ArrowLeft size={19} />
           </button>
@@ -491,10 +494,10 @@ export function MangaReader({
               <button
                 className="manga-chapter-selector-pill"
                 onClick={() => setDrawerOpen(true)}
-                title="Cambiar de capítulo"
+                title={tr("MangaReader.7fe1d39dfd")}
               >
                 <span>
-                  Cap. {currentChapter.chapter}
+                  {tr("MangaReader.cb954faf62")}{currentChapter.chapter}
                   {currentChapter.title ? `: ${currentChapter.title}` : ""}
                 </span>
                 <List size={14} />
@@ -510,38 +513,35 @@ export function MangaReader({
             </span>
           )}
 
-          <div className="manga-mode-switcher" role="group" aria-label="Modo de lectura">
+          <div className="manga-mode-switcher" role="group" aria-label={tr("MangaReader.d1ca310264")}>
             <button
               className={`mode-btn ${readingMode === "rtl" ? "active" : ""}`}
               onClick={() => handleSetMode("rtl")}
               aria-pressed={readingMode === "rtl"}
-              title="Manga (Derecha a izquierda)"
+              title={tr("MangaReader.ae29522f94")}
             >
-              <span className="manga-mode-symbol" aria-hidden="true">📖</span> Manga
-            </button>
+              <span className="manga-mode-symbol" aria-hidden="true">📖</span> {tr("MangaReader.01e130d8de")}</button>
             <button
               className={`mode-btn ${readingMode === "ltr" ? "active" : ""}`}
               onClick={() => handleSetMode("ltr")}
               aria-pressed={readingMode === "ltr"}
-              title="Occidental (Izquierda a derecha)"
+              title={tr("MangaReader.394d1b96e5")}
             >
-              <span className="manga-mode-symbol" aria-hidden="true">📄</span> Comic
-            </button>
+              <span className="manga-mode-symbol" aria-hidden="true">📄</span> {tr("MangaReader.51fd712bed")}</button>
             <button
               className={`mode-btn ${readingMode === "webtoon" ? "active" : ""}`}
               onClick={() => handleSetMode("webtoon")}
               aria-pressed={readingMode === "webtoon"}
-              title="Cascada vertical (Webtoon)"
+              title={tr("MangaReader.77f28c4b84")}
             >
-              <span className="manga-mode-symbol" aria-hidden="true">📜</span> Cascada
-            </button>
+              <span className="manga-mode-symbol" aria-hidden="true">📜</span> {tr("MangaReader.a0ebe2199d")}</button>
           </div>
 
           <button
             className="icon-button"
             onClick={handleAddBookmark}
-            title="Añadir marcador a esta página"
-            aria-label="Añadir marcador"
+            title={tr("MangaReader.35755e6eab")}
+            aria-label={tr("MangaReader.7ec394f252")}
           >
             <BookmarkPlus size={18} />
           </button>
@@ -549,8 +549,8 @@ export function MangaReader({
           <button
             className="icon-button"
             onClick={() => setSettingsOpen((s) => !s)}
-            title="Ajustes de lectura"
-            aria-label="Ajustes de lectura"
+            title={tr("MangaReader.7dd7d3ef4b")}
+            aria-label={tr("MangaReader.7dd7d3ef4b")}
           >
             <SlidersHorizontal size={18} />
           </button>
@@ -558,8 +558,8 @@ export function MangaReader({
           <button
             className="icon-button"
             onClick={toggleFullscreen}
-            title={fullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
-            aria-label="Pantalla completa"
+            title={fullscreen ? tr("MangaReader.2de6e8b7c9") : tr("MangaReader.93f2f91137")}
+            aria-label={tr("MangaReader.93f2f91137")}
           >
             {fullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
           </button>
@@ -590,7 +590,7 @@ export function MangaReader({
         {loadingChapters ? (
           <div className="manga-stage-state">
             <Loader2 size={36} className="spinning" />
-            <p>Cargando lista de capítulos de MangaDex…</p>
+            <p>{tr("MangaReader.d7a02ac095")}</p>
           </div>
         ) : chapterError ? (
           <div className="manga-stage-state">
@@ -615,7 +615,7 @@ export function MangaReader({
           <div className="manga-stage-state">
             <Loader2 size={36} className="spinning" />
             <p>
-              Cargando páginas del capítulo {currentChapter?.chapter || ""}…
+              {tr("MangaReader.acabab5783")}{currentChapter?.chapter || ""}…
             </p>
           </div>
         ) : pagesError ? (
@@ -636,16 +636,14 @@ export function MangaReader({
                 }
               }}
             >
-              <RotateCcw size={15} /> Reintentar
-            </button>
+              <RotateCcw size={15} /> {tr("MangaReader.a8cd450971")}</button>
           </div>
         ) : currentChapter?.isExternal ? (
           <div className="manga-stage-state external-chapter-box">
             <ExternalLink size={42} />
-            <h2>Capítulo en fuente externa</h2>
+            <h2>{tr("MangaReader.331cd5b176")}</h2>
             <p>
-              Este capítulo está disponible a través de la editorial oficial.
-            </p>
+              {tr("MangaReader.20397c67e3")}</p>
             <MangaSources title={document.title} />
             {currentChapter.externalUrl && (
               <a
@@ -655,8 +653,7 @@ export function MangaReader({
                 className="primary-button"
                 onClick={(e) => e.stopPropagation()}
               >
-                Leer en la web oficial
-                <ExternalLink size={15} />
+                {tr("MangaReader.2d4159daab")}<ExternalLink size={15} />
               </a>
             )}
             <div className="manga-stage-actions">
@@ -669,8 +666,7 @@ export function MangaReader({
                     setCurrentPageIndex(0);
                   }}
                 >
-                  <ChevronLeft size={16} /> Capítulo anterior
-                </button>
+                  <ChevronLeft size={16} /> {tr("MangaReader.5fdb56921e")}</button>
               )}
               {currentChapterIndex < chapters.length - 1 && (
                 <button
@@ -681,7 +677,7 @@ export function MangaReader({
                     setCurrentPageIndex(0);
                   }}
                 >
-                  Siguiente capítulo <ChevronRight size={16} />
+                  {tr("MangaReader.5e07888c93")}<ChevronRight size={16} />
                 </button>
               )}
             </div>
@@ -693,7 +689,7 @@ export function MangaReader({
               <div key={idx} className="manga-webtoon-page-wrapper">
                 <img
                   src={pageUrl}
-                  alt={`Página ${idx + 1}`}
+                  alt={tr("MangaReader.b253bd3e82", { v0: idx + 1 })}
                   loading="lazy"
                   referrerPolicy="no-referrer"
                   className="manga-webtoon-img"
@@ -716,13 +712,12 @@ export function MangaReader({
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                 >
-                  Siguiente capítulo: Cap. {chapters[currentChapterIndex + 1]?.chapter}
+                  {tr("MangaReader.b621a2cd73")}{chapters[currentChapterIndex + 1]?.chapter}
                   <ArrowRight size={18} />
                 </button>
               ) : (
                 <p className="manga-end-notice">
-                  ¡Has llegado al último capítulo disponible en este idioma!
-                </p>
+                  {tr("MangaReader.19ada4fbd7")}</p>
               )}
             </div>
           </div>
@@ -739,7 +734,7 @@ export function MangaReader({
               <img
                 key={chapterPages[currentPageIndex]}
                 src={chapterPages[currentPageIndex]}
-                alt={`Página ${currentPageIndex + 1}`}
+                alt={tr("MangaReader.b253bd3e82", { v0: currentPageIndex + 1 })}
                 referrerPolicy="no-referrer"
                 className="manga-active-page-img"
               />
@@ -758,10 +753,9 @@ export function MangaReader({
               setCurrentChapterIndex((c) => c - 1);
               setCurrentPageIndex(0);
             }}
-            title="Capítulo anterior"
+            title={tr("MangaReader.32333919fc")}
           >
-            <ChevronLeft size={16} /> Cap. anterior
-          </button>
+            <ChevronLeft size={16} /> {tr("MangaReader.eeadb2d1cc")}</button>
         </div>
 
         <div className="manga-footer-center">
@@ -771,8 +765,8 @@ export function MangaReader({
                 className="icon-button"
                 disabled={navReversed ? currentPageIndex >= chapterPages.length - 1 && currentChapterIndex >= chapters.length - 1 : currentPageIndex <= 0 && currentChapterIndex <= 0}
                 onClick={navReversed ? goNextPage : goPrevPage}
-                title={navReversed ? "Página siguiente" : "Página anterior"}
-                aria-label={navReversed ? "Página siguiente" : "Página anterior"}
+                title={navReversed ? tr("MangaReader.9dd6b39842") : tr("MangaReader.9bcad73482")}
+                aria-label={navReversed ? tr("MangaReader.9dd6b39842") : tr("MangaReader.9bcad73482")}
               >
                 <ChevronLeft size={18} />
               </button>
@@ -784,7 +778,7 @@ export function MangaReader({
                 value={currentPageIndex}
                 onChange={(e) => setCurrentPageIndex(parseInt(e.target.value, 10))}
                 className="manga-range-slider"
-                aria-label="Página del capítulo"
+                aria-label={tr("MangaReader.b478181e15")}
               />
 
               <button
@@ -793,8 +787,8 @@ export function MangaReader({
                   navReversed ? currentPageIndex <= 0 && currentChapterIndex <= 0 : currentPageIndex >= chapterPages.length - 1 && currentChapterIndex >= chapters.length - 1
                 }
                 onClick={navReversed ? goPrevPage : goNextPage}
-                title={navReversed ? "Página anterior" : "Página siguiente"}
-                aria-label={navReversed ? "Página anterior" : "Página siguiente"}
+                title={navReversed ? tr("MangaReader.9bcad73482") : tr("MangaReader.9dd6b39842")}
+                aria-label={navReversed ? tr("MangaReader.9bcad73482") : tr("MangaReader.9dd6b39842")}
               >
                 <ChevronRight size={18} />
               </button>
@@ -802,7 +796,7 @@ export function MangaReader({
           )}
 
           {readingMode !== "webtoon" && chapterPages.length > 0 && <span className="manga-footer-page-counter" aria-live="polite">{currentPageIndex + 1}/{chapterPages.length}</span>}
-          <span className="manga-save-status-indicator" role="status">{saveStatus}</span>
+          <span className="manga-save-status-indicator" role="status">{translateMessage(saveStatus)}</span>
         </div>
 
         <div className="manga-footer-right">
@@ -813,9 +807,9 @@ export function MangaReader({
               setCurrentChapterIndex((c) => c + 1);
               setCurrentPageIndex(0);
             }}
-            title="Siguiente capítulo"
+            title={tr("MangaReader.89b1ad92b2")}
           >
-            Sig. capítulo <ChevronRight size={16} />
+            {tr("MangaReader.d564e74596")}<ChevronRight size={16} />
           </button>
         </div>
       </footer>
@@ -827,14 +821,14 @@ export function MangaReader({
             className="manga-drawer-panel"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
-            aria-label="Capítulos de manga"
+            aria-label={tr("MangaReader.3d97ab79f0")}
           >
             <div className="manga-drawer-header">
-              <h3>Índice de capítulos</h3>
+              <h3>{tr("MangaReader.7de4209187")}</h3>
               <button
                 className="icon-button"
                 onClick={() => setDrawerOpen(false)}
-                aria-label="Cerrar índice"
+                aria-label={tr("MangaReader.fcbcef75b4")}
               >
                 <X size={18} />
               </button>
@@ -843,7 +837,7 @@ export function MangaReader({
             <div className="manga-drawer-search">
               <input
                 type="text"
-                placeholder="Buscar capítulo..."
+                placeholder={tr("MangaReader.68d6b87407")}
                 value={chapterSearch}
                 onChange={(e) => setChapterSearch(e.target.value)}
                 autoFocus
@@ -867,12 +861,12 @@ export function MangaReader({
                     }}
                   >
                     <div className="manga-drawer-item-title">
-                      <strong>Capítulo {ch.chapter}</strong>
+                      <strong>{tr("MangaReader.3f7d2af0d3")}{ch.chapter}</strong>
                       {ch.title && <span>{ch.title}</span>}
                     </div>
 
                     <div className="manga-drawer-item-meta">
-                      {ch.pages > 0 && <span>{ch.pages} págs.</span>}
+                      {ch.pages > 0 && <span>{ch.pages} {tr("MangaReader.7dd886df8f")}</span>}
                       {ch.scanlationGroup && <small>{ch.scanlationGroup}</small>}
                       {ch.isExternal && <ExternalLink size={12} />}
                       {isSelected && <Check size={16} className="selected-icon" />}
@@ -892,24 +886,24 @@ export function MangaReader({
             className="manga-settings-panel"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
-            aria-label="Ajustes del lector de manga"
+            aria-label={tr("MangaReader.320f3e6f03")}
           >
             <div className="manga-drawer-header">
-              <h3>Ajustes del lector</h3>
+              <h3>{tr("MangaReader.2bcbd25c3f")}</h3>
               <button
                 className="icon-button"
                 onClick={() => setSettingsOpen(false)}
-                aria-label="Cerrar ajustes"
+                aria-label={tr("MangaReader.0db8852ec4")}
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="manga-settings-body"><p className="manga-touch-help">Desliza a la derecha para avanzar en Manga; a la izquierda en Comic. En Cascada, desplázate verticalmente. Puedes ampliar con dos dedos.</p>
+            <div className="manga-settings-body"><p className="manga-touch-help">{tr("MangaReader.9f3f1c001c")}</p>
               <MangaSources title={document.title} />
               {/* Language Selection */}
               <div className="setting-group">
-                <label htmlFor="manga-reader-language">Idioma de traducción</label>
+                <label htmlFor="manga-reader-language">{tr("MangaReader.a9345e8da6")}</label>
                 <div className="manga-lang-picker">
                   <Globe size={16} />
                   <select
@@ -931,55 +925,50 @@ export function MangaReader({
 
               {/* Theme Selection */}
               <div className="setting-group">
-                <label>Ambiente de lectura</label>
+                <label>{tr("MangaReader.56a378d6c9")}</label>
                 <div className="manga-theme-options">
                   <button
                     className={`theme-pill ${theme === "night" ? "active" : ""}`}
                     onClick={() => handleSetTheme("night")}
                   >
-                    🌙 Noche
-                  </button>
+                    {tr("MangaReader.3d209e8a7d")}</button>
                   <button
                     className={`theme-pill ${theme === "sepia" ? "active" : ""}`}
                     onClick={() => handleSetTheme("sepia")}
                   >
-                    📜 Sepia
-                  </button>
+                    {tr("MangaReader.b1e7ee821f")}</button>
                   <button
                     className={`theme-pill ${theme === "paper" ? "active" : ""}`}
                     onClick={() => handleSetTheme("paper")}
                   >
-                    ☀️ Papel
-                  </button>
+                    {tr("MangaReader.08b4c0affb")}</button>
                 </div>
               </div>
 
               {/* Fit Mode */}
               <div className="setting-group">
-                <label>Ajuste de página</label>
+                <label>{tr("MangaReader.cc3478ed50")}</label>
                 <div className="manga-theme-options">
                   <button
                     className={`theme-pill ${fit === "width" ? "active" : ""}`}
                     onClick={() => setFit("width")}
                   >
-                    Ajustar ancho
-                  </button>
+                    {tr("MangaReader.b629b46b10")}</button>
                   <button
                     className={`theme-pill ${fit === "page" ? "active" : ""}`}
                     onClick={() => setFit("page")}
                   >
-                    Ajustar pantalla
-                  </button>
+                    {tr("MangaReader.4812d2741c")}</button>
                 </div>
               </div>
 
               {/* Zoom Controls */}
               <div className="setting-group">
-                <label>Zoom ({Math.round(zoom * 100)}%)</label>
+                <label>{tr("MangaReader.efb94d17b5")}{Math.round(zoom * 100)}%)</label>
                 <div className="zoom-controls-row">
                   <button
                     className="icon-button"
-                    aria-label="Reducir zoom"
+                    aria-label={tr("MangaReader.2370347a67")}
                     disabled={zoom <= 0.6}
                     onClick={() => setZoom((z) => Math.max(0.5, Number((z - 0.15).toFixed(2))))}
                   >
@@ -993,7 +982,7 @@ export function MangaReader({
                   </button>
                   <button
                     className="icon-button"
-                    aria-label="Aumentar zoom"
+                    aria-label={tr("MangaReader.68eea7e00c")}
                     disabled={zoom >= 2.5}
                     onClick={() => setZoom((z) => Math.min(2.5, Number((z + 0.15).toFixed(2))))}
                   >
@@ -1005,8 +994,8 @@ export function MangaReader({
               {/* Invert Navigation Toggle */}
               <div className="setting-group toggle-group">
                 <div>
-                  <strong>Invertir dirección de navegación</strong>
-                  <p>Invierte las flechas, los toques y los deslizamientos del modo elegido.</p>
+                  <strong>{tr("MangaReader.192211eab3")}</strong>
+                  <p>{tr("MangaReader.12e66e6425")}</p>
                 </div>
                 <input
                   type="checkbox"
@@ -1018,8 +1007,8 @@ export function MangaReader({
               {/* Data Saver Mode Toggle */}
               <div className="setting-group toggle-group">
                 <div>
-                  <strong>Modo Ahorro de Datos</strong>
-                  <p>Descarga imágenes comprimidas para conexiones lentas.</p>
+                  <strong>{tr("MangaReader.d8cf796b8c")}</strong>
+                  <p>{tr("MangaReader.d28efe1af6")}</p>
                 </div>
                 <input
                   type="checkbox"

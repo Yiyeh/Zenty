@@ -1,3 +1,4 @@
+const { tr } = require("./locale.cjs");
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
@@ -21,10 +22,10 @@ function createStartupSettings(app, executable, profile, name, platform = proces
   return {
     get,
     async set(enabled) {
-      if (!supported || typeof enabled !== 'boolean') throw new Error('Solo disponible en la aplicación de Windows compilada.');
+      if (!supported || typeof enabled !== 'boolean') throw new Error(tr("startup_settings.787d710a1a"));
       app.setLoginItemSettings({ ...options, name, openAtLogin: enabled, enabled });
       const actual = get();
-      if (actual.enabled !== enabled) throw new Error('Windows no aplicó el cambio. Revisa las aplicaciones de inicio en Configuración de Windows.');
+      if (actual.enabled !== enabled) throw new Error(tr("startup_settings.cdd491414e"));
       await fs.mkdir(profile, { recursive: true });
       const temporary = path.join(profile, `startup.${randomUUID()}.tmp`);
       await fs.writeFile(temporary, JSON.stringify({ enabled: actual.enabled }));

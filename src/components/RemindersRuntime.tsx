@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { useEffect, useMemo, useRef } from "react";
 import { useDashboard } from "../context/DashboardStore";
 import {
@@ -18,6 +20,7 @@ function readDelivered(): Record<string, number> {
   }
 }
 export function RemindersRuntime() {
+  useInterfaceLocale();
   const { tasks, timeBlocks, reminders, settings, notify, storageWarning } =
     useDashboard();
   const notifyRef = useRef(notify);
@@ -96,7 +99,7 @@ export function RemindersRuntime() {
       const sync = native ? native.sync(plan) : engine.current?.sync(plan);
       void sync?.catch(() =>
         notifyRef.current(
-          "No se pudo actualizar la programación de avisos. Vuelve a abrir la agenda.",
+          tr("RemindersRuntime.d70f123c09"),
         ),
       );
     }, 250);

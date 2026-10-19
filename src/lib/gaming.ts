@@ -1,3 +1,4 @@
+import { tr, getFormatLocale } from "./i18n.ts";
 export type GameSource = "gamerpower" | "cheapshark" | "steam" | "manual";
 export type GameKind = "game" | "loot" | "beta" | "deal" | "release";
 export interface GameItem {
@@ -35,10 +36,10 @@ export interface GamingFeed {
   warning: string;
 }
 export const gameStatuses: Record<GameStatus, string> = {
-  pending: "Pendiente",
-  playing: "Jugando",
-  completed: "Terminado",
-  claimed: "Reclamado",
+  get pending() { return tr("gaming.2ef68536d8"); },
+  get playing(){return tr("gaming.185ac64646");},
+  get completed(){return tr("gaming.7b4a9395b9");},
+  get claimed(){return tr("gaming.2869d2c9d8");},
 };
 export const platformOptions = [
   "PC",
@@ -52,17 +53,17 @@ export const platformOptions = [
   "iOS",
 ];
 export const sourceNames = {
-  gamerpower: "GamerPower",
-  cheapshark: "CheapShark",
+  get gamerpower() { return tr("gaming.f8e0aae1be"); },
+  get cheapshark() { return tr("gaming.727c458fd7"); },
   steam: "Steam",
-  manual: "Añadido por ti",
+  get manual() { return tr("gaming.87bf6ca375"); },
 };
 export const kindNames: Record<GameKind, string> = {
-  game: "Juego completo",
-  loot: "DLC / contenido",
-  beta: "Beta / prueba",
-  deal: "Oferta",
-  release: "Lanzamiento",
+  get game() { return tr("gaming.3abad2deab"); },
+  get loot() { return tr("gaming.e16690e61d"); },
+  get beta() { return tr("gaming.5059fe8f90"); },
+  get deal() { return tr("gaming.7b2696be23"); },
+  get release() { return tr("gaming.1d0e4914dc"); },
 };
 export function httpsUrl(value: unknown, hosts?: string[]): string {
   if (typeof value !== "string") return "";
@@ -112,12 +113,12 @@ export function giveawayExpired(game: GameItem, now = Date.now()): boolean {
 }
 export function displayGameDate(value: string | null): string {
   return value
-    ? new Date(`${value}T12:00:00`).toLocaleDateString("es-CL", {
+    ? new Date(`${value}T12:00:00`).toLocaleDateString(getFormatLocale(), {
         day: "numeric",
         month: "short",
         year: "numeric",
       })
-    : "Sin fecha anunciada";
+    : tr("gaming.e74e12f80d");
 }
 export function emptyGame(overrides: Partial<GameItem> = {}): GameItem {
   return {

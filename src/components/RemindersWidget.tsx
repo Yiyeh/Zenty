@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr, getFormatLocale } from "../lib/i18n.ts";
 import { newId } from "../lib/id";
 import { APP_NAME } from "../lib/brand";
 import { useMemo, useState } from "react";
@@ -22,10 +24,10 @@ import {
 import { Dialog } from "./Dialog";
 import { ReminderAdvance } from "./ReminderAdvance";
 const repeatLabels = {
-  once: "Una vez",
-  daily: "Cada día",
-  weekdays: "Lunes a viernes",
-  weekly: "Cada semana",
+  get once() { return tr("RemindersWidget.1edf08bca5"); },
+  get daily() { return tr("RemindersWidget.102a46cd79"); },
+  get weekdays() { return tr("RemindersWidget.7d4a3c148a"); },
+  get weekly() { return tr("RemindersWidget.81df48e603"); },
 };
 function freshReminder(): Reminder {
   const date = new Date(Date.now() + 30 * 60000);
@@ -41,6 +43,7 @@ function freshReminder(): Reminder {
   };
 }
 export function RemindersWidget() {
+  useInterfaceLocale();
   const {
     reminders,
     setReminders,
@@ -79,8 +82,8 @@ export function RemindersWidget() {
         const result = await native.test();
         setStatus(
           result.ok
-            ? "Aviso enviado a las notificaciones de Windows."
-            : result.error || "Windows no pudo mostrar el aviso.",
+            ? tr("RemindersWidget.5d72b6b056")
+            : result.error || tr("RemindersWidget.29ff8a87d8"),
         );
       } else if ("Notification" in window) {
         const permission =
@@ -89,17 +92,17 @@ export function RemindersWidget() {
             : Notification.permission;
         if (permission === "granted") {
           new Notification(APP_NAME, {
-            body: "Los recordatorios están listos.",
+            body: tr("RemindersWidget.b2f4c39c63"),
           });
-          setStatus("Avisos de escritorio activados para esta página.");
+          setStatus(tr("RemindersWidget.7a19a45409"));
         } else
           setStatus(
-            `El navegador bloquea los avisos. Puedes habilitarlos en los permisos de este sitio. Seguirás viendo avisos dentro de ${APP_NAME}.`,
+            tr("RemindersWidget.8f9fba9865", { v0: APP_NAME }),
           );
       } else
-        setStatus(`Este navegador permite solo avisos dentro de ${APP_NAME}.`);
+        setStatus(tr("RemindersWidget.d2892d081b", { v0: APP_NAME }));
     } catch {
-      setStatus("No se pudo mostrar la notificación de prueba.");
+      setStatus(tr("RemindersWidget.048db8900b"));
     } finally {
       setTesting(false);
     }
@@ -107,15 +110,14 @@ export function RemindersWidget() {
   return (
     <section
       className="glass-panel reminders-card"
-      aria-label="Alarmas y recordatorios"
+      aria-label={tr("RemindersWidget.f87b3dca0a")}
     >
       <div className="widget-heading">
         <h3>
-          <AlarmClock size={17} /> Alarmas y avisos
-        </h3>
+          <AlarmClock size={17} /> {tr("RemindersWidget.b6de969828")}</h3>
         <button
           className="icon-button"
-          aria-label="Crear alarma"
+          aria-label={tr("RemindersWidget.89e6b95fa8")}
           onClick={() => {
             setEditing(freshReminder());
             setError("");
@@ -136,7 +138,7 @@ export function RemindersWidget() {
               }))
             }
           />
-          {settings.remindersEnabled ? "Avisos activados" : "Avisos pausados"}
+          {settings.remindersEnabled ? tr("RemindersWidget.0f6aa1f81c") : tr("RemindersWidget.4fb8bda02c")}
         </label>
         <button
           className="text-button"
@@ -145,10 +147,10 @@ export function RemindersWidget() {
         >
           <Bell size={14} />
           {testing
-            ? "Enviando…"
+            ? tr("RemindersWidget.9415ac2416")
             : window.zentyDesktop
-              ? "Probar aviso"
-              : "Permitir y probar"}
+              ? tr("RemindersWidget.1f800baa0d")
+              : tr("RemindersWidget.b97d220612")}
         </button>
       </div>
       {status && (
@@ -157,12 +159,10 @@ export function RemindersWidget() {
         </p>
       )}
       <p className="reminders-description">
-        Alarmas, tareas con hora y eventos con antelación, en un lugar.
-      </p>
+        {tr("RemindersWidget.ff44bd400c")}</p>
       {!settings.remindersEnabled && (
         <p className="reminders-paused" role="status">
-          <BellOff size={15} /> No se enviarán avisos hasta que los actives.
-        </p>
+          <BellOff size={15} /> {tr("RemindersWidget.e937a91da9")}</p>
       )}
       {entries.length ? (
         <ul className="reminders-list">
@@ -179,32 +179,32 @@ export function RemindersWidget() {
                     {alarm
                       ? repeatLabels[entry.repeat]
                       : entry.id.startsWith("task:")
-                        ? "Tarea"
-                        : "Agenda"}
+                        ? tr("RemindersWidget.981fc146f0")
+                        : tr("RemindersWidget.0fdf485f5b")}
                   </small>
                 </div>
                 <div className="reminder-main">
                   <strong>{entry.title}</strong>
                   <small>
                     {next
-                      ? new Date(next.at).toLocaleDateString("es-CL", {
+                      ? new Date(next.at).toLocaleDateString(getFormatLocale(), {
                           weekday: "short",
                           day: "numeric",
                           month: "short",
                         })
                       : entry.enabled
-                        ? "Finalizada"
-                        : "Pausada"}
+                        ? tr("RemindersWidget.636c7b850c")
+                        : tr("RemindersWidget.2c762c7006")}
                     {entry.advance
-                      ? ` · aviso ${entry.advance} min antes`
-                      : " · a la hora"}
+                      ? tr("RemindersWidget.237c04e110", { v0: entry.advance })
+                      : tr("RemindersWidget.85dcc78d4c")}
                   </small>
                 </div>
                 {alarm && (
                   <div className="reminder-actions">
                     <button
                       className="icon-button"
-                      aria-label={`${entry.enabled ? "Pausar" : "Activar"} alarma ${entry.title}`}
+                      aria-label={tr("a11y.RemindersWidget.207", { v0: entry.enabled ? tr("RemindersWidget.cd25ee5b1d") : tr("RemindersWidget.8e38c2571d"), v1: entry.title })}
                       aria-pressed={entry.enabled}
                       onClick={() =>
                         setReminders((previous) =>
@@ -224,7 +224,7 @@ export function RemindersWidget() {
                     </button>
                     <button
                       className="icon-button"
-                      aria-label={`Editar alarma ${entry.title}`}
+                      aria-label={tr("a11y.RemindersWidget.227", { v0: entry.title })}
                       onClick={() => {
                         setEditing(
                           reminders.find(
@@ -238,7 +238,7 @@ export function RemindersWidget() {
                     </button>
                     <button
                       className="icon-button"
-                      aria-label={`Quitar alarma ${entry.title}`}
+                      aria-label={tr("RemindersWidget.f9f315d28d", { v0: entry.title })}
                       onClick={() => {
                         const removed = reminders.find(
                           (item) => `alarm:${item.id}` === entry.id,
@@ -249,7 +249,7 @@ export function RemindersWidget() {
                           ),
                         );
                         if (removed)
-                          notify("Alarma eliminada.", () =>
+                          notify(tr("RemindersWidget.5200e5af01"), () =>
                             setReminders((previous) =>
                               previous.some((item) => item.id === removed.id)
                                 ? previous
@@ -268,7 +268,7 @@ export function RemindersWidget() {
       ) : (
         <div className="reminders-empty">
           <AlarmClock size={28} />
-          <p>Aquí aparecerán tus próximos avisos.</p>
+          <p>{tr("RemindersWidget.a3d630b16e")}</p>
           <button
             className="secondary-button"
             onClick={() => {
@@ -277,8 +277,7 @@ export function RemindersWidget() {
             }}
           >
             <Plus size={15} />
-            Crear mi primera alarma
-          </button>
+            {tr("RemindersWidget.08c01f02e6")}</button>
         </div>
       )}
       {entries.length > 5 && (
@@ -286,23 +285,23 @@ export function RemindersWidget() {
           className="text-button"
           onClick={() => setAll((value) => !value)}
         >
-          {all ? "Ver menos" : `Ver todos (${entries.length})`}
+          {all ? tr("RemindersWidget.8e38161a1c") : tr("RemindersWidget.5cadf16c1a", { v0: entries.length })}
         </button>
       )}
       <p className="reminders-footnote">
         {window.zentyDesktop
-          ? `Los avisos funcionan con ${APP_NAME} abierto o minimizado. Si lo cierras por completo, se detienen.`
-          : "Mantén esta página abierta. El navegador puede retrasar los avisos en segundo plano."}
+          ? tr("RemindersWidget.641709db41", { v0: APP_NAME })
+          : tr("RemindersWidget.4976fc655b")}
       </p>
       <Dialog
         open={!!editing}
         onClose={() => setEditing(null)}
         title={
           editing && reminders.some((item) => item.id === editing.id)
-            ? "Editar alarma"
-            : "Nueva alarma"
+            ? tr("RemindersWidget.7dc4d5a2ad")
+            : tr("RemindersWidget.812cc6f2b3")
         }
-        description="Elige cuándo quieres recibir el aviso."
+        description={tr("RemindersWidget.7567fa8aec")}
       >
         {editing && (
           <form
@@ -310,7 +309,7 @@ export function RemindersWidget() {
             onSubmit={(event) => {
               event.preventDefault();
               if (!validReminder(editing)) {
-                setError("Completa el nombre, la fecha y una hora válida.");
+                setError(tr("RemindersWidget.5cc581f4cd"));
                 return;
               }
               if (
@@ -318,7 +317,7 @@ export function RemindersWidget() {
                 new Date(`${editing.date}T${editing.time}`).getTime() <=
                   Date.now()
               ) {
-                setError("Elige una fecha y hora futuras.");
+                setError(tr("RemindersWidget.81a4c6752b"));
                 return;
               }
               setReminders((previous) =>
@@ -331,16 +330,15 @@ export function RemindersWidget() {
                   : [...previous, { ...editing, title: editing.title.trim() }],
               );
               setEditing(null);
-              notify("Alarma guardada.");
+              notify(tr("RemindersWidget.a5ded97567"));
             }}
           >
             <label>
-              Nombre
-              <input
+              {tr("RemindersWidget.562bb15757")}<input
                 autoFocus
                 required
                 maxLength={200}
-                placeholder="Volver al trabajo, reunión, descanso…"
+                placeholder={tr("RemindersWidget.119557cddb")}
                 value={editing.title}
                 onChange={(event) =>
                   setEditing({ ...editing, title: event.target.value })
@@ -349,8 +347,7 @@ export function RemindersWidget() {
             </label>
             <div className="form-row">
               <label>
-                Fecha
-                <input
+                {tr("RemindersWidget.93b2a9ef78")}<input
                   required
                   type="date"
                   value={editing.date}
@@ -360,8 +357,7 @@ export function RemindersWidget() {
                 />
               </label>
               <label>
-                Hora
-                <input
+                {tr("RemindersWidget.503f312cde")}<input
                   required
                   type="time"
                   value={editing.time}
@@ -372,8 +368,7 @@ export function RemindersWidget() {
               </label>
             </div>
             <label>
-              Repetir
-              <select
+              {tr("RemindersWidget.91a7a94f21")}<select
                 value={editing.repeat}
                 onChange={(event) =>
                   setEditing({
@@ -394,7 +389,7 @@ export function RemindersWidget() {
               onChange={(value) =>
                 setEditing({ ...editing, advance: value ?? 0 })
               }
-              label="Avisarme con antelación"
+              label={tr("RemindersWidget.2a1116073a")}
             />
             <label className="check-label">
               <input
@@ -404,11 +399,10 @@ export function RemindersWidget() {
                   setEditing({ ...editing, sound: event.target.checked })
                 }
               />
-              Sonido de notificación
-            </label>
+              {tr("RemindersWidget.fae15f2081")}</label>
             {error && (
               <p className="error-message" role="alert">
-                {error}
+                {translateMessage(error)}
               </p>
             )}
             <div className="dialog-actions">
@@ -418,12 +412,10 @@ export function RemindersWidget() {
                 onClick={() => setEditing(null)}
               >
                 <X size={15} />
-                Cancelar
-              </button>
+                {tr("RemindersWidget.bb9dbb406d")}</button>
               <button className="primary-button" type="submit">
                 <Check size={15} />
-                Guardar alarma
-              </button>
+                {tr("RemindersWidget.cf3ed3ab27")}</button>
             </div>
           </form>
         )}

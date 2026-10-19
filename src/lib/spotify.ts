@@ -1,3 +1,4 @@
+import { tr } from "./i18n.ts";
 import { safeUrl, spotifyEmbed } from "./dashboard.ts";
 import type {
   NowPlaying,
@@ -69,17 +70,17 @@ export function normalizeSpotifyPlayback(
   };
 }
 function spotifyError(status: number) {
-  return new Error(
+  return Object.assign(new Error(
     status === 403
-      ? "Spotify no permite este control. Comprueba Premium, los permisos y los usuarios autorizados de tu aplicación."
+      ? tr("spotify.ba0e89a5ed")
       : status === 404
-        ? "No hay un dispositivo disponible. Abre Spotify en Windows o en el navegador y actualiza los dispositivos."
+        ? tr("spotify.1216c7fb63")
         : status === 401
-          ? "La sesión de Spotify venció. Vuelve a conectar tu cuenta."
+          ? tr("spotify.3bdce0aafc")
           : status === 429
-            ? "Spotify pidió esperar. Inténtalo de nuevo dentro de un minuto."
-            : "Spotify no pudo realizar el cambio. Vuelve a intentarlo.",
-  );
+            ? tr("spotify.42f5b04fdb")
+            : tr("spotify.7896cc1b21"),
+  ), { status });
 }
 export async function requestSpotifyDevices(
   token: string,
@@ -109,7 +110,7 @@ export async function requestSpotifyCommand(
   fetcher: typeof fetch = fetch,
 ): Promise<void> {
   if (!command.deviceId || command.deviceId.length > 300)
-    throw new Error("Selecciona un dispositivo de Spotify.");
+    throw new Error(tr("spotify.0c91277c01"));
   const routes = {
     play: "play",
     pause: "pause",
@@ -119,7 +120,7 @@ export async function requestSpotifyCommand(
     transfer: "",
   } as const;
   if (!Object.hasOwn(routes, command.action))
-    throw new Error("Control de Spotify inválido.");
+    throw new Error(tr("spotify.7b19d4822f"));
   const query = new URLSearchParams({ device_id: command.deviceId });
   let body: unknown;
   if (command.action === "seek") {
@@ -128,7 +129,7 @@ export async function requestSpotifyCommand(
       command.position! < 0 ||
       command.position! > 86_400_000
     )
-      throw new Error("Posición de reproducción inválida.");
+      throw new Error(tr("spotify.0b0afc3018"));
     query.set("position_ms", String(Math.round(command.position!)));
   }
   if (command.action === "play" && command.url) {
@@ -136,7 +137,7 @@ export async function requestSpotifyCommand(
     const match = embed?.match(/\/(album|playlist|track)\/([a-zA-Z0-9]{22})$/);
     if (!match)
       throw new Error(
-        "Usa un enlace de Spotify a un álbum, playlist o canción.",
+        tr("spotify.dd5ecbbd39"),
       );
     const uri = `spotify:${match[1]}:${match[2]}`;
     body = match[1] === "track" ? { uris: [uri] } : { context_uri: uri };
@@ -164,7 +165,7 @@ export async function requestSpotifyVolume(
   fetcher: typeof fetch = fetch,
 ): Promise<number> {
   if (!Number.isFinite(volume) || !deviceId || deviceId.length > 300)
-    throw new Error("No hay un volumen o dispositivo válido.");
+    throw new Error(tr("spotify.2b5d4a5f48"));
   const percent = Math.max(0, Math.min(100, Math.round(volume)));
   const query = new URLSearchParams({
     volume_percent: String(percent),
@@ -181,12 +182,12 @@ export async function requestSpotifyVolume(
   if (!response.ok)
     throw new Error(
       response.status === 403
-        ? "Spotify no permite cambiar el volumen. Requiere Premium, permiso de reproducción y un dispositivo compatible."
+        ? tr("spotify.d9e781b6dd")
         : response.status === 404
-          ? "No hay un dispositivo activo. Abre Spotify, reproduce algo y pulsa Actualizar."
+          ? tr("spotify.afa80ab407")
           : response.status === 429
-            ? "Spotify pidió esperar antes de cambiar el volumen de nuevo."
-            : "Spotify no pudo ajustar el volumen. Inténtalo de nuevo.",
+            ? tr("spotify.31b0dadf38")
+            : tr("spotify.9a4781b4fe"),
     );
   return percent;
 }

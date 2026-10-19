@@ -1,3 +1,4 @@
+const { tr } = require("./locale.cjs");
 const { execFile } = require("node:child_process");
 const { promisify } = require("node:util");
 const fs = require("node:fs/promises");
@@ -40,7 +41,7 @@ function createAudioController({
     ];
     if (!ids.length)
       throw new Error(
-        "No se encontraron los procesos de audio de la aplicación.",
+        tr("audio_controller.ac723e752e"),
       );
     const result = await run(executable, [level, ids.join(",")], {
       windowsHide: true,
@@ -49,7 +50,7 @@ function createAudioController({
     });
     const body = JSON.parse(result.stdout);
     if (!body.ok || !Array.isArray(body.sessions))
-      throw new Error("Windows no pudo ajustar el audio de la aplicación.");
+      throw new Error(tr("audio_controller.c487049986"));
     return body.sessions;
   }
   function flush() {
@@ -92,7 +93,7 @@ function createAudioController({
     },
     async set(value) {
       if (!validAudioPreference(value))
-        throw new Error("El volumen debe estar entre 0 y 100.");
+        throw new Error(tr("audio_controller.429ea6378e"));
       await ready;
       preference = { volume: Math.round(value.volume), muted: value.muted };
       saved = true;

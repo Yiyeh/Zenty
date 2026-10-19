@@ -1,3 +1,4 @@
+import { tr } from "../src/lib/i18n.ts";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 interface CacheEntry<T> {
@@ -39,13 +40,13 @@ async function mangadexFetch(url: string) {
   });
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(`MangaDex error ${res.status}: ${text || res.statusText}`);
+    throw new Error(tr("mangadex_api.8d1defbbd3", { v0: res.status, v1: text || res.statusText }));
   }
   return res.json();
 }
 
 function resolveTitle(titleObj: Record<string, string> | undefined, altTitles?: Record<string, string>[]): string {
-  if (!titleObj) return "Manga sin título";
+  if (!titleObj) return tr("mangadex_api.b3ca8d5687");
   if (titleObj["es"]) return titleObj["es"];
   if (titleObj["es-la"]) return titleObj["es-la"];
   if (titleObj["en"]) return titleObj["en"];
@@ -63,7 +64,7 @@ function resolveTitle(titleObj: Record<string, string> | undefined, altTitles?: 
       if (v) return v;
     }
   }
-  return "Manga sin título";
+  return tr("mangadex_api.b3ca8d5687");
 }
 
 function resolveDescription(descObj: Record<string, string> | undefined): string {
@@ -115,14 +116,14 @@ export function createMangaDexApi({ fetchJson = mangadexFetch }: { fetchJson?: t
           !["127.0.0.1", "::1", "::ffff:127.0.0.1"].includes(req.socket.remoteAddress || "") ||
           req.headers["sec-fetch-site"] === "cross-site" ||
           (req.headers.origin && req.headers.origin !== `http://${host}`)) {
-        reply(res, 403, { error: "Solo disponible desde Zenty en este equipo." }); return;
+        reply(res, 403, { error: tr("mangadex_api.c7ebeeaa53") }); return;
       }
       const url = new URL(req.url || "/", `http://${host}`);
       const parts = url.pathname.split("/").filter(Boolean);
       // parts[0] === "api", parts[1] === "mangadex", parts[2] === action or manga
       const action = parts[2];
       if (["manga", "chapter"].includes(action) && !/^[a-zA-Z0-9-]{1,100}$/.test(parts[3] || "")) {
-        reply(res, 400, { error: "Identificador de manga o capítulo inválido." }); return;
+        reply(res, 400, { error: tr("mangadex_api.f35af09c9c") }); return;
       }
 
       // 1. GET /api/mangadex/search
@@ -236,7 +237,7 @@ export function createMangaDexApi({ fetchJson = mangadexFetch }: { fetchJson?: t
           rawChapters.push(...batch);
           offset += batch.length;
           if (!batch.length || offset >= Number(feedData.total || 0)) break;
-          if (offset >= 10000) throw new Error("Este catálogo supera el límite de consulta de MangaDex. Selecciona un idioma concreto para ver todos sus capítulos.");
+          if (offset >= 10000) throw new Error(tr("mangadex_api.50f43d1833"));
         }
         // Deduplicate chapters: prefer chapters with pages > 0 (internal reader)
         const chapterMap = new Map<string, any>();
@@ -372,7 +373,7 @@ export function createMangaDexApi({ fetchJson = mangadexFetch }: { fetchJson?: t
       if (action === "image" && (req.method === "GET" || req.method === "HEAD")) {
         const targetUrl = url.searchParams.get("url");
         if (!targetUrl) {
-          reply(res, 400, { error: "Parámetro url requerido." });
+          reply(res, 400, { error: tr("mangadex_api.f67e05ef00") });
           return;
         }
 
@@ -380,7 +381,7 @@ export function createMangaDexApi({ fetchJson = mangadexFetch }: { fetchJson?: t
         try {
           parsed = new URL(targetUrl);
         } catch {
-          reply(res, 400, { error: "URL inválida." });
+          reply(res, 400, { error: tr("mangadex_api.7b5287fd1f") });
           return;
         }
 
@@ -391,7 +392,7 @@ export function createMangaDexApi({ fetchJson = mangadexFetch }: { fetchJson?: t
           parsed.hostname.endsWith(".mangadex.network");
 
         if (!allowed || parsed.protocol !== "https:" || parsed.username || parsed.password || (parsed.port && parsed.port !== "443")) {
-          reply(res, 403, { error: "Dominio no autorizado para proxy de imagen." });
+          reply(res, 403, { error: tr("mangadex_api.600a21378e") });
           return;
         }
 
@@ -408,7 +409,7 @@ export function createMangaDexApi({ fetchJson = mangadexFetch }: { fetchJson?: t
           });
 
           if (!imgRes.ok) {
-            reply(res, imgRes.status, { error: `MangaDex image error: ${imgRes.status}` });
+            reply(res, imgRes.status, { error: tr("mangadex_api.d85816bac3", { v0: imgRes.status }) });
             return;
           }
 
@@ -416,7 +417,7 @@ export function createMangaDexApi({ fetchJson = mangadexFetch }: { fetchJson?: t
           const contentLength = imgRes.headers.get("content-length");
           if (!/^image\/(jpeg|png|webp|avif|gif)(?:;|$)/i.test(contentType) || Number(contentLength || 0) > 20_000_000) {
             await imgRes.body?.cancel();
-            reply(res, 502, { error: "La fuente no devolvió una imagen compatible." }); return;
+            reply(res, 502, { error: tr("mangadex_api.ccd7f8ae78") }); return;
           }
 
           const headers: Record<string, string> = {
@@ -435,7 +436,7 @@ export function createMangaDexApi({ fetchJson = mangadexFetch }: { fetchJson?: t
           const chunks: Buffer[] = []; let size = 0;
           for await (const chunk of imgRes.body || []) {
             size += chunk.length;
-            if (size > 20_000_000) throw new Error("Imagen demasiado grande.");
+            if (size > 20_000_000) throw new Error(tr("mangadex_api.7289b3420c"));
             chunks.push(Buffer.from(chunk));
           }
           const buffer = Buffer.concat(chunks);
@@ -444,15 +445,15 @@ export function createMangaDexApi({ fetchJson = mangadexFetch }: { fetchJson?: t
           res.end(buffer);
           return;
         } catch {
-          reply(res, 502, { error: "No se pudo obtener la imagen de MangaDex." });
+          reply(res, 502, { error: tr("mangadex_api.2893675768") });
           return;
         }
       }
 
-      reply(res, 404, { error: "Ruta de MangaDex no encontrada." });
+      reply(res, 404, { error: tr("mangadex_api.9ea25cfa71") });
     } catch (err) {
       reply(res, 500, {
-        error: (err as Error).message || "Error al conectar con MangaDex.",
+        error: (err as Error).message || tr("mangadex_api.2045971771"),
       });
     }
   };

@@ -1,3 +1,4 @@
+import { tr } from "../src/lib/i18n.ts";
 import { createHash, randomUUID } from "node:crypto";
 import {
   mkdir,
@@ -39,7 +40,7 @@ export function createLibraryApi(directory = resolve("library-data")) {
     try {
       const data = JSON.parse(await readFile(manifest, "utf8"));
       if (data.version !== 1 || !Array.isArray(data.documents))
-        throw new Error("Invalid library");
+        throw new Error(tr("library_api.550bd81f38"));
       if (
         !data.documents.every(
           (d: LibraryDocument) =>
@@ -69,7 +70,7 @@ export function createLibraryApi(directory = resolve("library-data")) {
             ),
         )
       )
-        throw new Error("Invalid records");
+        throw new Error(tr("library_api.d860b80565"));
       return {
         ...data,
         preferences: normalizeReaderPreferences(data.preferences),
@@ -83,7 +84,7 @@ export function createLibraryApi(directory = resolve("library-data")) {
         };
       throw new ApiError(
         500,
-        "No se pudo leer el índice de la biblioteca. Conserva la carpeta library-data para recuperarlo; no se ha sobrescrito.",
+        tr("library_api.49df016276"),
       );
     }
   }
@@ -110,7 +111,7 @@ export function createLibraryApi(directory = resolve("library-data")) {
       if (size > max)
         throw new ApiError(
           413,
-          "El archivo supera el límite permitido (150 MB por documento).",
+          tr("library_api.7b17ca3cf3"),
         );
       chunks.push(Buffer.from(chunk));
     }
@@ -140,23 +141,23 @@ export function createLibraryApi(directory = resolve("library-data")) {
       )
         throw new ApiError(
           403,
-          "La biblioteca está disponible solo desde este equipo.",
+          tr("library_api.8e96e6e074"),
         );
       if (req.headers.origin && new URL(req.headers.origin).host !== host)
-        throw new ApiError(403, "Origen no autorizado.");
+        throw new ApiError(403, tr("library_api.1634c68e7e"));
       if (req.headers["sec-fetch-site"] === "cross-site")
-        throw new ApiError(403, "Origen no autorizado.");
+        throw new ApiError(403, tr("library_api.1634c68e7e"));
       if (
         !["GET", "HEAD"].includes(req.method || "") &&
         req.headers["x-mia-library"] !== "1"
       )
-        throw new ApiError(403, "Solicitud de biblioteca no autorizada.");
+        throw new ApiError(403, tr("library_api.d38c333492"));
       const url = new URL(req.url, `http://${host}`);
       const parts = url.pathname.split("/").filter(Boolean);
       const id = parts[2];
       const action = parts[3];
       if (id && id !== "preferences" && id !== "manga" && !/^[a-f\d-]{36}$/.test(id))
-        throw new ApiError(400, "Documento no válido.");
+        throw new ApiError(400, tr("library_api.c5d56f356b"));
       if (req.method === "GET" && !id) {
         const state = await read();
         reply(res, 200, { ...state, storagePath: root });
@@ -170,7 +171,7 @@ export function createLibraryApi(directory = resolve("library-data")) {
           !input.title ||
           typeof input.title !== "string"
         )
-          throw new ApiError(400, "Datos de manga inválidos.");
+          throw new ApiError(400, tr("library_api.dc9074dc41"));
         const result = await serialize(async () => {
           const state = await read();
           const existing = state.documents.find(
@@ -251,22 +252,22 @@ export function createLibraryApi(directory = resolve("library-data")) {
         )
           throw new ApiError(
             415,
-            "Formato no compatible. Usa PDF, DOCX, EPUB, CBZ, TXT, MD o imágenes JPG, PNG y WebP.",
+            tr("library_api.61edddf59c"),
           );
         const buffer = await body(req, MAX_DOCUMENT_BYTES);
-        if (!buffer.length) throw new ApiError(400, "El archivo está vacío.");
+        if (!buffer.length) throw new ApiError(400, tr("library_api.139da295d9"));
         if (
           format === "pdf" &&
           !buffer.subarray(0, 1024).includes(Buffer.from("%PDF-"))
         )
-          throw new ApiError(415, "El archivo no contiene un PDF válido.");
+          throw new ApiError(415, tr("library_api.1ac67384b1"));
         if (
           ["epub", "docx", "cbz"].includes(format) &&
           buffer.subarray(0, 2).toString() !== "PK"
         )
           throw new ApiError(
             415,
-            "El archivo no es un contenedor válido o está protegido.",
+            tr("library_api.c0cce00e7c"),
           );
         const hash = createHash("sha256").update(buffer).digest("hex");
         const result = await serialize(async () => {
@@ -328,12 +329,12 @@ export function createLibraryApi(directory = resolve("library-data")) {
       ) {
         const state = await read();
         const doc = state.documents.find((d) => d.id === id);
-        if (!doc) throw new ApiError(404, "Documento no encontrado.");
+        if (!doc) throw new ApiError(404, tr("library_api.779483553b"));
         const file = pathFor(doc);
         const info = await stat(file).catch(() => {
           throw new ApiError(
             404,
-            "No encontramos el archivo en la carpeta de biblioteca. Restaura una copia de la carpeta o vuelve a importarlo.",
+            tr("library_api.eb4145e894"),
           );
         });
         res.writeHead(200, {
@@ -356,7 +357,7 @@ export function createLibraryApi(directory = resolve("library-data")) {
         const doc = await serialize(async () => {
           const state = await read();
           const item = state.documents.find((d) => d.id === id);
-          if (!item) throw new ApiError(404, "Documento no encontrado.");
+          if (!item) throw new ApiError(404, tr("library_api.779483553b"));
           if (typeof input.title === "string" && input.title.trim())
             item.title = input.title.trim().slice(0, 200);
           if (typeof input.favorite === "boolean")
@@ -413,12 +414,12 @@ export function createLibraryApi(directory = resolve("library-data")) {
         await serialize(async () => {
           const state = await read();
           const doc = state.documents.find((d) => d.id === id);
-          if (!doc) throw new ApiError(404, "Documento no encontrado.");
+          if (!doc) throw new ApiError(404, tr("library_api.779483553b"));
           if (url.searchParams.get("permanent") === "1") {
             if (!doc.deletedAt)
               throw new ApiError(
                 409,
-                "Mueve el documento a la papelera primero.",
+                tr("library_api.7fc9bf5a69"),
               );
             await unlink(pathFor(doc)).catch((error) => {
               if (error.code !== "ENOENT") throw error;
@@ -430,7 +431,7 @@ export function createLibraryApi(directory = resolve("library-data")) {
         reply(res, 200, { ok: true });
         return;
       }
-      throw new ApiError(404, "Ruta no encontrada.");
+      throw new ApiError(404, tr("library_api.60e7fc39ad"));
     } catch (error) {
       if (res.headersSent) {
         res.destroy();
@@ -448,8 +449,8 @@ export function createLibraryApi(directory = resolve("library-data")) {
             error instanceof ApiError
               ? error.message
               : error instanceof SyntaxError
-                ? "Solicitud JSON inválida."
-                : "No se pudo guardar el cambio en la carpeta de biblioteca. Comprueba el espacio disponible y los permisos.",
+                ? tr("library_api.554ce05a5d")
+                : tr("library_api.76404a5786"),
         },
       );
     }

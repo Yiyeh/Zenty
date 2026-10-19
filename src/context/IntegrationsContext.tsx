@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "./Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { integrationSnapshot } from "../lib/remote-integrations";
 import type { IntegrationValue } from "./IntegrationsStore";
 import { IntegrationContext } from "./IntegrationsStore";
@@ -38,7 +40,7 @@ async function exchangeSpotify(code: string, state: string): Promise<Session> {
     Date.now() - pending.createdAt > 600000
   )
     throw new Error(
-      "La autorización venció o no coincide. Vuelve a conectar Spotify.",
+      tr("IntegrationsContext.c0248c6f01"),
     );
   sessionStorage.removeItem("mia_spotify_pending");
   const response = await fetch("https://accounts.spotify.com/api/token", {
@@ -55,14 +57,14 @@ async function exchangeSpotify(code: string, state: string): Promise<Session> {
   });
   if (!response.ok)
     throw new Error(
-      "Spotify no pudo autorizar la aplicación. Revisa el Client ID y la URL de retorno.",
+      tr("IntegrationsContext.c0e36e211d"),
     );
   const body = await response.json();
   if (
     typeof body.access_token !== "string" ||
     !Number.isFinite(body.expires_in)
   )
-    throw new Error("Respuesta de Spotify inválida.");
+    throw new Error(tr("IntegrationsContext.b3d1f327b7"));
   return {
     accessToken: body.access_token,
     refreshToken: body.refresh_token,
@@ -83,7 +85,7 @@ function loadGoogle() {
         script.remove();
         googleScript = null;
         reject(
-          new Error("Google no respondió. Reabre Conexiones para reintentar."),
+          new Error(tr("IntegrationsContext.0c9d1ce29d")),
         );
       }, 15000);
       script.onload = () => {
@@ -96,7 +98,7 @@ function loadGoogle() {
         googleScript = null;
         reject(
           new Error(
-            "No se pudo cargar el acceso de Google. Revisa tu conexión.",
+            tr("IntegrationsContext.de8707997e"),
           ),
         );
       };
@@ -105,6 +107,7 @@ function loadGoogle() {
   return googleScript;
 }
 export function IntegrationsProvider({ children }: { children: ReactNode }) {
+  useInterfaceLocale();
   const { settings, notify } = useDashboard();
   const notifyRef = useRef(notify);
   notifyRef.current = notify;
@@ -162,7 +165,7 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
         setSpotify(saved);
       }
     }).catch(() => {
-      if (!cancelled) setSpotifyError("No se pudo recuperar la conexión guardada. Conecta Spotify una vez para reemplazarla.");
+      if (!cancelled) setSpotifyError(tr("IntegrationsContext.23f5d77ae6"));
     });
     return () => { cancelled = true; };
   }, [settings.spotifyClientId]);
@@ -185,7 +188,7 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
       /* No saved session. */
     }
     void window.zentyDesktop?.spotifySession?.set(null).catch(() => {
-      setSpotifyError("No se pudo borrar la conexión guardada de Spotify. Vuelve a intentar desconectar.");
+      setSpotifyError(tr("IntegrationsContext.a16ab00db6"));
     });
   };
   const disconnectGoogle = () => {
@@ -230,10 +233,10 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
       void window.zentyDesktop.spotifySession.set(spotify).then(() => {
         sessionStorage.removeItem("mia_spotify_session");
         localStorage.removeItem("mia_spotify_session");
-      }).catch(() => setSpotifyError("No se pudo guardar la conexión de Spotify. Tendrás que conectarla al volver a abrir Zenty."));
+      }).catch(() => setSpotifyError(tr("IntegrationsContext.86e63fa5be")));
     } else {
       try { localStorage.setItem("mia_spotify_session", JSON.stringify(spotify)); sessionStorage.removeItem("mia_spotify_session"); }
-      catch { setSpotifyError("El navegador no permite conservar la conexión de Spotify."); }
+      catch { setSpotifyError(tr("IntegrationsContext.e40223ce60")); }
     }
   }, [spotify]);
   useEffect(() => {
@@ -243,7 +246,7 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
     const code = params.get("code");
     if (!code || params.has("error")) {
       setSpotifyError(
-        "No se concedió el acceso a Spotify. Puedes volver a intentarlo.",
+        tr("IntegrationsContext.353dd8d9ff"),
       );
       sessionStorage.removeItem("mia_spotify_pending");
     } else {
@@ -252,7 +255,7 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
       exchangePromise
         .then((session) => {
           setSpotify(session);
-          notifyRef.current("Tu cuenta de Spotify está conectada.");
+          notifyRef.current(tr("IntegrationsContext.960b391222"));
         })
         .catch((e) => setSpotifyError(e.message))
         .finally(() => setSpotifyBusy(false));
@@ -269,7 +272,7 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
     setSpotifyError("");
     if (!/^[a-f\d]{32}$/i.test(settings.spotifyClientId.trim())) {
       setSpotifyError(
-        "Introduce el Client ID público de tu aplicación de Spotify (32 caracteres).",
+        tr("IntegrationsContext.ac5ae0df3a"),
       );
       return;
     }
@@ -278,7 +281,7 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
       !["127.0.0.1", "[::1]"].includes(location.hostname)
     ) {
       setSpotifyError(
-        "Spotify requiere HTTPS o http://127.0.0.1:5173/. Abre esa dirección y registra su URL de retorno.",
+        tr("IntegrationsContext.e3ded5a591"),
       );
       return;
     }
@@ -322,18 +325,18 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
     } catch {
       setSpotifyBusy(false);
       setSpotifyError(
-        "No se pudo iniciar la conexión. Revisa que el navegador permita el almacenamiento de sesión.",
+        tr("IntegrationsContext.e64a9a6a25"),
       );
     }
   };
   const refreshLock = useRef<Promise<Session> | null>(null);
   const validSpotifySession = async () => {
     const session = spotifyRef.current;
-    if (!session) throw new Error("Conecta tu cuenta de Spotify.");
+    if (!session) throw new Error(tr("IntegrationsContext.dcede473c3"));
     if (session.expiresAt > Date.now() + 30000) return session;
     if (!session.refreshToken) {
       disconnectSpotify();
-      throw new Error("La sesión de Spotify venció. Conecta de nuevo.");
+      throw new Error(tr("IntegrationsContext.80352f1416"));
     }
     if (!refreshLock.current)
       refreshLock.current = (async () => {
@@ -350,15 +353,15 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
         if (!response.ok) {
           const failure = await response.json().catch(() => ({}));
           throw new Error(failure.error === "invalid_grant"
-            ? "Spotify venció o revocó la autorización. Vuelve a conectar tu cuenta."
-            : "Spotify no pudo renovar la conexión en este momento. Se conserva la sesión; vuelve a intentar en unos instantes.");
+            ? tr("IntegrationsContext.221b23bd5f")
+            : tr("IntegrationsContext.89479ec878"));
         }
         const body = await response.json();
         if (
           typeof body.access_token !== "string" ||
           !Number.isFinite(body.expires_in)
         )
-          throw new Error("Spotify no pudo renovar la sesión.");
+          throw new Error(tr("IntegrationsContext.0acb3ec59b"));
         return {
           ...session,
           accessToken: body.access_token,
@@ -414,14 +417,14 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
       if ((profile && !profile.ok) || (playback.status !== 204 && !playback.ok))
         throw new Error(
           playback.status === 429
-            ? "Spotify pidió esperar. Se reintentará en un minuto."
-            : "No se pudo consultar Spotify. Revisa los permisos y usuarios autorizados de tu aplicación.",
+            ? tr("IntegrationsContext.220e32e18f")
+            : tr("IntegrationsContext.ffcd14ca9f"),
         );
       const user = profile ? await profile.json() : null;
       const player = playback.status === 204 ? null : await playback.json();
       if (generation !== spotifyGeneration.current) return;
-      if (user) profileName.current = user.display_name || "Mi cuenta";
-      setSpotifyName(profileName.current || "Mi cuenta");
+      if (user) profileName.current = user.display_name || tr("common.myAccount");
+      setSpotifyName(profileName.current || tr("common.myAccount"));
       if (devices) {
         setSpotifyDevices(devices);
         deviceTime.current = Date.now();
@@ -433,8 +436,8 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
         const message =
           error instanceof Error
             ? error.message
-            : "Spotify no está disponible.";
-        if (message.includes("esperar"))
+            : tr("IntegrationsContext.a300039d82");
+        if (error instanceof Error && "status" in error && error.status === 429)
           cooldownUntil.current = Date.now() + 60_000;
         setSpotifyError(message);
       }
@@ -466,8 +469,8 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
         const message =
           error instanceof Error
             ? error.message
-            : "Spotify no pudo realizar el cambio.";
-        if (message.includes("esperar"))
+            : tr("IntegrationsContext.4df96a9ac8");
+        if (error instanceof Error && "status" in error && error.status === 429)
           cooldownUntil.current = Date.now() + 60_000;
         setSpotifyError(message);
       }
@@ -520,13 +523,13 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
       !settings.googleClientId.trim().endsWith(".apps.googleusercontent.com")
     ) {
       setGoogleError(
-        "Introduce un Client ID OAuth de tipo Aplicación web de Google.",
+        tr("IntegrationsContext.72c500bdb7"),
       );
       return;
     }
     if (!window.google?.accounts.oauth2) {
       setGoogleError(
-        "El acceso de Google todavía no está listo. Revisa la conexión y vuelve a intentarlo.",
+        tr("IntegrationsContext.c3c7c91a23"),
       );
       return;
     }
@@ -545,7 +548,7 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
             !result.scope?.split(" ").includes(GOOGLE_SCOPE)
           ) {
             setGoogleError(
-              "Debes autorizar la lectura de eventos para mostrar tu calendario.",
+              tr("IntegrationsContext.b6411afb76"),
             );
             return;
           }
@@ -554,12 +557,12 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
             expiresAt: Date.now() + Number(result.expires_in) * 1000,
             clientId: settings.googleClientId.trim(),
           });
-          notify("Google Calendar conectado.");
+          notify(tr("IntegrationsContext.d4b8e7a482"));
         },
         error_callback: () => {
           setGoogleBusy(false);
           setGoogleError(
-            "La ventana de Google se cerró o fue bloqueada. Puedes reintentar.",
+            tr("IntegrationsContext.a47ec02927"),
           );
         },
       })
@@ -572,7 +575,7 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
       googleRef.current = null;
       setGoogle(null);
       setEvents([]);
-      setGoogleError("La sesión venció. Vuelve a conectar Google Calendar.");
+      setGoogleError(tr("IntegrationsContext.8e45bd8ad8"));
       return;
     }
     const generation = googleGeneration.current;
@@ -598,8 +601,8 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
       if (!response.ok)
         throw new Error(
           response.status === 401
-            ? "La sesión venció. Vuelve a conectar Google Calendar."
-            : "Google Calendar no respondió. Comprueba que Calendar API esté habilitada y la cuenta autorizada.",
+            ? tr("IntegrationsContext.8e45bd8ad8")
+            : tr("IntegrationsContext.9c36a34bf2"),
         );
       const body = await response.json();
       if (generation !== googleGeneration.current) return;
@@ -615,7 +618,7 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
               htmlLink?: string;
             }) => ({
               id: e.id,
-              title: e.summary || "Sin título",
+              title: e.summary || tr("IntegrationsContext.30d1a8cd45"),
               start: e.start.dateTime || e.start.date || "",
               end: e.end.dateTime || e.end.date || "",
               allDay: !e.start.dateTime,
@@ -628,7 +631,7 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
         setGoogleError(
           e instanceof Error
             ? e.message
-            : "No se pudo actualizar el calendario.",
+            : tr("IntegrationsContext.b1b0d932bb"),
         );
     } finally {
       setGoogleBusy(false);
@@ -673,13 +676,13 @@ export function IntegrationsProvider({ children }: { children: ReactNode }) {
     let ok = true;
     if (action === "refresh") { if (input === "calendar") await current.refreshCalendar(); else await current.refreshSpotify(); }
     else if (action === "volume") {
-      if (typeof input !== "number" || !Number.isFinite(input) || input < 0 || input > 100) throw new Error("Volumen inválido.");
+      if (typeof input !== "number" || !Number.isFinite(input) || input < 0 || input > 100) throw new Error(tr("IntegrationsContext.6351b82c0b"));
       ok = await current.setSpotifyVolume(input);
     } else if (action === "command") {
       const command = input as SpotifyCommand;
-      if (!command || !["play", "pause", "next", "previous", "seek", "transfer"].includes(command.action) || typeof command.deviceId !== "string" || command.deviceId.length > 200) throw new Error("Acción inválida.");
+      if (!command || !["play", "pause", "next", "previous", "seek", "transfer"].includes(command.action) || typeof command.deviceId !== "string" || command.deviceId.length > 200) throw new Error(tr("IntegrationsContext.de70e71794"));
       ok = await current.commandSpotify(command);
-    } else if (action !== "snapshot") throw new Error("Acción inválida.");
+    } else if (action !== "snapshot") throw new Error(tr("IntegrationsContext.de70e71794"));
     return { ok, snapshot: integrationSnapshot(remoteValue.current) };
   }), []);
   return (

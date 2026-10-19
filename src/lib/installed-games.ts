@@ -1,3 +1,4 @@
+import { tr } from "./i18n.ts";
 export const launcherNames = {
   steam: "Steam",
   epic: "Epic Games",
@@ -8,8 +9,8 @@ export const launcherNames = {
   battlenet: "Battle.net",
   xbox: "Xbox / Game Pass / Microsoft Store",
   riot: "Riot Games",
-  manual: "Añadido por ti",
-  emulator: "Emulador",
+  get manual() { return tr("installed_games.87bf6ca375"); },
+  get emulator() { return tr("installed_games.a98e85e311"); },
 };
 export type LauncherId = keyof typeof launcherNames;
 export interface InstalledGame {
@@ -50,7 +51,7 @@ export interface GameMetadata {
   source: string;
   fetchedAt: string;
 }
-export const emulatorPresets = [
+export const emulatorPresets = ([
   {
     name: "RetroArch",
     extensions: "nes,sfc,smc,gb,gbc,gba,md,gen,pce,zip",
@@ -61,11 +62,11 @@ export const emulatorPresets = [
   { name: "DuckStation", extensions: "cue,chd,pbp,m3u", args: '["{rom}"]' },
   { name: "PPSSPP", extensions: "iso,cso,pbp", args: '["{rom}"]' },
   {
-    name: "Otro emulador",
+    get name() { return tr("installed_games.406b46cd7c"); },
     extensions: "nes,sfc,gba,nds,iso,chd,zip",
     args: '["{rom}"]',
   },
-];
+]);
 export function searchKey(value: string): string {
   return value
     .normalize("NFD")

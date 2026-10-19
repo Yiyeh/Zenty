@@ -1,3 +1,4 @@
+import { tr } from "../lib/i18n.ts";
 import { createContext, useContext } from "react";
 export type TimerMode = "work" | "shortBreak" | "longBreak";
 export interface TimerState {
@@ -16,6 +17,6 @@ export interface TimerValue extends TimerState {
 export const TimerContext = createContext<TimerValue | null>(null);
 export function useTimer() {
   const value = useContext(TimerContext);
-  if (!value) throw new Error("TimerProvider missing");
+  if (!value) throw new Error(tr("TimerStore.44f60e14f1"));
   return value;
 }

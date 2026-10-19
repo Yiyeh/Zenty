@@ -1,3 +1,4 @@
+import { tr } from "../src/lib/i18n.ts";
 import { APP_NAME } from "../src/lib/brand.ts";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
@@ -13,7 +14,8 @@ export async function startLocalServer({
   root = resolve("dist"),
   dataDirectory = process.cwd(),
   port = 5173,
-}: { root?: string; dataDirectory?: string; port?: number } = {}) {
+  isLocked = () => false,
+}: { root?: string; dataDirectory?: string; port?: number; isLocked?: () => boolean } = {}) {
   root = resolve(root);
   const contentSecurityPolicy = [
     "default-src 'self'",
@@ -54,7 +56,11 @@ export async function startLocalServer({
     ".wasm": "application/wasm",
   };
   const server = createServer(
-    (req, res) =>
+    (req, res) => {
+      if (isLocked() && new URL(req.url || "/", "http://localhost").pathname.startsWith("/api/")) {
+        res.writeHead(423, { "Content-Type": "application/json", "Cache-Control": "no-store" });
+        res.end(JSON.stringify({ error: "security.locked" })); return;
+      }
       void mangadex(
         req,
         res,
@@ -120,7 +126,7 @@ export async function startLocalServer({
                             } catch {
                               res.writeHead(404);
                               res.end(
-                                `No encontrado. Ejecuta npm run build para generar ${APP_NAME}.`,
+                                tr("local_server.3309255e1f", { v0: APP_NAME }),
                               );
                             }
                           })(),
@@ -130,7 +136,8 @@ export async function startLocalServer({
           ),
         ),
       ),
-    ),
+      );
+    },
   );
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);

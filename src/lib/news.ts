@@ -1,3 +1,4 @@
+import { tr, getFormatLocale } from "./i18n.ts";
 export type NewsCategory =
   | "all"
   | "tech"
@@ -48,14 +49,14 @@ export interface NewsFeedResponse {
 /** Discard unsafe links and malformed cached/provider data before rendering. */
 export function normalizeNewsFeed(value: unknown): NewsFeedResponse {
   if (!value || typeof value !== "object")
-    throw new Error("Respuesta de noticias inválida.");
+    throw new Error(tr("news.288350b72b"));
   const feed = value as NewsFeedResponse;
   if (
     !Array.isArray(feed.items) ||
     !Array.isArray(feed.sources) ||
     !Number.isFinite(Date.parse(feed.updatedAt))
   )
-    throw new Error("Respuesta de noticias inválida.");
+    throw new Error(tr("news.288350b72b"));
   const webUrl = (url: unknown) => {
     if (typeof url !== "string") return false;
     try {
@@ -120,56 +121,56 @@ export const NEWS_CATEGORIES: {
   label: string;
   description: string;
   color: string;
-}[] = [
+}[] = ([
   {
     id: "all",
-    label: "Todas",
-    description: "Últimas noticias de todas las fuentes",
+    get label() { return tr("news.aff4d19d6e"); },
+    get description() { return tr("news.edff70de39"); },
     color: "#6366f1",
   },
   {
     id: "tech",
-    label: "Tecnología",
-    description: "Innovación, software, hardware e inteligencia artificial",
+    get label() { return tr("news.17c282eff9"); },
+    get description() { return tr("news.91330426b7"); },
     color: "#3b82f6",
   },
   {
     id: "gaming",
-    label: "Videojuegos",
-    description: "Lanzamientos, consolas, análisis y novedades gamer",
+    get label() { return tr("news.9bd45efffa"); },
+    get description() { return tr("news.e45111e5b1"); },
     color: "#10b981",
   },
   {
     id: "anime",
-    label: "Manga & Anime",
-    description: "Noticias de manga, anime, editoriales y adaptaciones",
+    get label() { return tr("news.b52b15d2c3"); },
+    get description() { return tr("news.1f326f74f0"); },
     color: "#f43f5e",
   },
   {
     id: "science",
-    label: "Ciencia",
-    description: "Descubrimientos espaciales, física, biología y avances",
+    get label() { return tr("news.f8bb82bbd6"); },
+    get description() { return tr("news.5c8c2c3c4f"); },
     color: "#8b5cf6",
   },
   {
     id: "culture",
-    label: "Cultura & Cine",
-    description: "Cine, series, libros, arte y entretenimiento",
+    get label() { return tr("news.580480ed32"); },
+    get description() { return tr("news.a98291395f"); },
     color: "#f59e0b",
   },
   {
     id: "general",
-    label: "Mundo",
-    description: "Actualidad internacional y noticias destacadas",
+    get label() { return tr("news.43c6d4bb0a"); },
+    get description() { return tr("news.a61e64f7ef"); },
     color: "#06b6d4",
   },
   {
     id: "saved",
-    label: "Guardados",
-    description: "Artículos guardados para leer con calma",
+    get label() { return tr("news.2a5c020df6"); },
+    get description() { return tr("news.f040a3a67c"); },
     color: "#ec4899",
   },
-];
+]);
 
 export const DEFAULT_PRESET_TAGS = [
   "Inteligencia Artificial",
@@ -205,15 +206,15 @@ export function formatRelativeTime(dateStr: string | null | undefined): string {
   const time = Date.parse(dateStr);
   if (isNaN(time)) return "";
   const diffSec = Math.floor((Date.now() - time) / 1000);
-  if (diffSec < 60) return "hace un momento";
+  if (diffSec < 60) return tr("news.daf2008954");
   const diffMin = Math.floor(diffSec / 60);
-  if (diffMin < 60) return `hace ${diffMin} min`;
+  if (diffMin < 60) return new Intl.RelativeTimeFormat(getFormatLocale(), { numeric: "auto", style: "short" }).format(-diffMin, "minute");
   const diffHours = Math.floor(diffMin / 60);
-  if (diffHours < 24) return `hace ${diffHours} h`;
+  if (diffHours < 24) return new Intl.RelativeTimeFormat(getFormatLocale(), { numeric: "auto", style: "short" }).format(-diffHours, "hour");
   const diffDays = Math.floor(diffHours / 24);
-  if (diffDays === 1) return "ayer";
-  if (diffDays < 7) return `hace ${diffDays} días`;
-  return new Date(time).toLocaleDateString("es-CL", {
+  if (diffDays === 1) return new Intl.RelativeTimeFormat(getFormatLocale(), { numeric: "auto" }).format(-1, "day");
+  if (diffDays < 7) return tr("news.42cb2d9105", { v0: diffDays });
+  return new Date(time).toLocaleDateString(getFormatLocale(), {
     day: "numeric",
     month: "short",
   });

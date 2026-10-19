@@ -44,3 +44,10 @@
 .settings-tabs > button { flex-shrink:0; white-space:nowrap; }
 .update-notice { display:flex; align-items:center; gap:6px; color:var(--accent-color); font-size:12px; cursor:pointer; }
 @media(max-width:760px) { .update-notice span { display:none; } .settings-tabs > button { flex:0 0 auto; } }
+ .pin-lock-screen { min-height: 100dvh; display: grid; place-items: center; padding: 60px 20px 24px; background: var(--bg, #191a20); color: var(--text, #eee); }
+ .pin-lock-card { width: min(100%, 400px); padding: 28px; border: 1px solid var(--border, #454550); border-radius: 22px; background: var(--panel, #26262e); }
+ .pin-lock-card h1 { margin: 0; }
+ .pin-lock-card p, .pin-settings p { line-height: 1.6; }
+ .pin-lock-card input { font-size: 22px; letter-spacing: .25em; }
+ .pin-recovery { display: grid; gap: 12px; padding: 16px; border: 1px solid var(--border); border-radius: 12px; }
+ .pin-recovery code { overflow-wrap: anywhere; user-select: all; font-size: 18px; }

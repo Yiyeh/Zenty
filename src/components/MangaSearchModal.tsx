@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr } from "../lib/i18n.ts";
 import { useEffect, useRef, useState } from "react";
 import {
   Search,
@@ -33,6 +35,7 @@ export function MangaSearchModal({
   existingDocuments,
   onMangaAdded,
 }: MangaSearchModalProps) {
+  useInterfaceLocale();
   const [query, setQuery] = useState("");
   const [language, setLanguage] = useState("es-all");
   const [results, setResults] = useState<MangaSearchResult[]>([]);
@@ -65,7 +68,7 @@ export function MangaSearchModal({
         const data = await searchManga(query.trim(), language, 24);
         setResults(data.results);
       } catch (err) {
-        setError((err as Error).message || "No se pudo conectar con MangaDex.");
+        setError((err as Error).message || tr("MangaSearchModal.43f39a4c41"));
       } finally {
         setLoading(false);
       }
@@ -99,7 +102,7 @@ export function MangaSearchModal({
         onClose();
       }
     } catch (err) {
-      setError((err as Error).message || "No se pudo añadir el manga a la biblioteca.");
+      setError((err as Error).message || tr("MangaSearchModal.a551ade62d"));
     } finally {
       setAddingId(null);
       setReadingId(null);
@@ -110,30 +113,30 @@ export function MangaSearchModal({
     <Dialog
       open={open}
       onClose={onClose}
-      title="Explorar MangaDex"
+      title={tr("MangaSearchModal.5910070458")}
       wide
-      description="Descubre y añade mangas a tu biblioteca personal con guardado automático de capítulos y páginas."
+      description={tr("MangaSearchModal.9b4a6cd237")}
     >
       <div className="manga-modal-content">
         <div className="manga-search-bar-row">
           <div className="manga-filter-field">
-          <label htmlFor="mangadex-title">Buscar manga</label>
+          <label htmlFor="mangadex-title">{tr("MangaSearchModal.705dda1fc3")}</label>
           <div className="input-icon manga-search-input-wrapper">
             <Search size={18} />
             <input
               ref={searchInputRef}
               type="text"
               id="mangadex-title"
-              placeholder="Título del manga…"
+              placeholder={tr("MangaSearchModal.2fa3a38a81")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              aria-label="Buscar mangas en MangaDex"
+              aria-label={tr("MangaSearchModal.2b523870c9")}
             />
             {query && (
               <button
                 className="icon-button manga-clear-btn"
                 onClick={() => setQuery("")}
-                aria-label="Limpiar búsqueda"
+                aria-label={tr("MangaSearchModal.a7859bae87")}
               >
                 <X size={15} />
               </button>
@@ -141,14 +144,14 @@ export function MangaSearchModal({
           </div>
           </div>
           <div className="manga-filter-field">
-          <label htmlFor="mangadex-language">Idioma de los capítulos</label>
+          <label htmlFor="mangadex-language">{tr("MangaSearchModal.997cd42eec")}</label>
           <div className="manga-lang-select-wrapper">
             <Globe size={16} className="lang-icon" aria-hidden="true" />
             <select
               id="mangadex-language"
               value={language}
               onChange={(e) => setLanguage(e.target.value)}
-              aria-label="Filtrar por idioma"
+              aria-label={tr("MangaSearchModal.ba399ab065")}
             >
               {MANGA_LANGUAGES.map((l) => (
                 <option key={l.code} value={l.code}>
@@ -164,18 +167,18 @@ export function MangaSearchModal({
         <div className="manga-modal-header-info">
           <span>
             {query.trim()
-              ? `Resultados para «${query.trim()}»`
-              : "Mangas populares y recomendados en MangaDex"}
+              ? tr("MangaSearchModal.3d128445e9", { v0: query.trim() })
+              : tr("MangaSearchModal.a0fa875bc9")}
           </span>
           {results.length > 0 && !loading && (
-            <small>{results.length} títulos disponibles</small>
+            <small>{results.length} {tr("MangaSearchModal.c75d7dc75e")}</small>
           )}
         </div>
         <MangaSources title={query.trim()} />
 
         {error && (
           <div className="error-message manga-error-banner" role="alert">
-            <p>{error}</p>
+            <p>{translateMessage(error)}</p>
           </div>
         )}
 
@@ -183,15 +186,14 @@ export function MangaSearchModal({
           {loading ? (
             <div className="manga-loading-state" role="status">
               <Loader2 size={32} className="spinning" />
-              <p>Consultando MangaDex...</p>
+              <p>{tr("MangaSearchModal.3c6062e243")}</p>
             </div>
           ) : results.length === 0 ? (
             <div className="manga-empty-state">
               <BookOpen size={42} strokeWidth={1.2} />
-              <h3>No se encontraron mangas</h3>
+              <h3>{tr("MangaSearchModal.34ced425d3")}</h3>
               <p>
-                Prueba con otro título o cambia el filtro de idioma a «Todos los idiomas».
-              </p>
+                {tr("MangaSearchModal.d421a9003a")}</p>
             </div>
           ) : (
             <div className="manga-grid">
@@ -217,11 +219,11 @@ export function MangaSearchModal({
                         </div>
                       )}
                       {manga.status && (
-                        <span className={`manga-status-pill status-${manga.status}`} title="Estado de publicación de la obra; las traducciones pueden estar incompletas.">
+                        <span className={`manga-status-pill status-${manga.status}`} title={tr("MangaSearchModal.cbe596dcd8")}>
                           {manga.status === "completed"
-                            ? "Finalizado"
+                            ? tr("MangaSearchModal.a5affa11a6")
                             : manga.status === "ongoing"
-                              ? "En emisión"
+                              ? tr("MangaSearchModal.273ad68f85")
                               : manga.status}
                         </span>
                       )}
@@ -248,15 +250,14 @@ export function MangaSearchModal({
                       <p className="manga-card-desc">
                         {manga.description
                           ? manga.description.slice(0, 140) + (manga.description.length > 140 ? "…" : "")
-                          : "Sin descripción disponible en este idioma."}
+                          : tr("MangaSearchModal.f897ed55ee")}
                       </p>
 
                       <div className="manga-card-actions">
                         {inLibrary ? (
                           <>
                             <span className="manga-in-lib-badge">
-                              <Check size={14} /> En biblioteca
-                            </span>
+                              <Check size={14} /> {tr("MangaSearchModal.496117e1a4")}</span>
                             <button
                               className="secondary-button compact-btn"
                               onClick={() => {
@@ -266,7 +267,7 @@ export function MangaSearchModal({
                                 }
                               }}
                             >
-                              Leer <ChevronRight size={14} />
+                              {tr("MangaSearchModal.6f251a37d7")}<ChevronRight size={14} />
                             </button>
                           </>
                         ) : (
@@ -281,8 +282,7 @@ export function MangaSearchModal({
                               ) : (
                                 <Plus size={14} />
                               )}
-                              Añadir
-                            </button>
+                              {tr("MangaSearchModal.7542a5e800")}</button>
                             <button
                               className="secondary-button compact-btn"
                               disabled={isAdding || isReading}
@@ -293,8 +293,7 @@ export function MangaSearchModal({
                               ) : (
                                 <BookOpen size={14} />
                               )}
-                              Leer ahora
-                            </button>
+                              {tr("MangaSearchModal.cd9727cf89")}</button>
                           </>
                         )}
                       </div>

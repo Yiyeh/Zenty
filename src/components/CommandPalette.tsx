@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { newId } from "../lib/id";
 import { useState } from "react";
 import {
@@ -27,6 +29,7 @@ export function CommandPalette({
   onFocus: () => void;
   onSection: (section: "focus" | "notes" | "library" | "gaming") => void;
 }) {
+  useInterfaceLocale();
   const {
     tasks,
     notes,
@@ -63,7 +66,7 @@ export function CommandPalette({
       .map((t) => ({
         key: `t-${t.id}`,
         title: t.title,
-        detail: "Enfocar esta tarea",
+        detail: tr("CommandPalette.2b322dcda2"),
         icon: CheckSquare,
         action: () => {
           setActiveTaskId(t.id);
@@ -82,29 +85,29 @@ export function CommandPalette({
     ...[
       {
         key: "gaming",
-        title: "Rincón gamer",
-        detail: "Juegos gratis, lanzamientos, ofertas y mi juegoteca",
+        title: tr("CommandPalette.4e407fb48d"),
+        detail: tr("CommandPalette.5e738a4ffc"),
         icon: Gamepad2,
         action: () => onSection("gaming"),
       },
       {
         key: "library",
-        title: "Mi biblioteca",
-        detail: "Documentos, libros y mangas",
+        title: tr("CommandPalette.dbfb33f5ae"),
+        detail: tr("CommandPalette.ab6bedac93"),
         icon: LibraryBig,
         action: () => onSection("library"),
       },
       {
         key: "settings",
-        title: "Personalizar mi espacio",
-        detail: "Apariencia, widgets y conexiones",
+        title: tr("CommandPalette.c429f4e8c4"),
+        detail: tr("CommandPalette.c33e7d4b10"),
         icon: Settings,
         action: onSettings,
       },
       {
         key: "focus",
-        title: "Entrar en modo enfoque",
-        detail: "Un momento sin distracciones",
+        title: tr("CommandPalette.2e55b3b442"),
+        detail: tr("CommandPalette.56699b9577"),
         icon: Maximize2,
         action: onFocus,
       },
@@ -114,16 +117,16 @@ export function CommandPalette({
     <Dialog
       open={open}
       onClose={onClose}
-      title="Busca en tu espacio"
-      description="Accesos, tareas, notas y acciones. Todo a mano."
+      title={tr("CommandPalette.49787bbef4")}
+      description={tr("CommandPalette.1c4bb6a4b9")}
     >
       <div className="dialog-body command-body">
         <div className="input-icon command-input">
           <Search size={18} />
           <input
             autoFocus
-            aria-label="Buscar accesos, tareas y notas"
-            placeholder="Escribe algo…"
+            aria-label={tr("CommandPalette.fd8d2f1fbc")}
+            placeholder={tr("CommandPalette.7768f6961f")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -185,35 +188,31 @@ export function CommandPalette({
                     },
                     ...p,
                   ]);
-                  notify("Tarea añadida.");
+                  notify(tr("CommandPalette.0ae52a6bb6"));
                 })
               }
             >
               <Plus size={18} />
               <span>
-                Crear tarea: {query}
-                <small>Captura sin salir de lo que estás haciendo</small>
+                {tr("CommandPalette.dd7abf1b33")}{query}
+                <small>{tr("CommandPalette.6c915f293a")}</small>
               </span>
             </button>
           )}
           {!results.length && !query.trim() && (
             <div className="empty-state">
               <Link2 size={24} />
-              Tu espacio irá creciendo contigo.
-            </div>
+              {tr("CommandPalette.ad0445dfcc")}</div>
           )}
         </div>
         <div className="command-help">
           <span>
             <kbd>↑</kbd>
-            <kbd>↓</kbd> Navegar
-          </span>
+            <kbd>↓</kbd> {tr("CommandPalette.de13cacf66")}</span>
           <span>
-            <kbd>↵</kbd> Abrir
-          </span>
+            <kbd>↵</kbd> {tr("CommandPalette.0ccd7d0b91")}</span>
           <span>
-            <kbd>Esc</kbd> Cerrar
-          </span>
+            <kbd>{tr("CommandPalette.52f878edb3")}</kbd> {tr("CommandPalette.b6f0bdc7c2")}</span>
         </div>
       </div>
     </Dialog>

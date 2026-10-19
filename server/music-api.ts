@@ -1,3 +1,4 @@
+import { tr } from "../src/lib/i18n.ts";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { spotifyEmbed } from "../src/lib/dashboard.ts";
 export function createMusicApi(fetcher: typeof fetch = fetch) {
@@ -27,7 +28,7 @@ export function createMusicApi(fetcher: typeof fetch = fetch) {
       res.end(JSON.stringify(data));
     };
     if (req.method !== "GET") {
-      reply(405, { error: "Método no permitido" });
+      reply(405, { error: tr("music_api.3e4b4ae4a2") });
       return;
     }
     if (
@@ -41,7 +42,7 @@ export function createMusicApi(fetcher: typeof fetch = fetch) {
     }
     const embed = spotifyEmbed(request.searchParams.get("url") || "");
     if (!embed) {
-      reply(400, { error: "Pega un enlace completo de Spotify." });
+      reply(400, { error: tr("music_api.77a68840da") });
       return;
     }
     let result = cache.get(embed);
@@ -90,9 +91,9 @@ export function createMusicApi(fetcher: typeof fetch = fetch) {
       title: result.title || "",
       error:
         result.status === 404
-          ? "Spotify no encuentra este contenido. Puede ser privado, haber sido eliminado o no estar disponible en tu región."
+          ? tr("music_api.df5be13e1b")
           : result.status !== 200
-            ? "No pudimos comprobar el enlace. Puedes intentar abrir el reproductor."
+            ? tr("music_api.3ec4e43109")
             : "",
     });
   };

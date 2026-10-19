@@ -1,3 +1,4 @@
+import { tr } from "../src/lib/i18n.ts";
 import { APP_NAME } from "../src/lib/brand.ts";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { request } from "node:https";
@@ -51,14 +52,14 @@ export function imageUrl(value: string): URL {
     url.password ||
     (url.port && url.port !== "443")
   )
-    throw new Error("Invalid image URL");
+    throw new Error(tr("game_images.f995ba9ebc"));
   const host = url.hostname.replace(/^\[|\]$/g, "");
   if (
     (!host.includes(".") && !isIP(host)) ||
     /(?:^|\.)(localhost|local|internal|home|lan|test|invalid)$/.test(host) ||
     (isIP(host) && !publicImageAddress(host))
   )
-    throw new Error("Non-public image URL");
+    throw new Error(tr("game_images.7840c772c7"));
   url.hash = "";
   return url;
 }
@@ -81,14 +82,14 @@ export function imageMime(bytes: Buffer): string {
     /avif|avis/.test(bytes.subarray(8, 40).toString("ascii"))
   )
     return "image/avif";
-  throw new Error("Unsupported image data");
+  throw new Error(tr("game_images.5704d82880"));
 }
 /** Resolve once and connect to that verified address, including on every redirect. */
 export async function downloadGameImage(
   input: string,
   redirects = 0,
 ): Promise<Buffer> {
-  if (redirects > 3) throw new Error("Too many image redirects");
+  if (redirects > 3) throw new Error(tr("game_images.0160164d60"));
   const url = imageUrl(input),
     host = url.hostname.replace(/^\[|\]$/g, "");
   let dnsTimer: ReturnType<typeof setTimeout> | undefined;
@@ -98,7 +99,7 @@ export async function downloadGameImage(
         lookup(host, { all: true, verbatim: true }),
         new Promise<never>((_, reject) => {
           dnsTimer = setTimeout(
-            () => reject(new Error("Image DNS timeout")),
+            () => reject(new Error(tr("game_images.c41902270c"))),
             8000,
           );
         }),
@@ -107,7 +108,7 @@ export async function downloadGameImage(
     !addresses.length ||
     addresses.some((a) => !publicImageAddress(a.address))
   )
-    throw new Error("Non-public image address");
+    throw new Error(tr("game_images.a23c1da3e8"));
   return new Promise<Buffer>((resolve, reject) => {
     const connection = request(
       {
@@ -143,7 +144,7 @@ export async function downloadGameImage(
           Number(response.headers["content-length"] || 0) > MAX_IMAGE_BYTES
         ) {
           response.destroy();
-          reject(new Error("Image unavailable or too large"));
+          reject(new Error(tr("game_images.7f5a69efb8")));
           return;
         }
         const chunks: Buffer[] = [];
@@ -151,7 +152,7 @@ export async function downloadGameImage(
         response.on("data", (chunk) => {
           size += chunk.length;
           if (size > MAX_IMAGE_BYTES) {
-            response.destroy(new Error("Image too large"));
+            response.destroy(new Error(tr("game_images.43fdc69e6e")));
             return;
           }
           chunks.push(Buffer.from(chunk));
@@ -253,12 +254,12 @@ export function createGameImages({
         }
       }
       if (previous?.retryAfter && previous.retryAfter > now())
-        throw new Error("Image retry deferred");
+        throw new Error(tr("game_images.d33aa3f9ce"));
       return slot(async () => {
         try {
           const bytes = await downloader(url);
           if (bytes.length > MAX_IMAGE_BYTES)
-            throw new Error("Image too large");
+            throw new Error(tr("game_images.43fdc69e6e"));
           const mime = imageMime(bytes);
           await mkdir(directory, { recursive: true });
           await atomic(imagePath, bytes);

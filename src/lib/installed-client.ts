@@ -1,3 +1,4 @@
+import { translateMessage, tr } from "./i18n.ts";
 import { APP_NAME } from "./brand.ts";
 export async function installedRequest<T>(
   action: string,
@@ -17,10 +18,10 @@ export async function installedRequest<T>(
     result = await response.json();
   } catch {
     throw new Error(
-      `No se pudo conectar con tus juegos. Comprueba que ${APP_NAME} esté en ejecución.`,
+      tr("installed_client.b605ae8a76", { v0: APP_NAME }),
     );
   }
   if (!response.ok)
-    throw new Error(result.error || "No se pudo completar la acción.");
+    throw new Error(translateMessage(result.error || tr("installed_client.4d8c09fb8e")));
   return result;
 }

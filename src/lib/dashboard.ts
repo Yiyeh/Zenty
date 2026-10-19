@@ -1,3 +1,4 @@
+import { tr } from "./i18n.ts";
 import { validReminder } from "./reminders.ts";
 import type { Reminder } from "./reminders.ts";
 import { validSavedGame } from "./gaming.ts";
@@ -56,31 +57,32 @@ export interface Bookmark {
   color: string;
 }
 export const sectionLabels = {
-  all: "Mi espacio",
-  focus: "Enfoque y tareas",
-  calendar: "Mi agenda",
-  notes: "Notas e ideas",
-  reading: "Noticias",
-  library: "Mi biblioteca",
-  gaming: "Rincón gamer",
+  get all() { return tr("dashboard.dc14c4433b"); },
+  get focus() { return tr("dashboard.a50681a9e6"); },
+  get calendar() { return tr("dashboard.8216725467"); },
+  get notes() { return tr("dashboard.e6513ed173"); },
+  get reading() { return tr("dashboard.ef133f9368"); },
+  get library() { return tr("dashboard.dbfb33f5ae"); },
+  get gaming() { return tr("dashboard.4e407fb48d"); },
 } as const;
 export type SectionId = keyof typeof sectionLabels;
 export const widgetLabels = {
-  tasks: "Tareas",
-  pomodoro: "Temporizador",
-  calendar: "Calendario",
-  reminders: "Alarmas y avisos",
-  habits: "Hábitos",
-  notes: "Notas",
-  ideas: "Captura de ideas",
-  stats: "Tu progreso",
-  news: "Noticias",
+  get tasks() { return tr("dashboard.ab434464d1"); },
+  get pomodoro() { return tr("dashboard.9e2ffdc192"); },
+  get calendar() { return tr("dashboard.68de201e0e"); },
+  get reminders() { return tr("dashboard.e3e1481e02"); },
+  get habits() { return tr("dashboard.de353c0516"); },
+  get notes() { return tr("dashboard.8a6172e21a"); },
+  get ideas() { return tr("dashboard.1b54894bbd"); },
+  get stats() { return tr("dashboard.d150573d90"); },
+  get news() { return tr("dashboard.ef133f9368"); },
   music: "Spotify",
-  weather: "El tiempo",
-  gaming: "Radar gamer",
+  get weather() { return tr("dashboard.1363a90abf"); },
+  get gaming() { return tr("dashboard.7fbc76dea3"); },
 };
 export type WidgetId = keyof typeof widgetLabels;
 export interface DashboardSettings {
+  language: import("./i18n.ts").Language;
   readerPreferences: Record<string, string | number | boolean>;
   mangaCoverOverrides: Record<string, "official" | "lastPage">;
   surfaceTone:
@@ -199,6 +201,7 @@ export function spotifyEmbed(value: string): string | null {
   }
 }
 export const defaultSettings: DashboardSettings = {
+  language: "es",
   readerPreferences: {},
   mangaCoverOverrides: {},
   surfaceTone: "stone",
@@ -209,7 +212,7 @@ export const defaultSettings: DashboardSettings = {
   welcomeCompleted: false,
   dailyIntention: "",
   intentionDate: localDate(),
-  newsTags: "diseño, tecnología, creatividad",
+  get newsTags() { return tr("dashboard.d1701bed36"); },
   newsWidgetVersion: 1,
   newsWidgetCategory: "all",
   homeLayout: "compact",
@@ -285,24 +288,24 @@ export const defaultData: DashboardData = {
   timeBlocks: [],
   reminders: [],
   focusSessions: [],
-  bookmarks: [
+  bookmarks: ([
     {
       id: "gmail",
-      title: "Gmail",
+      get title() { return tr("dashboard.d19a15c704"); },
       url: "https://mail.google.com/",
       group: "Personal",
       color: "#c86854",
     },
     {
       id: "calendar",
-      title: "Calendar",
+      get title() { return tr("dashboard.d5d0a30b51"); },
       url: "https://calendar.google.com/",
       group: "Personal",
       color: "#5c86b3",
     },
     {
       id: "notion",
-      title: "Notion",
+      get title() { return tr("dashboard.73bcfe9883"); },
       url: "https://www.notion.so/",
       group: "Trabajo",
       color: "#565b58",
@@ -316,19 +319,19 @@ export const defaultData: DashboardData = {
     },
     {
       id: "github",
-      title: "GitHub",
+      get title() { return tr("dashboard.f911e414cf"); },
       url: "https://github.com/",
       group: "Trabajo",
       color: "#7b6d9e",
     },
     {
       id: "youtube",
-      title: "YouTube",
+      get title() { return tr("dashboard.fb7accfff8"); },
       url: "https://www.youtube.com/",
       group: "Personal",
       color: "#bd625b",
     },
-  ],
+  ]),
   settings: defaultSettings,
 };
 const isRecord = (value: unknown): value is Record<string, unknown> =>
@@ -396,6 +399,8 @@ const validators: Record<string, (v: unknown) => boolean> = {
 export function normalizeSettings(input: unknown): DashboardSettings {
   const result = structuredClone(defaultSettings);
   if (!isRecord(input)) return result;
+  if (["es", "en", "pt", "fr", "de", "it", "ja", "zh", "ko"].includes(String(input.language)))
+    result.language = input.language as DashboardSettings["language"];
   result.welcomeCompleted = typeof input.welcomeCompleted === "boolean"
     ? input.welcomeCompleted
     : typeof input.userName === "string" && !!input.userName.trim();
@@ -593,7 +598,7 @@ export function normalizeSettings(input: unknown): DashboardSettings {
 /** Validate the complete payload before applying any part of an import. Supports legacy exports. */
 export function parseBackup(raw: string): DashboardData {
   if (raw.length > 5_000_000)
-    throw new Error("El respaldo supera el máximo de 5 MB.");
+    throw new Error(tr("dashboard.1a54f898a9"));
   const input: unknown = JSON.parse(raw);
   if (
     !isRecord(input) ||
@@ -602,18 +607,18 @@ export function parseBackup(raw: string): DashboardData {
     !Array.isArray(input.habits) ||
     (input.version !== undefined && input.version !== 2)
   )
-    throw new Error("Formato de respaldo incompatible.");
+    throw new Error(tr("dashboard.da34493189"));
   const result = structuredClone(defaultData);
   for (const [key, validate] of Object.entries(validators)) {
     const items = input[key];
     if (items === undefined) continue;
     if (!Array.isArray(items) || !items.every(validate))
-      throw new Error(`Datos inválidos en ${key}.`);
+      throw new Error(tr("dashboard.fa53aa46b3", { v0: key }));
     const ids = items.map((item) =>
       key === "focusSessions" ? item.date : item.id,
     );
     if (new Set(ids).size !== ids.length)
-      throw new Error(`Hay registros duplicados en ${key}.`);
+      throw new Error(tr("dashboard.90c8d03325", { v0: key }));
     Object.assign(result, { [key]: items });
   }
   result.settings = normalizeSettings(input.settings);
@@ -645,7 +650,7 @@ export function loadData(storage: Pick<Storage, "getItem">): {
     return {
       data: structuredClone(defaultData),
       warning:
-        "No se pudieron leer los datos guardados. Los datos originales siguen en el navegador. Exporta o recupera un respaldo antes de guardar nuevos cambios.",
+        tr("dashboard.efe7cd4a4b"),
     };
   }
 }

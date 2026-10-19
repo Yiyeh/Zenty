@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr } from "../lib/i18n.ts";
 import { newId } from "../lib/id";
 import { useState } from "react";
 import {
@@ -15,6 +17,7 @@ import { Dialog } from "./Dialog";
 import { safeUrl } from "../lib/dashboard";
 import type { Bookmark } from "../lib/dashboard";
 export function Bookmarks({ compact = false }: { compact?: boolean }) {
+  useInterfaceLocale();
   const { bookmarks, setBookmarks, settings, notify } = useDashboard();
   const [group, setGroup] = useState("Todos");
   const [open, setOpen] = useState(false);
@@ -51,7 +54,7 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
     );
     if (!url || !draft.title.trim() || !draft.group.trim()) {
       setError(
-        "Añade un nombre, un grupo y una dirección web válida (http o https).",
+        tr("Bookmarks.e84807c3c6"),
       );
       return;
     }
@@ -68,12 +71,12 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
         : [...prev, next],
     );
     setOpen(false);
-    notify(editing ? "Acceso actualizado." : "Acceso añadido a tu espacio.");
+    notify(editing ? tr("Bookmarks.0d699d7571") : tr("Bookmarks.09c4e448ca"));
   };
   const remove = (bookmark: Bookmark) => {
     const index = bookmarks.findIndex((b) => b.id === bookmark.id);
     setBookmarks((prev) => prev.filter((b) => b.id !== bookmark.id));
-    notify("Acceso eliminado.", () =>
+    notify(tr("Bookmarks.fab106df3c"), () =>
       setBookmarks((prev) => {
         const next = prev.filter((b) => b.id !== bookmark.id);
         next.splice(index, 0, bookmark);
@@ -91,14 +94,14 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
       return next;
     });
   return (
-    <section className="bookmarks-section" aria-label="Accesos rápidos">
+    <section className="bookmarks-section" aria-label={tr("Bookmarks.5c9ca10166")}>
       <div className="section-heading">
         <h2>
           {compact ? (
-            "Accesos"
+            tr("Bookmarks.b1eb8bfead")
           ) : (
             <>
-              Tus lugares de siempre<span>Un clic y estás ahí.</span>
+              {tr("Bookmarks.3fef9b41a3")}<span>{tr("Bookmarks.76e37462c2")}</span>
             </>
           )}
         </h2>
@@ -109,13 +112,12 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
               aria-pressed={selectedGroup === g}
               onClick={() => setGroup(g)}
             >
-              {g}
+              {g === "Todos" ? tr("common.all") : g === "Personal" ? tr("common.personal") : g === "Trabajo" ? tr("common.work") : g}
             </button>
           ))}
         </div>
         <button className="text-button" onClick={() => edit()}>
-          <Plus size={15} /> Añadir acceso
-        </button>
+          <Plus size={15} /> {tr("Bookmarks.f50ed0c1cb")}</button>
       </div>
       <div className="bookmark-grid">
         {accesses
@@ -141,7 +143,7 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
               </a>
               <button
                 className="bookmark-edit icon-button"
-                aria-label={`Editar acceso ${b.title}`}
+                aria-label={tr("a11y.Bookmarks.146", { v0: b.title })}
                 onClick={() => edit(b)}
               >
                 <Pencil size={12} />
@@ -152,47 +154,44 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
           <button
             className="bookmark-add"
             onClick={() => edit()}
-            aria-label="Crear acceso rápido"
+            aria-label={tr("Bookmarks.433e357262")}
           >
             <Plus size={21} />
-            <span>Tu próximo lugar</span>
+            <span>{tr("Bookmarks.8107368252")}</span>
           </button>
         )}
       </div>
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
-        title={editing ? "Editar acceso" : "Un nuevo lugar"}
-        description="Tus aplicaciones, herramientas y rincones favoritos."
+        title={editing ? tr("Bookmarks.c8103e7235") : tr("Bookmarks.9f7c90da66")}
+        description={tr("Bookmarks.2bf995ef0d")}
       >
         <form className="dialog-body form-stack" onSubmit={save}>
           <label>
-            Nombre
-            <input
+            {tr("Bookmarks.562bb15757")}<input
               required
               maxLength={60}
               autoFocus
               value={draft.title}
               onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-              placeholder="Por ejemplo, mi espacio en Notion"
+              placeholder={tr("Bookmarks.c8af3a9e5d")}
             />
           </label>
           <label>
-            Dirección web
-            <div className="input-icon">
+            {tr("Bookmarks.6504b8a436")}<div className="input-icon">
               <Link2 size={16} />
               <input
                 required
                 value={draft.url}
                 onChange={(e) => setDraft({ ...draft, url: e.target.value })}
-                placeholder="https://…"
+                placeholder={tr("Bookmarks.ab04e20ed4")}
               />
             </div>
           </label>
           <div className="form-row">
             <label>
-              Grupo
-              <input
+              {tr("Bookmarks.399b037dab")}<input
                 required
                 maxLength={40}
                 list="bookmark-groups"
@@ -203,13 +202,12 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
                 {groups
                   .filter((g) => g !== "Todos")
                   .map((g) => (
-                    <option key={g}>{g}</option>
+                    <option key={g} value={g}>{g === "Todos" ? tr("common.all") : g === "Personal" ? tr("common.personal") : g === "Trabajo" ? tr("common.work") : g}</option>
                   ))}
               </datalist>
             </label>
             <label>
-              Color
-              <input
+              {tr("Bookmarks.6b73191a0a")}<input
                 type="color"
                 value={draft.color}
                 onChange={(e) => setDraft({ ...draft, color: e.target.value })}
@@ -218,7 +216,7 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
           </div>
           {error && (
             <p className="error-message" role="alert">
-              {error}
+              {translateMessage(error)}
             </p>
           )}
           {editing && (
@@ -229,15 +227,14 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
                 disabled={bookmarks[0]?.id === editing.id}
                 onClick={() => move(editing.id, -1)}
               >
-                <ArrowLeft size={15} /> Mover antes
-              </button>
+                <ArrowLeft size={15} /> {tr("Bookmarks.cefb754a60")}</button>
               <button
                 type="button"
                 className="secondary-button"
                 disabled={bookmarks.at(-1)?.id === editing.id}
                 onClick={() => move(editing.id, 1)}
               >
-                Mover después <ArrowRight size={15} />
+                {tr("Bookmarks.3fbab39932")}<ArrowRight size={15} />
               </button>
             </div>
           )}
@@ -251,12 +248,10 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
                   setOpen(false);
                 }}
               >
-                <Trash2 size={16} /> Eliminar
-              </button>
+                <Trash2 size={16} /> {tr("Bookmarks.4828ccd788")}</button>
             )}
             <button className="primary-button">
-              <Check size={16} /> Guardar acceso
-            </button>
+              <Check size={16} /> {tr("Bookmarks.91150bb7b9")}</button>
           </div>
         </form>
       </Dialog>

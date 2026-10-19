@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr, getFormatLocale } from "../lib/i18n.ts";
 import { isRemoteLibrary } from "../lib/remote";
 import { APP_NAME } from "../lib/brand.ts";
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
@@ -39,6 +41,7 @@ import { emptyGame, cachedGameImage } from "../lib/gaming";
 type AddTab = "game" | "emulator";
 let cachedSnapshot: InstalledSnapshot | null = null;
 export function InstalledGames() {
+  useInterfaceLocale();
   const { settings, setSettings, games, setGames, notify } = useDashboard();
   const [snapshot, setSnapshot] = useState<InstalledSnapshot | null>(
     cachedSnapshot,
@@ -257,8 +260,8 @@ export function InstalledGames() {
     setDetail(null);
     notify(
       wasHidden
-        ? "Juego visible otra vez."
-        : "Juego oculto. Puedes recuperarlo en Ocultos.",
+        ? tr("InstalledGames.f22cd34697")
+        : tr("InstalledGames.dadd08cb59"),
       () =>
         setSettings((s) => ({
           ...s,
@@ -272,7 +275,7 @@ export function InstalledGames() {
     if (savedIds.has(game.id)) {
       const previous = games.find((g) => g.id === game.id)!;
       setGames((p) => p.filter((g) => g.id !== game.id));
-      notify("Quitado de tu juegoteca. Sigue instalado.", () =>
+      notify(tr("InstalledGames.7b760aa38d"), () =>
         setGames((p) =>
           p.some((g) => g.id === previous.id) ? p : [previous, ...p],
         ),
@@ -304,7 +307,7 @@ export function InstalledGames() {
             ...p,
           ],
     );
-    notify("Añadido a tu juegoteca.");
+    notify(tr("InstalledGames.09978f9c2a"));
   };
   const openAdd = (tab: AddTab) => {
     setAdd(tab);
@@ -348,8 +351,8 @@ export function InstalledGames() {
       setDetail(null);
       notify(
         enabled
-          ? "Acceso restaurado."
-          : `Acceso quitado de ${APP_NAME}. Los archivos siguen en tu equipo.`,
+          ? tr("InstalledGames.b24844e9a0")
+          : tr("InstalledGames.f39c72bd05", { v0: APP_NAME }),
         () => {
           void disableEntry(id, type, !enabled);
         },
@@ -364,24 +367,22 @@ export function InstalledGames() {
     <section className="installed-library">
       <div className="installed-heading">
         <div>
-          <h2>Todos tus juegos. A un clic.</h2>
-          <p>Instalados en tu PC, reunidos aquí. Busca y vuelve a jugar.</p>
+          <h2>{tr("InstalledGames.a1b0d869f3")}</h2>
+          <p>{tr("InstalledGames.d5fbffef0f")}</p>
         </div>
         <div className="installed-actions">
-          {isRemoteLibrary && <small>Las aplicaciones y emuladores se añaden desde el PC.</small>}
+          {isRemoteLibrary && <small>{tr("InstalledGames.9f304db462")}</small>}
           <button
             className="secondary-button"
-            disabled={isRemoteLibrary} title={isRemoteLibrary ? "Configura los emuladores desde el PC" : undefined}
+            disabled={isRemoteLibrary} title={isRemoteLibrary ? tr("InstalledGames.b0874f7926") : undefined}
             onClick={() => setEmulatorsOpen(true)}
           >
-            <Gamepad2 size={16} /> Emuladores
-            {enabledEmulators.length > 0 && (
+            <Gamepad2 size={16} /> {tr("InstalledGames.45fe0d7965")}{enabledEmulators.length > 0 && (
               <span>{enabledEmulators.length}</span>
             )}
           </button>
           <button className="primary-button" disabled={isRemoteLibrary} onClick={() => openAdd("game")}>
-            <Plus size={16} /> Añadir juego
-          </button>
+            <Plus size={16} /> {tr("InstalledGames.cff3f9a490")}</button>
         </div>
       </div>
       <div className="installed-toolbar">
@@ -390,8 +391,8 @@ export function InstalledGames() {
           <input
             ref={searchInput}
             autoComplete="off"
-            aria-label="Buscar en mis juegos instalados"
-            placeholder="Busca un juego, launcher o emulador…"
+            aria-label={tr("InstalledGames.d6b8208520")}
+            placeholder={tr("InstalledGames.c914489894")}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -401,7 +402,7 @@ export function InstalledGames() {
           {query && (
             <button
               className="icon-button"
-              aria-label="Limpiar búsqueda de instalados"
+              aria-label={tr("InstalledGames.e7c988689d")}
               onClick={() => setQuery("")}
             >
               <X size={16} />
@@ -414,19 +415,19 @@ export function InstalledGames() {
           onClick={() => void refresh(true)}
         >
           <RefreshCw size={16} className={loading ? "gamer-spinning" : ""} />
-          {loading ? "Cargando biblioteca…" : "Detectar juegos"}
+          {loading ? tr("InstalledGames.daf2f4eb7a") : tr("InstalledGames.d976d69f8e")}
         </button>
       </div>
       <div className="installed-filterbar">
         <select
-          aria-label="Launcher de mis juegos"
+          aria-label={tr("InstalledGames.621ece7d4a")}
           value={launcher}
           onChange={(e) => {
             setLauncher(e.target.value);
             setLimit(24);
           }}
         >
-          <option value="all">Todos los launchers</option>
+          <option value="all">{tr("InstalledGames.2789cc338f")}</option>
           {Object.entries(launcherNames)
             .filter(([id]) => snapshot?.games.some((g) => g.launcher === id))
             .map(([id, name]) => (
@@ -440,8 +441,7 @@ export function InstalledGames() {
           className={onlyFavorites ? "active" : ""}
           onClick={() => setOnlyFavorites((p) => !p)}
         >
-          <Bookmark size={15} /> En mi juegoteca
-        </button>
+          <Bookmark size={15} /> {tr("InstalledGames.99875b2363")}</button>
         <button
           aria-pressed={hidden}
           className={hidden ? "active" : ""}
@@ -450,21 +450,20 @@ export function InstalledGames() {
             setLimit(24);
           }}
         >
-          <EyeOff size={15} /> Ocultos
-          {hiddenIds.size > 0 && <span>{hiddenIds.size}</span>}
+          <EyeOff size={15} /> {tr("InstalledGames.cb154e7199")}{hiddenIds.size > 0 && <span>{hiddenIds.size}</span>}
         </button>
         <select
-          aria-label="Orden de mis juegos instalados"
+          aria-label={tr("InstalledGames.656f95ccba")}
           value={sort}
           onChange={(e) => setSort(e.target.value)}
         >
-          <option value="recent">Abiertos recientemente</option>
-          <option value="name">Nombre A–Z</option>
+          <option value="recent">{tr("InstalledGames.16d42e9717")}</option>
+          <option value="name">{tr("InstalledGames.15d998a2ae")}</option>
         </select>
         <div className="installed-view">
           <button
             className={view === "grid" ? "active" : ""}
-            aria-label="Vista de carátulas"
+            aria-label={tr("InstalledGames.eb0bbf2719")}
             aria-pressed={view === "grid"}
             onClick={() => setView("grid")}
           >
@@ -472,7 +471,7 @@ export function InstalledGames() {
           </button>
           <button
             className={view === "list" ? "active" : ""}
-            aria-label="Vista de lista"
+            aria-label={tr("InstalledGames.2eaa9ea4b3")}
             aria-pressed={view === "list"}
             onClick={() => setView("list")}
           >
@@ -482,37 +481,34 @@ export function InstalledGames() {
       </div>
       {error && (
         <div className="gamer-notice" role="alert">
-          {error}
+          {translateMessage(error)}
           <button className="text-button" onClick={() => void refresh()}>
-            Reintentar
-          </button>
+            {tr("InstalledGames.a9254c5f81")}</button>
         </div>
       )}
       {snapshot?.warnings.map((warning, i) => (
         <p className="installed-warning" key={i}>
-          {warning}
+          {translateMessage(warning)}
         </p>
       ))}
       {loading && !snapshot ? (
         <div className="installed-loading" role="status">
           <MonitorDown size={30} />
-          <h3>Encontrando tus juegos</h3>
+          <h3>{tr("InstalledGames.246eb5829e")}</h3>
           <p>
-            Consultando bibliotecas de los launchers. No recorremos tus carpetas
-            personales.
-          </p>
+            {tr("InstalledGames.8754cf0c7d")}</p>
         </div>
       ) : (
         <>
           <div className="installed-count" aria-live="polite">
             <span>
-              {items.length} {items.length === 1 ? "juego" : "juegos"}
-              {hidden ? " ocultos" : " en tu biblioteca"}
+              {tr("common.games", { count: items.length })}
+              {hidden ? tr("InstalledGames.46122cc9bf") : tr("InstalledGames.e19f9626c4")}
             </span>
             {snapshot && (
               <small>
-                Detección:{" "}
-                {new Date(snapshot.scannedAt).toLocaleTimeString("es-CL", {
+                {tr("InstalledGames.8a00bb88c3")}{" "}
+                {new Date(snapshot.scannedAt).toLocaleTimeString(getFormatLocale(), {
                   hour: "2-digit",
                   minute: "2-digit",
                 })}
@@ -529,7 +525,7 @@ export function InstalledGames() {
                   <article className="installed-card" key={game.id}>
                     <button
                       className="installed-cover"
-                      aria-label={`Ver detalles de ${game.title}`}
+                      aria-label={tr("a11y.InstalledGames.528", { v0: game.title })}
                       onClick={() => void openDetail(game)}
                     >
                       <Gamepad2
@@ -574,16 +570,16 @@ export function InstalledGames() {
                           className="installed-play"
                           disabled={!!launching}
                           onClick={() => void launch(game)}
-                          aria-label={`Jugar ${game.title}`}
+                          aria-label={tr("a11y.InstalledGames.573", { v0: game.title })}
                         >
                           <Play size={15} fill="currentColor" />
-                          {launching === game.id ? "Abriendo…" : isRemoteLibrary ? "Jugar en el PC" : "Jugar"}
+                          {launching === game.id ? tr("InstalledGames.2d5bf11d9a") : isRemoteLibrary ? tr("InstalledGames.65291f2faa") : tr("InstalledGames.b61eda6f4b")}
                         </button>
                         <button
                           className="icon-button"
                           aria-pressed={savedIds.has(game.id)}
-                          aria-label={`${savedIds.has(game.id) ? "Quitar de" : "Añadir a"} mi juegoteca: ${game.title}`}
-                          title="Mi juegoteca"
+                          aria-label={tr("a11y.InstalledGames.581", { v0: savedIds.has(game.id) ? tr("InstalledGames.e803dc9f36") : tr("InstalledGames.1765be422c"), v1: game.title })}
+                          title={tr("InstalledGames.7cd4459f57")}
                           onClick={() => saveGame(game)}
                         >
                           {savedIds.has(game.id) ? (
@@ -594,7 +590,7 @@ export function InstalledGames() {
                         </button>
                         <button
                           className="icon-button"
-                          aria-label={`${hidden ? "Mostrar" : "Ocultar"} ${game.title}`}
+                          aria-label={`${hidden ? tr("InstalledGames.5c492f37a6") : tr("InstalledGames.dd68077287")} ${game.title}`}
                           onClick={() => hideGame(game)}
                         >
                           {hidden ? <Eye size={16} /> : <EyeOff size={16} />}
@@ -610,13 +606,13 @@ export function InstalledGames() {
               <Gamepad2 size={38} strokeWidth={1} />
               <h3>
                 {query || launcher !== "all" || hidden || onlyFavorites
-                  ? "No hay juegos con esos filtros"
-                  : "Tu colección empieza aquí"}
+                  ? tr("InstalledGames.6028bd8694")
+                  : tr("InstalledGames.e0ca8d5cd9")}
               </h3>
               <p>
                 {query || launcher !== "all" || hidden || onlyFavorites
-                  ? "Prueba otro nombre o cambia los filtros."
-                  : "Detecta tus juegos, añade un acceso o configura tu primer emulador."}
+                  ? tr("InstalledGames.128fdee283")
+                  : tr("InstalledGames.2465dc5f80")}
               </p>
               <button
                 className="secondary-button"
@@ -630,8 +626,8 @@ export function InstalledGames() {
                 }}
               >
                 {query || launcher !== "all" || hidden || onlyFavorites
-                  ? "Limpiar filtros"
-                  : "Añadir un juego"}
+                  ? tr("InstalledGames.bfc2d16235")
+                  : tr("InstalledGames.cf0057b629")}
               </button>
             </div>
           )}
@@ -640,35 +636,23 @@ export function InstalledGames() {
               className="secondary-button gamer-load-more"
               onClick={() => setLimit((p) => p + 24)}
             >
-              Cargar 24 más <Plus size={15} />
+              {tr("InstalledGames.367670810e")}<Plus size={15} />
             </button>
           )}
         </>
       )}
       <details className="installed-help">
         <summary>
-          Compatibilidad y dónde se guardan mis accesos{" "}
+          {tr("InstalledGames.27b3c8284c")}{" "}
           <ChevronRight size={14} />
         </summary>
         <p>
-          Steam, Epic, GOG y Amazon Games usan sus registros o manifiestos de
-          instalación. Ubisoft Connect, EA app, Battle.net y Riot se detectan
-          cuando registran un ejecutable identificable. Xbox, Game Pass y Microsoft Store
-          se buscan en los paquetes del usuario y en bibliotecas XboxGames de todas las unidades,
-          incluidas las ubicaciones indicadas por Gaming Services. Solo aparecen juegos instalados;
-          los títulos del catálogo o de la nube no se añaden. Si falta alguno, usa Añadir juego.
-        </p>
+          {tr("InstalledGames.ab20a2fc0e")}</p>
         <p>
-          La lista se conserva entre aperturas. Usa «Detectar juegos» para encontrar instalaciones nuevas o juegos eliminados.
-          Los accesos y emuladores se guardan en la carpeta privada gaming-data
-          de este equipo. Ocultar o quitar un acceso no desinstala ni elimina
-          juegos o ROMs. Las fichas de Epic buscan también la portada de su tienda; las demás se completan desde Steam solo si se
-          encuentra una coincidencia exacta; también puedes poner tu propia
-          imagen.
-        </p>
+          {tr("InstalledGames.478cdddd84")}</p>
         {!!snapshot?.removed?.length && (
           <div>
-            <h3>Accesos quitados</h3>
+            <h3>{tr("InstalledGames.65894be87f")}</h3>
             {snapshot.removed.map((entry) => (
               <div className="installed-emulator" key={entry.id}>
                 <span>{entry.title}</span>
@@ -676,8 +660,7 @@ export function InstalledGames() {
                   className="secondary-button"
                   onClick={() => void disableEntry(entry.id, "manual", true)}
                 >
-                  Restaurar acceso
-                </button>
+                  {tr("InstalledGames.1e64c5c51f")}</button>
               </div>
             ))}
           </div>
@@ -686,7 +669,7 @@ export function InstalledGames() {
       <Dialog
         open={!!detail}
         onClose={() => setDetail(null)}
-        title={detail?.title || "Mi juego"}
+        title={detail?.title || tr("InstalledGames.7ec2cf30f8")}
         description={
           detail
             ? `${launcherNames[detail.launcher]}${detail.system ? " · " + detail.system : ""}`
@@ -697,8 +680,7 @@ export function InstalledGames() {
           <div className="dialog-body gamer-detail">
             {detailLoading && (
               <p role="status" className="muted">
-                Completando ficha… Puedes abrir el juego mientras tanto.
-              </p>
+                {tr("InstalledGames.0d76a6764a")}</p>
             )}
             {(meta?.image || detail.image) && (
               <img
@@ -723,7 +705,7 @@ export function InstalledGames() {
                 onClick={() => void launch(detail)}
               >
                 <Play size={16} />
-                {launching === detail.id ? "Abriendo…" : isRemoteLibrary ? "Jugar en el PC" : "Jugar ahora"}
+                {launching === detail.id ? tr("InstalledGames.2d5bf11d9a") : isRemoteLibrary ? tr("InstalledGames.65291f2faa") : tr("InstalledGames.ee42856979")}
               </button>
               <button
                 className="secondary-button"
@@ -731,8 +713,8 @@ export function InstalledGames() {
               >
                 <Bookmark size={15} />
                 {savedIds.has(detail.id)
-                  ? "Quitar de mi juegoteca"
-                  : "Añadir a mi juegoteca"}
+                  ? tr("InstalledGames.e891a78f38")
+                  : tr("InstalledGames.0be3a66555")}
               </button>
               <button
                 className="secondary-button"
@@ -744,13 +726,13 @@ export function InstalledGames() {
                   <EyeOff size={15} />
                 )}
                 {hiddenIds.has(detail.id)
-                  ? "Volver a mostrar"
-                  : "Ocultar juego"}
+                  ? tr("InstalledGames.d73a60d3a7")
+                  : tr("InstalledGames.11a1cc4537")}
               </button>
             </div>
             {meta?.source && (
               <small className="muted">
-                Ficha: {meta.source}
+                {tr("InstalledGames.0cb4b76830")}{meta.source}
                 {meta.url && (
                   <>
                     {" "}
@@ -760,14 +742,14 @@ export function InstalledGames() {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Ver en la tienda <ArrowUpRight size={12} />
+                      {tr("InstalledGames.770682a231")}<ArrowUpRight size={12} />
                     </a>
                   </>
                 )}
               </small>
             )}
             <details className="installed-path">
-              <summary>Ubicación y carátula</summary>
+              <summary>{tr("InstalledGames.6af39a948c")}</summary>
               <p>{detail.installPath}</p>
               <form
                 className="form-stack"
@@ -785,25 +767,25 @@ export function InstalledGames() {
                       url: meta?.url || "",
                       genres: meta?.genres || [],
                       matchedTitle: detail.title,
-                      source: "Personalizada",
+                      source: tr("InstalledGames.399810b42c"),
                       fetchedAt: new Date().toISOString(),
                     };
                     setMetadata((p) => ({ ...p, [detail.id]: value }));
-                    notify("Carátula actualizada.");
+                    notify(tr("InstalledGames.9e9a626c5a"));
                   } catch (e) {
                     notify((e as Error).message);
                   }
                 }}
               >
                 <input
-                  aria-label="URL de la carátula"
+                  aria-label={tr("InstalledGames.bd2983fab3")}
                   type="url"
-                  placeholder="https://… imagen personalizada"
+                  placeholder={tr("InstalledGames.240f9c3148")}
                   value={artwork}
                   onChange={(e) => setArtwork(e.target.value)}
                   required
                 />
-                <button className="secondary-button">Guardar carátula</button>
+                <button className="secondary-button">{tr("InstalledGames.34a90e7109")}</button>
               </form>
             </details>
             {detail.id.startsWith("local:") && (
@@ -811,7 +793,7 @@ export function InstalledGames() {
                 className="text-button danger"
                 onClick={() => void disableEntry(detail.id, "manual", false)}
               >
-                <Trash2 size={15} /> Quitar acceso de {APP_NAME}
+                <Trash2 size={15} /> {tr("InstalledGames.6f6e7fc27f")}{APP_NAME}
               </button>
             )}
           </div>
@@ -824,13 +806,13 @@ export function InstalledGames() {
         }}
         title={
           add === "emulator"
-            ? "Tu emulador, tus juegos"
-            : "Añadir un juego de tu PC"
+            ? tr("InstalledGames.f6850394f6")
+            : tr("InstalledGames.99f312f4d7")
         }
         description={
           add === "emulator"
-            ? "Elige el emulador y la carpeta de ROMs que ya tienes."
-            : "Crea un acceso a cualquier juego instalado."
+            ? tr("InstalledGames.97c645703e")
+            : tr("InstalledGames.07c79dc950")
         }
       >
         <form
@@ -845,7 +827,7 @@ export function InstalledGames() {
                 args = JSON.parse(form.args);
               } catch {
                 throw new Error(
-                  'Los argumentos deben ser una lista, por ejemplo ["{rom}"].',
+                  tr("InstalledGames.a614f8075a"),
                 );
               }
               if (add === "emulator")
@@ -869,8 +851,8 @@ export function InstalledGames() {
               await refresh(true);
               notify(
                 add === "emulator"
-                  ? "Emulador añadido. Tus ROMs ya están en la biblioteca."
-                  : "Acceso añadido a tus juegos.",
+                  ? tr("InstalledGames.e784266e07")
+                  : tr("InstalledGames.0b9e149973"),
               );
             } catch (e) {
               setFormError((e as Error).message);
@@ -881,8 +863,7 @@ export function InstalledGames() {
         >
           {add === "emulator" && (
             <label>
-              Configurar para
-              <select
+              {tr("InstalledGames.76c0827159")}<select
                 defaultValue=""
                 onChange={(e) => {
                   const preset = emulatorPresets.find(
@@ -891,15 +872,14 @@ export function InstalledGames() {
                   if (preset)
                     setForm((p) => ({
                       ...p,
-                      title: preset.name === "Otro emulador" ? "" : preset.name,
+                      title: preset === emulatorPresets.at(-1) ? "" : preset.name,
                       extensions: preset.extensions,
                       args: preset.args,
                     }));
                 }}
               >
                 <option value="" disabled>
-                  Elegir emulador…
-                </option>
+                  {tr("InstalledGames.17ca5a0e75")}</option>
                 {emulatorPresets.map((p) => (
                   <option key={p.name}>{p.name}</option>
                 ))}
@@ -907,7 +887,7 @@ export function InstalledGames() {
             </label>
           )}
           <label>
-            {add === "emulator" ? "Nombre del emulador" : "Nombre del juego"}
+            {add === "emulator" ? tr("InstalledGames.4ea7559637") : tr("InstalledGames.27839f10af")}
             <input
               autoFocus
               required
@@ -918,18 +898,17 @@ export function InstalledGames() {
               }
               placeholder={
                 add === "emulator"
-                  ? "Por ejemplo, Dolphin · GameCube"
-                  : "Nombre del juego"
+                  ? tr("InstalledGames.560d5f48ad")
+                  : tr("InstalledGames.27839f10af")
               }
             />
           </label>
           <label>
-            Ejecutable (.exe)
-            <div className="installed-path-input">
+            {tr("InstalledGames.2e6c43bf41")}<div className="installed-path-input">
               <input
                 required
                 value={form.executable}
-                placeholder="C:\Juegos\Mi juego\juego.exe"
+                placeholder={tr("InstalledGames.200568590f")}
                 onChange={(e) =>
                   setForm((p) => ({
                     ...p,
@@ -943,19 +922,17 @@ export function InstalledGames() {
                 disabled={picking}
                 onClick={() => void pick("executable")}
               >
-                <FolderOpen size={16} /> Elegir
-              </button>
+                <FolderOpen size={16} /> {tr("InstalledGames.842ca60786")}</button>
             </div>
           </label>
           {add === "emulator" ? (
             <>
               <label>
-                Carpeta de ROMs
-                <div className="installed-path-input">
+                {tr("InstalledGames.7f7a68084c")}<div className="installed-path-input">
                   <input
                     required
                     value={form.folder}
-                    placeholder="D:\ROMs\GameCube"
+                    placeholder={tr("InstalledGames.69e9869966")}
                     onChange={(e) =>
                       setForm((p) => ({
                         ...p,
@@ -969,19 +946,17 @@ export function InstalledGames() {
                     disabled={picking}
                     onClick={() => void pick("folder")}
                   >
-                    <FolderOpen size={16} /> Elegir
-                  </button>
+                    <FolderOpen size={16} /> {tr("InstalledGames.842ca60786")}</button>
                 </div>
               </label>
               <label>
-                Formatos, separados por comas
-                <input
+                {tr("InstalledGames.edc98d2072")}<input
                   required
                   value={form.extensions}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, extensions: e.target.value }))
                   }
-                  placeholder="iso,rvz,gcm"
+                  placeholder={tr("InstalledGames.0745249aaa")}
                 />
               </label>
               <label className="gamer-check">
@@ -992,14 +967,12 @@ export function InstalledGames() {
                     setForm((p) => ({ ...p, recursive: e.target.checked }))
                   }
                 />
-                Incluir subcarpetas (hasta 4 niveles)
-              </label>
+                {tr("InstalledGames.0d66450232")}</label>
             </>
           ) : (
             <>
               <label>
-                Launcher
-                <select
+                {tr("InstalledGames.22614ace1a")}<select
                   value={form.launcher}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, launcher: e.target.value }))
@@ -1015,11 +988,10 @@ export function InstalledGames() {
                 </select>
               </label>
               <label>
-                Carátula (opcional)
-                <input
+                {tr("InstalledGames.655bdeb5e6")}<input
                   type="url"
                   value={form.image}
-                  placeholder="https://…"
+                  placeholder={tr("InstalledGames.ab04e20ed4")}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, image: e.target.value }))
                   }
@@ -1028,10 +1000,9 @@ export function InstalledGames() {
             </>
           )}
           <details>
-            <summary>Opciones de inicio</summary>
+            <summary>{tr("InstalledGames.50dc6fd313")}</summary>
             <label>
-              Argumentos de inicio
-              <input
+              {tr("InstalledGames.fefb57cda5")}<input
                 value={form.args}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, args: e.target.value }))
@@ -1040,15 +1011,13 @@ export function InstalledGames() {
             </label>
             <p className="muted">
               {add === "emulator"
-                ? "Cada argumento va entre comillas en una lista. {rom} se reemplaza por el archivo del juego. RetroArch requiere indicar el core real que tienes instalado."
-                : 'Normalmente puedes dejar []. Si el juego necesita parámetros, añádelos como una lista: ["-fullscreen"].'}
+                ? tr("InstalledGames.c6539021ac")
+                : tr("InstalledGames.26239bf059")}
             </p>
           </details>
           {picking && (
             <p role="status" className="muted">
-              El selector de Windows está abierto. Elige el archivo o la carpeta
-              para continuar.
-            </p>
+              {tr("InstalledGames.4f920ea1d7")}</p>
           )}
           {formError && (
             <p className="error-message" role="alert">
@@ -1058,25 +1027,23 @@ export function InstalledGames() {
           <button className="primary-button" disabled={busy || picking}>
             <Plus size={16} />
             {busy
-              ? "Guardando…"
+              ? tr("InstalledGames.3c8dc4dc7a")
               : add === "emulator"
-                ? "Añadir emulador y detectar ROMs"
-                : "Guardar acceso"}
+                ? tr("InstalledGames.d300bd7ece")
+                : tr("InstalledGames.4ed1bb1fe1")}
           </button>
         </form>
       </Dialog>
       <Dialog
         open={emulatorsOpen}
         onClose={() => setEmulatorsOpen(false)}
-        title="Mis emuladores"
-        description="Tus ROMs se abren con el emulador que elijas."
+        title={tr("InstalledGames.6ae2ddcf7f")}
+        description={tr("InstalledGames.31f5432c8d")}
       >
         <div className="dialog-body form-stack">
           {!snapshot?.emulators.length && (
             <p className="muted">
-              Configura un emulador para ver tus ROMs junto con los demás
-              juegos.
-            </p>
+              {tr("InstalledGames.7fb1ddc27c")}</p>
           )}
           {snapshot?.emulators.map((emulator: EmulatorConfig) => (
             <div className="installed-emulator" key={emulator.id}>
@@ -1085,7 +1052,7 @@ export function InstalledGames() {
                 <strong>{emulator.name}</strong>
                 <small>{emulator.extensions.join(" · ")}</small>
                 <span>
-                  {emulator.enabled ? "Activo" : `Quitado de ${APP_NAME}`}
+                  {emulator.enabled ? tr("InstalledGames.723858144b") : tr("interface.InstalledGames.e1200b67ca", { v0: APP_NAME })}
                 </span>
               </div>
               <button
@@ -1094,7 +1061,7 @@ export function InstalledGames() {
                   void disableEntry(emulator.id, "emulators", !emulator.enabled)
                 }
               >
-                {emulator.enabled ? "Quitar" : "Restaurar"}
+                {emulator.enabled ? tr("InstalledGames.f039f4a8c9") : tr("InstalledGames.eda02893d3")}
               </button>
             </div>
           ))}
@@ -1102,13 +1069,9 @@ export function InstalledGames() {
             className="primary-button"
             onClick={() => openAdd("emulator")}
           >
-            <Plus size={16} /> Añadir emulador
-          </button>
+            <Plus size={16} /> {tr("InstalledGames.6245382148")}</button>
           <p className="muted">
-            {APP_NAME} no incluye emuladores, BIOS ni ROMs; usa los archivos que
-            ya tengas. Quitar un emulador de {APP_NAME} conserva todos sus
-            archivos.
-          </p>
+            {APP_NAME} {tr("InstalledGames.3eea02cf42")}{APP_NAME} {tr("InstalledGames.53633486a7")}</p>
         </div>
       </Dialog>
     </section>

@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "./Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { APP_NAME } from "../lib/brand.ts";
 import { TimerContext } from "./TimerStore";
 import type { TimerState, TimerMode } from "./TimerStore";
@@ -5,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { useDashboard } from "./DashboardStore";
 export function TimerProvider({ children }: { children: ReactNode }) {
+  useInterfaceLocale();
   const { settings, activeTaskId, addFocusMinutes, notify } = useDashboard();
   const durationFor = (mode: TimerMode) =>
     (mode === "work" ? settings.workMinutes : settings[mode]) * 60;
@@ -75,11 +78,11 @@ export function TimerProvider({ children }: { children: ReactNode }) {
         );
       const message =
         current.mode === "work"
-          ? "Sesión completada. Es momento de una pausa."
-          : "Pausa terminada. Vuelve a tu ritmo.";
+          ? tr("TimerContext.95db901fb3")
+          : tr("TimerContext.6cbe819906");
       callbacks.current.notify(message);
       if ("Notification" in window && Notification.permission === "granted")
-        new Notification(`${APP_NAME} · Tu espacio`, {
+        new Notification(tr("TimerContext.deff560989", { v0: APP_NAME }), {
           body: message,
           icon: "/favicon.svg",
         });

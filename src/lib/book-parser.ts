@@ -1,3 +1,4 @@
+import { tr } from "./i18n.ts";
 import DOMPurify from "dompurify";
 import JSZip from "jszip";
 import type { PDFDocumentProxy } from "pdfjs-dist";
@@ -28,7 +29,7 @@ function xml(text: string) {
   const doc = new DOMParser().parseFromString(text, "application/xml");
   if (doc.querySelector("parsererror"))
     throw new Error(
-      "El documento contiene una estructura XML que no se pudo leer.",
+      tr("book_parser.f9b6d97ba8"),
     );
   return doc;
 }
@@ -43,7 +44,7 @@ function checkZip(buffer: ArrayBuffer) {
       count++;
       if (size > 80 * 1024 * 1024 || total > 350 * 1024 * 1024 || count > 15000)
         throw new Error(
-          "El archivo comprimido es demasiado grande al descomprimirlo. Divide el libro o cómic en volúmenes.",
+          tr("book_parser.08c2aff88b"),
         );
       offset +=
         45 +
@@ -51,7 +52,7 @@ function checkZip(buffer: ArrayBuffer) {
         data.getUint16(offset + 30, true) +
         data.getUint16(offset + 32, true);
     }
-  if (!count) throw new Error("No se encontró un archivo ZIP válido.");
+  if (!count) throw new Error(tr("book_parser.e5097198a4"));
 }
 function clean(html: string) {
   const result = DOMPurify.sanitize(html, {
@@ -132,7 +133,7 @@ export async function openBook(
   const response = await fetch(`/api/library/${document.id}/file`, { signal });
   if (!response.ok)
     throw new Error(
-      "No se pudo abrir el archivo guardado. Comprueba la carpeta de tu biblioteca.",
+      tr("book_parser.74f94c1a3a"),
     );
   const buffer = await response.arrayBuffer();
   if (signal.aborted) throw new DOMException("Aborted", "AbortError");
@@ -183,7 +184,7 @@ export async function openBook(
       kind: "reflow",
       total: units.length,
       chapters: units.map((_, i) => ({
-        title: `Sección ${i + 1}`,
+        title: tr("book_parser.bd34a5f86b", { v0: i + 1 }),
         path: String(i),
       })),
       chapter: async (i) => units[i],
@@ -194,7 +195,7 @@ export async function openBook(
   if (signal.aborted) throw new DOMException("Aborted", "AbortError");
   if (document.format === "docx") {
     if (!zip.file("word/document.xml"))
-      throw new Error("Este archivo no contiene un documento DOCX válido.");
+      throw new Error(tr("book_parser.a1627ccae4"));
     const mammoth = await import("mammoth/mammoth.browser");
     const result = await mammoth.convertToHtml({ arrayBuffer: buffer });
     const units = splitReflow(result.value);
@@ -203,7 +204,7 @@ export async function openBook(
       kind: "reflow",
       total: units.length,
       chapters: units.map((_, i) => ({
-        title: `Sección ${i + 1}`,
+        title: tr("book_parser.bd34a5f86b", { v0: i + 1 }),
         path: String(i),
       })),
       chapter: async (i) => units[i],
@@ -219,7 +220,7 @@ export async function openBook(
       ),
     );
     if (!pages.length)
-      throw new Error("El CBZ no contiene imágenes JPG, PNG, WebP o GIF.");
+      throw new Error(tr("book_parser.bb6ee87070"));
     const urls = new Map<number, string>();
     return {
       ...empty,
@@ -249,12 +250,12 @@ export async function openBook(
   }
   const container = zip.file("META-INF/container.xml");
   if (!container)
-    throw new Error("No se encontró la estructura de un EPUB válido.");
+    throw new Error(tr("book_parser.1905f0015f"));
   const rootfile = xml(await container.async("string"))
     .getElementsByTagName("rootfile")[0]
     ?.getAttribute("full-path");
   if (!rootfile || !zip.file(rootfile))
-    throw new Error("El EPUB no contiene su índice principal.");
+    throw new Error(tr("book_parser.077a6144b2"));
   const encrypted = zip.file("META-INF/encryption.xml");
   if (encrypted) {
     const text = await encrypted.async("string");
@@ -263,7 +264,7 @@ export async function openBook(
       !/(?:idpf.org\/2008\/embedding|ns.adobe.com\/pdf\/enc#RC)/.test(text)
     )
       throw new Error(
-        "El EPUB está cifrado o protegido con DRM. Importa una copia sin DRM que tengas derecho a leer.",
+        tr("book_parser.69a5c9bd9e"),
       );
   }
   const opf = xml(await zip.file(rootfile)!.async("string"));
@@ -281,12 +282,12 @@ export async function openBook(
   )
     .filter((ref) => ref.getAttribute("linear") !== "no")
     .map((ref, index) => ({
-      title: `Capítulo ${index + 1}`,
+      title: tr("book_parser.d97ad69f3b", { v0: index + 1 }),
       path: items.get(ref.getAttribute("idref")!)?.path || "",
     }))
     .filter((chapter) => !!zip.file(chapter.path));
   if (!chapters.length)
-    throw new Error("El EPUB no contiene capítulos legibles.");
+    throw new Error(tr("book_parser.29fd594bcb"));
   const nav = Array.from(items.values()).find((item) =>
     item.properties.split(" ").includes("nav"),
   );

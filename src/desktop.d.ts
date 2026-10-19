@@ -2,6 +2,16 @@ declare global {
   interface Window {
     zentyDesktop?: {
       platform: string;
+      setLocale: (language: string) => Promise<void>;
+      security: {
+        get: () => Promise<import("./lib/security").PinState>;
+        unlock: (pin: string) => Promise<import("./lib/security").PinState>;
+        lock: () => Promise<import("./lib/security").PinState>;
+        configure: (current: string, pin: string) => Promise<import("./lib/security").PinState & { recovery: string }>;
+        disable: (pin: string) => Promise<import("./lib/security").PinState>;
+        recover: (code: string) => Promise<import("./lib/security").PinState>;
+        onState: (listener: (state: import("./lib/security").PinState) => void) => () => void;
+      };
       updates: {
         get:()=>Promise<import("./lib/updates").UpdateState>;
         check:()=>Promise<import("./lib/updates").UpdateState>;

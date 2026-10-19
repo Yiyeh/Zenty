@@ -1,3 +1,4 @@
+import { tr, getFormatLocale } from "./i18n.ts";
 import type { DashboardData } from "./dashboard.ts";
 export interface Reminder {
   id: string;
@@ -52,7 +53,7 @@ export function validateReminderPlan(value: unknown): ReminderPlan {
     !plan.entries.every(validReminder) ||
     new Set(plan.entries.map((item) => item.id)).size !== plan.entries.length
   )
-    throw new Error("Programación de avisos inválida.");
+    throw new Error(tr("reminders.71a50fcfb4"));
   return {
     enabled: plan.enabled,
     entries: plan.entries.map((item) => ({ ...item })),
@@ -137,14 +138,14 @@ export function reminderMessage(
   now = Date.now(),
 ): string {
   const at = new Date(occurrence.at);
-  const time = at.toLocaleString("es-CL", {
+  const time = at.toLocaleString(getFormatLocale(), {
     day: "numeric",
     month: "short",
     hour: "2-digit",
     minute: "2-digit",
   });
   const remaining = Math.ceil((occurrence.at - now) / 60000);
-  return `${occurrence.entry.title}\n${time}${remaining > 0 ? ` · en ${remaining} min` : " · ahora"}`;
+  return `${occurrence.entry.title}\n${time}${remaining > 0 ? tr("reminders.0affede6fa", { v0: remaining }) : tr("reminders.af6d34e4df")}`;
 }
 export function createReminderEngine({
   notify,

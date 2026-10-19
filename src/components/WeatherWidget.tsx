@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr, getFormatLocale } from "../lib/i18n.ts";
 import { useEffect, useState } from "react";
 import { CloudSun, MapPin, Search, RefreshCw } from "lucide-react";
 import { useDashboard } from "../context/DashboardStore";
@@ -10,19 +12,20 @@ type Place = {
 };
 const condition = (code: number) =>
   code === 0
-    ? "Despejado"
+    ? tr("WeatherWidget.356b15ebee")
     : code <= 3
-      ? "Parcialmente nublado"
+      ? tr("WeatherWidget.b089e2b6a4")
       : code <= 48
-        ? "Niebla"
+        ? tr("WeatherWidget.a4ca9bf74b")
         : code <= 67
-          ? "Lluvia"
+          ? tr("WeatherWidget.24af7c4cec")
           : code <= 77
-            ? "Nieve"
+            ? tr("WeatherWidget.8f8d9e9e07")
             : code <= 82
-              ? "Chubascos"
-              : "Tormentas";
+              ? tr("WeatherWidget.500f95caf0")
+              : tr("WeatherWidget.b4f64d9249");
 export function WeatherWidget() {
+  useInterfaceLocale();
   const { settings, setSettings } = useDashboard();
   const place = settings.weatherLocation;
   const [query, setQuery] = useState("");
@@ -47,7 +50,7 @@ export function WeatherWidget() {
     setWeather(null);
     const timeout = setTimeout(() => {
       if (!disposed) {
-        setError("La consulta tardó demasiado. Vuelve a intentarlo.");
+        setError(tr("WeatherWidget.6013dabbc3"));
         setBusy(false);
       }
       controller.abort();
@@ -67,7 +70,7 @@ export function WeatherWidget() {
             code: data.current.weather_code,
             min: data.daily.temperature_2m_min[0],
             max: data.daily.temperature_2m_max[0],
-            updated: new Date().toLocaleTimeString("es", {
+            updated: new Date().toLocaleTimeString(getFormatLocale(), {
               hour: "2-digit",
               minute: "2-digit",
             }),
@@ -75,7 +78,7 @@ export function WeatherWidget() {
       })
       .catch(() => {
         if (!controller.signal.aborted)
-          setError("No se pudo consultar el tiempo. Vuelve a intentarlo.");
+          setError(tr("WeatherWidget.2baf474bf3"));
       })
       .finally(() => {
         clearTimeout(timeout);
@@ -107,10 +110,10 @@ export function WeatherWidget() {
       setPlaces(data.results || []);
       if (!data.results?.length)
         setError(
-          "No encontramos esa ciudad. Prueba con un nombre más completo.",
+          tr("WeatherWidget.a550c2c912"),
         );
     } catch {
-      setError("No se pudo buscar la ciudad. Revisa tu conexión.");
+      setError(tr("WeatherWidget.9d35b822cc"));
     } finally {
       setBusy(false);
     }
@@ -119,11 +122,10 @@ export function WeatherWidget() {
     <section className="glass-panel weather-card">
       <div className="widget-heading">
         <h3>
-          <CloudSun size={17} /> Fuera de tu ventana
-        </h3>
+          <CloudSun size={17} /> {tr("WeatherWidget.6c1e0be934")}</h3>
         <button
           className="icon-button"
-          aria-label="Cambiar ciudad del tiempo"
+          aria-label={tr("WeatherWidget.d797cb6fc5")}
           onClick={() => setEditing(!editing)}
         >
           <MapPin size={15} />
@@ -133,8 +135,8 @@ export function WeatherWidget() {
         <div className="form-stack">
           <form className="inline-form" onSubmit={find}>
             <input
-              aria-label="Ciudad del tiempo"
-              placeholder="Busca tu ciudad…"
+              aria-label={tr("WeatherWidget.41f17a396c")}
+              placeholder={tr("WeatherWidget.a28415153d")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               minLength={2}
@@ -142,7 +144,7 @@ export function WeatherWidget() {
             />
             <button
               className="icon-button"
-              aria-label="Buscar ciudad"
+              aria-label={tr("WeatherWidget.02b703c274")}
               disabled={busy}
             >
               <Search size={17} />
@@ -170,9 +172,7 @@ export function WeatherWidget() {
             </button>
           ))}
           <small>
-            Se consulta la ciudad elegida a Open-Meteo. No se solicita tu
-            ubicación precisa.
-          </small>
+            {tr("WeatherWidget.1a499022b7")}</small>
         </div>
       )}
       {weather && (
@@ -184,29 +184,28 @@ export function WeatherWidget() {
               {condition(weather.code)} · {place?.name}
             </span>
             <small>
-              Máx. {Math.round(weather.max)}° · Mín. {Math.round(weather.min)}°
+              {tr("WeatherWidget.9b809853a2")}{Math.round(weather.max)}{tr("WeatherWidget.92c777d2b0")}{Math.round(weather.min)}°
             </small>
           </div>
         </div>
       )}
       {busy && (
         <p className="muted" role="status">
-          Consultando el tiempo…
-        </p>
+          {tr("WeatherWidget.7d8dd68285")}</p>
       )}
       {error && (
         <p className="error-message" role="alert">
-          {error}
+          {translateMessage(error)}
         </p>
       )}
       {place && (
         <div className="music-footer">
           <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">
-            Open-Meteo{weather ? ` · ${weather.updated}` : ""}
+            {tr("WeatherWidget.de5cc828b6")}{weather ? ` · ${weather.updated}` : ""}
           </a>
           <button
             className="icon-button"
-            aria-label="Actualizar el tiempo"
+            aria-label={tr("WeatherWidget.4850287295")}
             disabled={busy}
             onClick={() => setRefresh((n) => n + 1)}
           >

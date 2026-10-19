@@ -1,3 +1,4 @@
+const { tr } = require("./locale.cjs");
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
@@ -13,7 +14,7 @@ function createSpotifySessionStore(directory, safeStorage) {
   const target = path.join(directory, 'spotify-session.enc');
   let pending = Promise.resolve();
   const encryption = () => {
-    if (!safeStorage.isEncryptionAvailable()) throw new Error('Windows no permite cifrar la conexión de Spotify. No se guardarán credenciales sin cifrar.');
+    if (!safeStorage.isEncryptionAvailable()) throw new Error(tr("spotify_session.2521e2b610"));
   };
   return {
     async get() {
@@ -21,14 +22,14 @@ function createSpotifySessionStore(directory, safeStorage) {
       let encrypted;
       try { encrypted = await fs.readFile(target); }
       catch (error) { if (error.code === 'ENOENT') return null; throw error; }
-      if (encrypted.length > 100000) throw new Error('La conexión guardada de Spotify no es válida.');
+      if (encrypted.length > 100000) throw new Error(tr("spotify_session.6ecf9902ad"));
       encryption();
       const value = JSON.parse(safeStorage.decryptString(encrypted));
-      if (!validSession(value)) throw new Error('La conexión guardada de Spotify no es válida.');
+      if (!validSession(value)) throw new Error(tr("spotify_session.6ecf9902ad"));
       return value;
     },
     set(value) {
-      if (value !== null && !validSession(value)) return Promise.reject(new Error('Sesión de Spotify no válida.'));
+      if (value !== null && !validSession(value)) return Promise.reject(new Error(tr("spotify_session.1fcf4223da")));
       // Capture before queuing so caller mutation cannot replace the validated data.
       const raw = value === null ? null : JSON.stringify({ accessToken: value.accessToken, refreshToken: value.refreshToken, clientId: value.clientId, expiresAt: value.expiresAt, scope: value.scope });
       const work = pending.catch(() => {}).then(async () => {

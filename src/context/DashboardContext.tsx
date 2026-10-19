@@ -1,4 +1,7 @@
+import { useLocale as useInterfaceLocale } from "./Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { mergeDashboard } from "../lib/dashboard-sync";
+import { getLocale, setLocale } from "../lib/i18n";
 import { isRemoteLibrary } from "../lib/remote";
 import { DashboardContext } from "./DashboardStore";
 import type { ContextValue, Setter } from "./DashboardStore";
@@ -13,6 +16,7 @@ import {
   parseBackup,
 } from "../lib/dashboard";
 export function DashboardProvider({ children }: { children: ReactNode }) {
+  useInterfaceLocale();
   const [initial] = useState(() => {
     try {
       const loaded = loadData(localStorage);
@@ -26,11 +30,15 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       return {
         data: structuredClone(defaultData),
         warning:
-          "El navegador no permite guardar datos. Exporta tu respaldo antes de cerrar.",
+          tr("DashboardContext.185516bc7e"),
       };
     }
   });
   const [data, setData] = useState(initial.data);
+  useEffect(() => {
+    if (data.settings.welcomeCompleted && data.settings.language !== getLocale())
+      void setLocale(data.settings.language).catch(() => {});
+  }, [data.settings.language, data.settings.welcomeCompleted]);
   const [storageWarning, setStorageWarning] = useState(initial.warning);
   const [diskWarning, setDiskWarning] = useState("");
   const [diskReady, setDiskReady] = useState(false);
@@ -55,7 +63,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       });
       if (response.status === 304) return;
       diskTag.current = response.headers.get("ETag");
-      if (!response.ok) throw new Error(response.status === 401 ? "La sesión terminó. Guarda un respaldo y vuelve a entrar desde la dirección del PC." : "No se pudo sincronizar con el PC. Los cambios siguen en este dispositivo y se reintentarán.");
+      if (!response.ok) throw new Error(response.status === 401 ? tr("DashboardContext.ffde58d1e8") : tr("DashboardContext.8801cf28f1"));
       const body = await response.json();
       const remote = body.data ? parseBackup(JSON.stringify(body.data)) : base;
       confirmed.current = remote;
@@ -101,7 +109,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       setStorageWarning("");
     } catch {
       setStorageWarning(
-        "No se pudieron guardar los últimos cambios. Exporta un respaldo para conservarlos.",
+        tr("DashboardContext.9de56f171d"),
       );
     }
   }, [data]);
@@ -114,7 +122,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         });
         if (!response.ok) {
           if (response.status === 500 || window.zentyDesktop)
-            throw new Error("No se pudo leer la copia de tu espacio en disco.");
+            throw new Error(tr("DashboardContext.d1349a9470"));
           return;
         }
         diskTag.current = response.headers.get("ETag");
@@ -147,7 +155,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   }, [data, diskReady]);
   useEffect(() => window.zentyDesktop?.onBeforeClose(async () => {
     clearTimeout(diskTimer.current);
-    if (!canSave.current || !diskReadyRef.current) throw new Error("El save aún no está listo.");
+    if (!canSave.current || !diskReadyRef.current) throw new Error(tr("DashboardContext.194cd6db30"));
     await writeDisk(JSON.stringify({ ...dataRef.current, version: 2 }));
   }), []);
   useEffect(() => {
@@ -161,7 +169,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         );
       } catch {
         setStorageWarning(
-          "Otra pestaña guardó datos que no pudimos leer. Exporta un respaldo antes de continuar.",
+          tr("DashboardContext.57a1cf17e4"),
         );
         canSave.current = false;
       }
@@ -277,7 +285,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
       setData(next);
       setActiveTaskId(null);
       setStorageWarning("");
-      notify("Respaldo restaurado.");
+      notify(tr("DashboardContext.f6c897f849"));
       return true;
     } catch {
       return false;

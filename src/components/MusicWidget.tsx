@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr } from "../lib/i18n.ts";
 import { useEffect, useState } from "react";
 import {
   Music2,
@@ -18,6 +20,7 @@ import { SpotifyFrameSlot } from "./SpotifyFrameSlot";
 import { SpotifyConnectPlayer } from "./SpotifyConnectPlayer";
 import { SpotifyModeSelector } from "./SpotifyModeSelector";
 export function MusicWidget({ onConnect }: { onConnect: () => void }) {
+  useInterfaceLocale();
   const { settings } = useDashboard();
   return settings.spotifyMode === "connect" ? (
     <SpotifyConnectPlayer onConnect={onConnect} />
@@ -26,6 +29,7 @@ export function MusicWidget({ onConnect }: { onConnect: () => void }) {
   );
 }
 function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
+  useInterfaceLocale();
   const { settings, setSettings } = useDashboard();
   const i = useIntegrations();
   const [editing, setEditing] = useState(false);
@@ -69,7 +73,7 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
             available: null,
             title: "",
             error:
-              "No pudimos comprobar el enlace. Si Spotify muestra un error, revisa que el contenido sea público.",
+              tr("MusicWidget.623f4e133a"),
           });
       });
     return () => controller.abort();
@@ -84,16 +88,15 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
     <section className="glass-panel music-card">
       <div className="widget-heading">
         <h3>
-          <Music2 size={17} /> La banda sonora de tu día
-        </h3>
+          <Music2 size={17} /> {tr("MusicWidget.8119461562")}</h3>
         <div className="music-heading-actions">
           {embed && (
             <button
               className="icon-button"
               aria-label={
                 settings.spotifyCompact
-                  ? "Ampliar reproductor de Spotify"
-                  : "Usar reproductor compacto de Spotify"
+                  ? tr("MusicWidget.1f0c32d46d")
+                  : tr("MusicWidget.102601b934")
               }
               onClick={() =>
                 setSettings((p) => ({
@@ -111,7 +114,7 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
           )}
           <button
             className="icon-button"
-            aria-label="Configurar playlist de Spotify"
+            aria-label={tr("MusicWidget.7b5a7b0609")}
             onClick={() => {
               setEditing(!editing);
               setUrl(settings.spotifyUrl);
@@ -128,23 +131,21 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
           style={{ height: settings.spotifyCompact ? 152 : 352 }}
           role="status"
         >
-          Comprobando enlace de Spotify…
-        </div>
+          {tr("MusicWidget.87aac10338")}</div>
       ) : embed && current?.available === false ? (
         <div className="music-unavailable" role="status">
           <AlertCircle size={27} />
-          <h4>Esta música no está disponible</h4>
+          <h4>{tr("MusicWidget.a9f4071be5")}</h4>
           <p>{current.error}</p>
           <button className="secondary-button" onClick={() => setEditing(true)}>
-            <Link2 size={15} /> Cambiar enlace
-          </button>
+            <Link2 size={15} /> {tr("MusicWidget.e577b03030")}</button>
           <a
             className="text-button"
             href={embed.replace("/embed/", "/")}
             target="_blank"
             rel="noreferrer"
           >
-            Comprobar en Spotify <ArrowUpRight size={14} />
+            {tr("MusicWidget.840b9dddb1")}<ArrowUpRight size={14} />
           </a>
         </div>
       ) : embed ? (
@@ -162,13 +163,10 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
             target="_blank"
             rel="noreferrer"
           >
-            Abrir en Spotify <ArrowUpRight size={13} />
+            {tr("MusicWidget.ef2a845252")}<ArrowUpRight size={13} />
           </a>
           <small className="music-hint">
-            Si Spotify indica «Muestra», está reproduciendo un fragmento, aunque
-            el álbum tenga canciones completas. Abre Spotify para escucharlas
-            completas si el reproductor integrado no lo permite.
-          </small>
+            {tr("MusicWidget.522f12cd49")}</small>
         </>
       ) : (
         <div className="music-empty">
@@ -179,11 +177,11 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
             <i />
           </span>
           <div>
-            <span className="eyebrow">TU PROPIO AMBIENTE</span>
-            <h4>Dale play a tu espacio.</h4>
-            <p>Una playlist para acompañarte.</p>
+            <span className="eyebrow">{tr("MusicWidget.9d72a83d9e")}</span>
+            <h4>{tr("MusicWidget.c04bd6b5e4")}</h4>
+            <p>{tr("MusicWidget.147c89e017")}</p>
             <button className="text-button" onClick={() => setEditing(true)}>
-              Añadir mi playlist <ArrowUpRight size={14} />
+              {tr("MusicWidget.a281fa3cd5")}<ArrowUpRight size={14} />
             </button>
           </div>
         </div>
@@ -195,7 +193,7 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
             e.preventDefault();
             if (url && !spotifyEmbed(url)) {
               setError(
-                "Pega un enlace de Spotify a una playlist, álbum, canción o podcast.",
+                tr("MusicWidget.8e9ab77997"),
               );
               return;
             }
@@ -205,20 +203,19 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
           }}
         >
           <label>
-            Enlace de Spotify
-            <input
+            {tr("MusicWidget.acf528dd1c")}<input
               type="url"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://open.spotify.com/playlist/…"
+              placeholder={tr("MusicWidget.b1eb798643")}
             />
           </label>
           {error && (
             <p className="error-message" role="alert">
-              {error}
+              {translateMessage(error)}
             </p>
           )}
-          <button className="secondary-button">Guardar playlist</button>
+          <button className="secondary-button">{tr("MusicWidget.c938a262cc")}</button>
           <button
             type="button"
             className="text-button"
@@ -227,12 +224,9 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
               setError("");
             }}
           >
-            Cancelar
-          </button>
+            {tr("MusicWidget.bb9dbb406d")}</button>
           <small>
-            En Spotify, usa Compartir → Copiar enlace. La playlist debe ser
-            pública y estar disponible en tu región.
-          </small>
+            {tr("MusicWidget.3681512a62")}</small>
         </form>
       )}
       <DesktopVolume />
@@ -242,12 +236,12 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
             <span>
               <span className="connection-dot" />
               {i.nowPlaying
-                ? `${i.nowPlaying.playing ? "Sonando" : "En pausa"} · ${i.nowPlaying.title} — ${i.nowPlaying.artist}`
+                ? `${i.nowPlaying.playing ? tr("MusicWidget.4b027a78de") : tr("MusicWidget.c28d816de9")} · ${i.nowPlaying.title} — ${i.nowPlaying.artist}`
                 : `Conectado · ${i.spotifyName || "Spotify"}`}
             </span>
             <button
               className="icon-button"
-              aria-label="Actualizar reproducción de Spotify"
+              aria-label={tr("MusicWidget.ecdca8c985")}
               disabled={i.spotifyBusy}
               onClick={() => void i.refreshSpotify()}
             >
@@ -256,9 +250,9 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
           </>
         ) : (
           <>
-            <span>Más tuyo con tu cuenta</span>
+            <span>{tr("MusicWidget.67e86894fa")}</span>
             <button className="text-button" onClick={onConnect}>
-              Conectar Spotify <ArrowUpRight size={13} />
+              {tr("MusicWidget.1b108abf7a")}<ArrowUpRight size={13} />
             </button>
           </>
         )}
@@ -267,35 +261,31 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
         <div className="spotify-volume-panel">
           <div className="spotify-volume-heading">
             <Volume2 size={15} />
-            <span>Volumen de Spotify</span>
+            <span>{tr("MusicWidget.bac325102a")}</span>
           </div>
           {!i.spotifyPlaybackControl ? (
             <>
               <p>
-                Controla el volumen de tu dispositivo activo. Requiere Spotify
-                Premium.
-              </p>
+                {tr("MusicWidget.24c0556c5b")}</p>
               <button
                 className="secondary-button"
                 disabled={i.spotifyBusy}
                 onClick={() => void i.connectSpotify(true)}
               >
-                Activar control de volumen
-              </button>
+                {tr("MusicWidget.bb70f165b9")}</button>
               <small>
-                Spotify te pedirá permiso para controlar la reproducción.
-              </small>
+                {tr("MusicWidget.9380c5f32f")}</small>
             </>
           ) : (
             <>
               <label className="spotify-volume-slider">
-                <span>{i.spotifyDevice?.name || "Sin dispositivo activo"}</span>
+                <span>{i.spotifyDevice?.name || tr("MusicWidget.bd6e67ae2a")}</span>
                 <input
                   type="range"
                   min="0"
                   max="100"
                   step="1"
-                  aria-label="Volumen del dispositivo de Spotify"
+                  aria-label={tr("MusicWidget.62372b6234")}
                   aria-valuetext={`${volume}%`}
                   value={volume}
                   disabled={
@@ -329,10 +319,10 @@ function SpotifyEmbedWidget({ onConnect }: { onConnect: () => void }) {
               </label>
               <small>
                 {!i.spotifyDevice
-                  ? "Abre Spotify, reproduce algo y pulsa Actualizar."
+                  ? tr("MusicWidget.11efb181b2")
                   : !i.spotifyDevice.supported
-                    ? "Este dispositivo no permite ajustar el volumen desde Spotify."
-                    : "Controla ese dispositivo; el reproductor integrado administra su audio por separado."}
+                    ? tr("MusicWidget.2d4db3db42")
+                    : tr("MusicWidget.8bf3545efb")}
               </small>
             </>
           )}

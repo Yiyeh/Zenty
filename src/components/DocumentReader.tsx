@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr } from "../lib/i18n.ts";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -34,6 +36,7 @@ function PdfPage({
   onReady: () => void;
   onError: (message: string) => void;
 }) {
+  useInterfaceLocale();
   const canvas = useRef<HTMLCanvasElement>(null);
   const area = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ width: 800, height: 800 });
@@ -85,7 +88,7 @@ function PdfPage({
           (error as Error).name !== "RenderingCancelledException"
         )
           callbacks.current.onError(
-            "No se pudo mostrar esta página del PDF. Prueba otra página o descarga el original.",
+            tr("DocumentReader.b92089c227"),
           );
       }
     })();
@@ -96,7 +99,7 @@ function PdfPage({
   }, [book, index, preferences.zoom, preferences.fit, size.width, size.height]);
   return (
     <div ref={area} className="reader-visual-scroll">
-      <canvas ref={canvas} aria-label={`Página ${index + 1} del PDF`} />
+      <canvas ref={canvas} aria-label={tr("DocumentReader.7906c5b821", { v0: index + 1 })} />
     </div>
   );
 }
@@ -113,6 +116,7 @@ function ImagePage({
   onReady: () => void;
   onError: (message: string) => void;
 }) {
+  useInterfaceLocale();
   const [url, setUrl] = useState("");
   const callbacks = useRef({ onReady, onError });
   callbacks.current = { onReady, onError };
@@ -125,7 +129,7 @@ function ImagePage({
       })
       .catch(() => {
         if (!cancelled)
-          callbacks.current.onError("No se pudo abrir esta imagen del cómic.");
+          callbacks.current.onError(tr("DocumentReader.63f735b454"));
       });
     return () => {
       cancelled = true;
@@ -135,11 +139,11 @@ function ImagePage({
     <div className={`reader-visual-scroll comic-page fit-${preferences.fit}`}>
       <img
         src={url || undefined}
-        alt={`Página ${index + 1}`}
+        alt={tr("DocumentReader.b253bd3e82", { v0: index + 1 })}
         onLoad={() => callbacks.current.onReady()}
         onError={() => {
           if (url)
-            callbacks.current.onError("La imagen no se pudo decodificar.");
+            callbacks.current.onError(tr("DocumentReader.fe36064a98"));
         }}
         style={{
           width:
@@ -171,6 +175,7 @@ export function DocumentReader({
   onClose: () => void;
   onUpdate: (doc: LibraryDocument) => void;
 }) {
+  useInterfaceLocale();
   const [book, setBook] = useState<ReaderBook | null>(null);
   const [unit, setUnit] = useState(document.position.unit);
   const [html, setHtml] = useState("");
@@ -179,7 +184,7 @@ export function DocumentReader({
   const [contentsOpen, setContentsOpen] = useState(false);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
-  const [saveStatus, setSaveStatus] = useState("Guardado");
+  const [saveStatus, setSaveStatus] = useState(tr("DocumentReader.3a660ff5fb"));
   const [saveError, setSaveError] = useState(false);
   const [full, setFull] = useState(false);
   const [currentDoc, setCurrentDoc] = useState(document);
@@ -201,18 +206,18 @@ export function DocumentReader({
     if (JSON.stringify(position) === JSON.stringify(queuedPosition.current))
       return queue.current;
     queuedPosition.current = { ...position };
-    setSaveStatus("Guardando…");
+    setSaveStatus(tr("DocumentReader.3c8dc4dc7a"));
     queue.current = queue.current.then(async () => {
       try {
         const next = await updateDocument(document.id, { position });
         saved.current = { ...position };
         setCurrentDoc(next);
         updateRef.current(next);
-        setSaveStatus("Guardado en tu carpeta");
+        setSaveStatus(tr("DocumentReader.f1aa948b38"));
         setSaveError(false);
         return true;
       } catch {
-        setSaveStatus("No se pudo guardar · reintenta al salir");
+        setSaveStatus(tr("DocumentReader.9d61a38d4a"));
         if (JSON.stringify(queuedPosition.current) === JSON.stringify(position))
           queuedPosition.current = null;
         setSaveError(true);
@@ -255,15 +260,15 @@ export function DocumentReader({
             updateRef.current(doc);
           })
           .catch(() =>
-            setSaveStatus("No se pudo guardar el número de páginas"),
+            setSaveStatus(tr("DocumentReader.098875b156")),
           );
       })
       .catch((e) => {
         if (!controller.signal.aborted) {
           setError(
             e.name === "PasswordException"
-              ? "Este PDF está protegido con contraseña. Importa una copia desbloqueada que tengas derecho a leer."
-              : e.message || "No se pudo abrir el documento.",
+              ? tr("DocumentReader.d79c2c4565")
+              : e.message || tr("DocumentReader.3993a80657"),
           );
           setBusy(false);
         }
@@ -324,7 +329,7 @@ export function DocumentReader({
         })
         .catch((e) => {
           if (!cancelled) {
-            setError(e.message || "No se pudo abrir el capítulo.");
+            setError(e.message || tr("DocumentReader.c2fb335a2a"));
             setBusy(false);
           }
         });
@@ -385,12 +390,12 @@ export function DocumentReader({
   const apply = (patch: Partial<ReaderPreferences>) => {
     const next = { ...preferences, ...patch };
     setPreferences(next);
-    setSaveStatus("Guardando ajustes…");
+    setSaveStatus(tr("DocumentReader.93eb9cc78b"));
     if (prefTimer.current) clearTimeout(prefTimer.current);
     prefTimer.current = setTimeout(() => {
       void updateReaderPreferences(next)
-        .then(() => setSaveStatus("Ajustes guardados"))
-        .catch(() => setSaveStatus("No se pudieron guardar los ajustes"));
+        .then(() => setSaveStatus(tr("DocumentReader.b4429f8ed0")))
+        .catch(() => setSaveStatus(tr("DocumentReader.fd8ae3d3f2")));
     }, 400);
   };
   const close = async () => {
@@ -490,7 +495,7 @@ export function DocumentReader({
   return (
     <dialog
       ref={root}
-      aria-label={`Leyendo: ${currentDoc.title}`}
+      aria-label={tr("a11y.DocumentReader.498", { v0: currentDoc.title })}
       onCancel={(event) => {
         event.preventDefault();
         if (settingsOpen || contentsOpen) {
@@ -509,26 +514,25 @@ export function DocumentReader({
       <header className="reader-toolbar">
         <button className="secondary-button" onClick={() => void close()}>
           <ArrowLeft size={16} />
-          <span>Mi biblioteca</span>
+          <span>{tr("DocumentReader.dbfb33f5ae")}</span>
         </button>
         <div className="reader-title">
           <strong>{currentDoc.title}</strong>
           <small>
             {currentDoc.format.toUpperCase()} ·{" "}
             {book?.kind === "reflow"
-              ? "Lectura adaptable"
-              : "Páginas originales"}
+              ? tr("DocumentReader.92eae21d19")
+              : tr("DocumentReader.8ec05cfaa0")}
           </small>
         </div>
         {saveError && (
           <button className="text-button danger" onClick={onClose}>
-            Salir sin guardar
-          </button>
+            {tr("DocumentReader.9f755601cf")}</button>
         )}
         <div className="reader-toolbar-actions">
           <button
             className="icon-button"
-            aria-label="Índice y marcadores"
+            aria-label={tr("DocumentReader.c2d1f9e4a9")}
             aria-expanded={contentsOpen}
             onClick={() => {
               setContentsOpen(!contentsOpen);
@@ -539,28 +543,28 @@ export function DocumentReader({
           </button>
           <button
             className="icon-button"
-            aria-label="Añadir marcador de lectura"
+            aria-label={tr("DocumentReader.030449b845")}
             disabled={!book || busy}
             onClick={() =>
               void updateDocument(document.id, {
                 bookmark: {
-                  label: `${book?.kind === "reflow" ? "Sección" : "Página"} ${unit + 1}`,
+                  label: `${book?.kind === "reflow" ? tr("DocumentReader.cf76294834") : tr("DocumentReader.8f63f4d759")} ${unit + 1}`,
                   position: { ...latest.current },
                 },
               })
                 .then((doc) => {
                   setCurrentDoc(doc);
                   updateRef.current(doc);
-                  setSaveStatus("Marcador guardado");
+                  setSaveStatus(tr("DocumentReader.b029606d1f"));
                 })
-                .catch(() => setSaveStatus("No se pudo guardar el marcador"))
+                .catch(() => setSaveStatus(tr("DocumentReader.b4f189cf1c")))
             }
           >
             <BookmarkPlus size={19} />
           </button>
           <a
             className="icon-button"
-            aria-label="Descargar documento original"
+            aria-label={tr("DocumentReader.fd34d09965")}
             href={`/api/library/${document.id}/file`}
             download={document.name}
           >
@@ -569,7 +573,7 @@ export function DocumentReader({
           <button
             className="icon-button reader-fullscreen"
             aria-label={
-              full ? "Salir de pantalla completa" : "Pantalla completa"
+              full ? tr("DocumentReader.2de6e8b7c9") : tr("DocumentReader.93f2f91137")
             }
             onClick={() => {
               if (!root.current) return;
@@ -578,7 +582,7 @@ export function DocumentReader({
                   ? window.document.exitFullscreen()
                   : root.current.requestFullscreen()
               ).catch(() =>
-                setSaveStatus("El navegador no permite pantalla completa"),
+                setSaveStatus(tr("DocumentReader.d36f47da54")),
               );
             }}
           >
@@ -586,7 +590,7 @@ export function DocumentReader({
           </button>
           <button
             className="reader-settings-toggle"
-            aria-label="Ajustar modo de lectura"
+            aria-label={tr("DocumentReader.457542a4be")}
             aria-expanded={settingsOpen}
             onClick={() => {
               setSettingsOpen(!settingsOpen);
@@ -594,7 +598,7 @@ export function DocumentReader({
             }}
           >
             <SlidersHorizontal size={17} />
-            <span>Aa</span>
+            <span>{tr("DocumentReader.81acaafba9")}</span>
           </button>
         </div>
       </header>
@@ -605,11 +609,10 @@ export function DocumentReader({
         {error ? (
           <div className="reader-message" role="alert">
             <BookOpen size={32} />
-            <h2>No pudimos abrir esta lectura</h2>
-            <p>{error}</p>
+            <h2>{tr("DocumentReader.45b1dd1466")}</h2>
+            <p>{translateMessage(error)}</p>
             <button className="secondary-button" onClick={() => void close()}>
-              Volver a la biblioteca
-            </button>
+              {tr("DocumentReader.183b5a7e67")}</button>
           </div>
         ) : (
           <>
@@ -634,7 +637,7 @@ export function DocumentReader({
             {book?.kind === "reflow" && html && (
               <iframe
                 ref={frame}
-                title="Contenido del documento"
+                title={tr("DocumentReader.85cfec363c")}
                 className="reader-frame"
                 sandbox="allow-same-origin"
                 srcDoc={source}
@@ -643,19 +646,18 @@ export function DocumentReader({
             )}{" "}
             {busy && (
               <div className="reader-loading" role="status">
-                Preparando tu lectura…
-              </div>
+                {tr("DocumentReader.4ade5ba3bf")}</div>
             )}
           </>
         )}
       </div>
       {settingsOpen && (
-        <aside className="reader-sidepanel" aria-label="Opciones de lectura">
+        <aside className="reader-sidepanel" aria-label={tr("DocumentReader.d11d02e7a3")}>
           <div className="widget-heading">
-            <h3>Encuentra tu comodidad</h3>
+            <h3>{tr("DocumentReader.fa4f3af76c")}</h3>
             <button
               className="icon-button"
-              aria-label="Cerrar opciones de lectura"
+              aria-label={tr("DocumentReader.9d0fb87cc9")}
               onClick={() => setSettingsOpen(false)}
             >
               <X size={18} />
@@ -663,7 +665,7 @@ export function DocumentReader({
           </div>
           <div className="form-stack">
             <fieldset>
-              <legend>Ambiente</legend>
+              <legend>{tr("DocumentReader.0d2b7ca656")}</legend>
               <div className="reader-theme-choices">
                 {(["paper", "sepia", "night"] as const).map((theme) => (
                   <button
@@ -676,10 +678,10 @@ export function DocumentReader({
                     }}
                   >
                     {theme === "paper"
-                      ? "Papel"
+                      ? tr("DocumentReader.e0165d8a6d")
                       : theme === "sepia"
-                        ? "Sepia"
-                        : "Noche"}
+                        ? tr("DocumentReader.7464e26f38")
+                        : tr("DocumentReader.2e690fc6e5")}
                     {preferences.theme === theme && <Check size={13} />}
                   </button>
                 ))}
@@ -688,8 +690,7 @@ export function DocumentReader({
             {book?.kind === "reflow" ? (
               <>
                 <label>
-                  Tipografía
-                  <select
+                  {tr("DocumentReader.a33d8a9fe4")}<select
                     value={preferences.font}
                     onChange={(e) =>
                       apply({
@@ -697,14 +698,13 @@ export function DocumentReader({
                       })
                     }
                   >
-                    <option value="serif">Libro · con serifas</option>
-                    <option value="sans">Simple · sin serifas</option>
+                    <option value="serif">{tr("DocumentReader.ba8957eca6")}</option>
+                    <option value="sans">{tr("DocumentReader.785018e7c7")}</option>
                   </select>
                 </label>
                 <label>
-                  Tamaño de letra · {preferences.fontSize}px
-                  <input
-                    aria-label="Tamaño de letra"
+                  {tr("DocumentReader.1758b60325")}{preferences.fontSize}{tr("DocumentReader.6ee2cc105a")}<input
+                    aria-label={tr("DocumentReader.37954072c5")}
                     type="range"
                     min="14"
                     max="32"
@@ -715,9 +715,9 @@ export function DocumentReader({
                   />
                 </label>
                 <label>
-                  Interlineado · {preferences.lineHeight.toFixed(2)}
+                  {tr("DocumentReader.c5595732c3")}{preferences.lineHeight.toFixed(2)}
                   <input
-                    aria-label="Interlineado"
+                    aria-label={tr("DocumentReader.4c9cd529b5")}
                     type="range"
                     min="1.3"
                     max="2.5"
@@ -729,9 +729,8 @@ export function DocumentReader({
                   />
                 </label>
                 <label>
-                  Ancho del texto · {preferences.width}px
-                  <input
-                    aria-label="Ancho del texto"
+                  {tr("DocumentReader.b53caaa7bd")}{preferences.width}{tr("DocumentReader.6ee2cc105a")}<input
+                    aria-label={tr("DocumentReader.09cd1fbf93")}
                     type="range"
                     min="440"
                     max="1200"
@@ -744,9 +743,9 @@ export function DocumentReader({
             ) : (
               <>
                 <label>
-                  Escala · {Math.round(preferences.zoom * 100)}%
+                  {tr("DocumentReader.b706903b6e")}{Math.round(preferences.zoom * 100)}%
                   <input
-                    aria-label="Escala de página"
+                    aria-label={tr("DocumentReader.7abdf3ffd9")}
                     type="range"
                     min="0.5"
                     max="3"
@@ -756,20 +755,19 @@ export function DocumentReader({
                   />
                 </label>
                 <label>
-                  Ajustar página
-                  <select
+                  {tr("DocumentReader.0d029b6fc6")}<select
                     value={preferences.fit}
                     onChange={(e) =>
                       apply({ fit: e.target.value as ReaderPreferences["fit"] })
                     }
                   >
-                    <option value="width">Al ancho disponible</option>
-                    <option value="page">Página completa</option>
+                    <option value="width">{tr("DocumentReader.500aac8c90")}</option>
+                    <option value="page">{tr("DocumentReader.b6616b1d67")}</option>
                   </select>
                 </label>
                 {book?.kind === "images" && (
                   <label className="switch-row">
-                    <span>Manga · avanzar de derecha a izquierda</span>
+                    <span>{tr("DocumentReader.f3a83ec471")}</span>
                     <input
                       type="checkbox"
                       checked={preferences.rtl}
@@ -778,15 +776,13 @@ export function DocumentReader({
                   </label>
                 )}
                 <small>
-                  Los PDF y las imágenes conservan sus colores originales. El
-                  tema cambia el entorno; el brillo atenúa también la página.
-                </small>
+                  {tr("DocumentReader.707d9fd822")}</small>
               </>
             )}
             <label>
-              Brillo de la lectura · {Math.round(preferences.brightness * 100)}%
+              {tr("DocumentReader.4f885da7b5")}{Math.round(preferences.brightness * 100)}%
               <input
-                aria-label="Brillo de la lectura"
+                aria-label={tr("DocumentReader.8cae7b160e")}
                 type="range"
                 min="0.55"
                 max="1"
@@ -796,19 +792,17 @@ export function DocumentReader({
               />
             </label>
             <small>
-              Tu posición y tus preferencias se guardan en tu carpeta. DOCX y
-              texto usan secciones adaptables, no la paginación de Word.
-            </small>
+              {tr("DocumentReader.00f1b38635")}</small>
           </div>
         </aside>
       )}
       {contentsOpen && (
-        <aside className="reader-sidepanel" aria-label="Índice del documento">
+        <aside className="reader-sidepanel" aria-label={tr("DocumentReader.41a9156503")}>
           <div className="widget-heading">
-            <h3>Tu lugar en la lectura</h3>
+            <h3>{tr("DocumentReader.958e5cf9b6")}</h3>
             <button
               className="icon-button"
-              aria-label="Cerrar índice"
+              aria-label={tr("DocumentReader.fcbcef75b4")}
               onClick={() => setContentsOpen(false)}
             >
               <X size={18} />
@@ -830,13 +824,11 @@ export function DocumentReader({
             ))
           ) : (
             <p className="muted">
-              Navega por páginas desde los controles inferiores.
-            </p>
+              {tr("DocumentReader.92c2651d4e")}</p>
           )}
           <h4 className="bookmarks-title">
             <Bookmark size={15} />
-            Mis marcadores
-          </h4>
+            {tr("DocumentReader.42add30958")}</h4>
           {currentDoc.bookmarks.length ? (
             currentDoc.bookmarks.map((mark) => (
               <div className="reader-bookmark" key={mark.id}>
@@ -848,12 +840,11 @@ export function DocumentReader({
                 >
                   {mark.label}
                   <small>
-                    {Math.round(mark.position.progress * 100)}% de la lectura
-                  </small>
+                    {Math.round(mark.position.progress * 100)}{tr("DocumentReader.d72befff07")}</small>
                 </button>
                 <button
                   className="icon-button"
-                  aria-label={`Quitar marcador ${mark.label}`}
+                  aria-label={tr("DocumentReader.f264853928", { v0: mark.label })}
                   onClick={() =>
                     void updateDocument(document.id, {
                       removeBookmark: mark.id,
@@ -868,13 +859,13 @@ export function DocumentReader({
               </div>
             ))
           ) : (
-            <p className="muted">Guarda un marcador para volver a un pasaje.</p>
+            <p className="muted">{tr("DocumentReader.0765209ebb")}</p>
           )}
         </aside>
       )}
       <footer className="reader-footer">
         <span className="reader-save-status" role="status">
-          {saveStatus}
+          {translateMessage(saveStatus)}
         </span>
         <div
           className="reader-pagination"
@@ -887,16 +878,16 @@ export function DocumentReader({
         >
           <button
             className="icon-button"
-            aria-label="Anterior"
+            aria-label={tr("DocumentReader.e4ce7c09d5")}
             disabled={!book || unit === 0}
             onClick={() => go(unit - 1)}
           >
             <ChevronLeft size={20} />
           </button>
           <label>
-            <span>{book?.kind === "reflow" ? "Sección" : "Página"}</span>
+            <span>{book?.kind === "reflow" ? tr("DocumentReader.cf76294834") : tr("DocumentReader.8f63f4d759")}</span>
             <input
-              aria-label="Ir a página o sección"
+              aria-label={tr("DocumentReader.eed5fb3c00")}
               type="number"
               min={1}
               max={book?.total || 1}
@@ -905,11 +896,11 @@ export function DocumentReader({
                 if (e.target.value) go(Number(e.target.value) - 1);
               }}
             />
-            <span>de {book?.total || "…"}</span>
+            <span>{tr("DocumentReader.c24713d8fd")}{book?.total || "…"}</span>
           </label>
           <button
             className="icon-button"
-            aria-label="Siguiente"
+            aria-label={tr("DocumentReader.49683b71c6")}
             disabled={!book || unit >= book.total - 1}
             onClick={() => go(unit + 1)}
           >
@@ -918,7 +909,7 @@ export function DocumentReader({
         </div>
         <span className="reader-percent">
           {Math.round(latest.current.progress * 100)}%{" "}
-          <span>· Tu propio ritmo</span>
+          <span>{tr("DocumentReader.9428ce5dc2")}</span>
         </span>
       </footer>
     </dialog>

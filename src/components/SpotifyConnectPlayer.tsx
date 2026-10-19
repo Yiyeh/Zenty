@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { useEffect, useRef, useState } from "react";
 import {
   Music2,
@@ -18,6 +20,7 @@ import { SpotifyModeSelector } from "./SpotifyModeSelector";
 const timeLabel = (ms: number) =>
   `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, "0")}`;
 export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
+  useInterfaceLocale();
   const i = useIntegrations();
   const { settings, setSettings } = useDashboard();
   const [clock, setClock] = useState(Date.now());
@@ -92,15 +95,14 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
   return (
     <section
       className="glass-panel music-card spotify-connect"
-      aria-label="Control remoto de Spotify"
+      aria-label={tr("SpotifyConnectPlayer.0820c31263")}
     >
       <div className="widget-heading">
         <h3>
-          <Music2 size={17} /> Tu música
-        </h3>
+          <Music2 size={17} /> {tr("SpotifyConnectPlayer.3be440b636")}</h3>
         <button
           className="icon-button"
-          aria-label="Actualizar dispositivos de Spotify"
+          aria-label={tr("SpotifyConnectPlayer.1900cba131")}
           disabled={!i.spotifyConnected || i.spotifyBusy}
           onClick={() => void i.refreshSpotify()}
         >
@@ -116,7 +118,7 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
           {playing?.image ? (
             <img
               src={playing.image}
-              alt="Portada del álbum"
+              alt={tr("SpotifyConnectPlayer.d116f0db8c")}
               loading="lazy"
               onError={(event) => {
                 event.currentTarget.style.visibility = "hidden";
@@ -128,20 +130,18 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
         </div>
         <div>
           <small>
-            {playing?.playing ? "SONANDO EN SPOTIFY" : "SPOTIFY CONNECT"}
+            {playing?.playing ? tr("SpotifyConnectPlayer.a87fc25bff") : tr("SpotifyConnectPlayer.2d6822c3cd")}
           </small>
-          <h4>{playing?.title || "Tu música, sin muestras"}</h4>
+          <h4>{playing?.title || tr("SpotifyConnectPlayer.c69d7b1cfe")}</h4>
           <p>
-            {playing?.artist || "Controla Spotify de Windows o del navegador."}
+            {playing?.artist || tr("SpotifyConnectPlayer.7f5289e540")}
           </p>
         </div>
       </div>
       {!i.spotifyConnected ? (
         <div className="spotify-connect-setup">
           <p>
-            Las canciones completas suenan en Spotify. Conecta tu cuenta Premium
-            para controlarlas desde aquí.
-          </p>
+            {tr("SpotifyConnectPlayer.c0f50d3fae")}</p>
           <button
             className="primary-button"
             onClick={() =>
@@ -150,30 +150,26 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
                 : onConnect()
             }
           >
-            Conectar mi Spotify
-          </button>
+            {tr("SpotifyConnectPlayer.ef3699cbb4")}</button>
         </div>
       ) : !i.spotifyPlaybackControl ? (
         <div className="spotify-connect-setup">
           <p>
-            Autoriza el control de reproducción para elegir el dispositivo y
-            manejar tu música.
-          </p>
+            {tr("SpotifyConnectPlayer.9fc57451be")}</p>
           <button
             className="primary-button"
             disabled={i.spotifyBusy}
             onClick={() => void i.connectSpotify(true)}
           >
-            Activar controles de Spotify
-          </button>
+            {tr("SpotifyConnectPlayer.4b5f63573d")}</button>
         </div>
       ) : (
         <>
           <label className="spotify-device-select">
             <MonitorSpeaker size={16} />
-            <span>Reproducir en</span>
+            <span>{tr("SpotifyConnectPlayer.9a6393220e")}</span>
             <select
-              aria-label="Dispositivo de Spotify"
+              aria-label={tr("SpotifyConnectPlayer.09c14d6aa5")}
               value={deviceId}
               disabled={!devices.length || i.spotifyActionBusy}
               onChange={(event) =>
@@ -185,7 +181,7 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
               }
             >
               {!devices.length && (
-                <option value="">Sin dispositivos disponibles</option>
+                <option value="">{tr("SpotifyConnectPlayer.7f446339fd")}</option>
               )}
               {device && !devices.some((item) => item.id === device.id) && (
                 <option value={device.id}>{device.name}</option>
@@ -197,21 +193,19 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
                   disabled={item.restricted}
                 >
                   {item.name}
-                  {item.active ? " · activo" : ""}
+                  {item.active ? tr("SpotifyConnectPlayer.ececb757f7") : ""}
                 </option>
               ))}
             </select>
           </label>
           {!devices.length && (
             <p className="music-hint">
-              Abre Spotify en tu PC o en otra pestaña con la misma cuenta.
-              Reproduce una canción y pulsa Actualizar.
-            </p>
+              {tr("SpotifyConnectPlayer.169840ce88")}</p>
           )}
           <div className="spotify-connect-transport">
             <button
               className="icon-button"
-              aria-label="Canción anterior en Spotify"
+              aria-label={tr("SpotifyConnectPlayer.3c452e3c5c")}
               disabled={disabled}
               onClick={() =>
                 void i.commandSpotify({ action: "previous", deviceId })
@@ -222,7 +216,7 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
             <button
               className="primary-button spotify-connect-play"
               aria-label={
-                playing?.playing ? "Pausar Spotify" : "Reproducir en Spotify"
+                playing?.playing ? tr("SpotifyConnectPlayer.ac4cce101e") : tr("SpotifyConnectPlayer.22c9ea8c4f")
               }
               disabled={disabled}
               onClick={() =>
@@ -240,7 +234,7 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
             </button>
             <button
               className="icon-button"
-              aria-label="Canción siguiente en Spotify"
+              aria-label={tr("SpotifyConnectPlayer.4f83d341cb")}
               disabled={disabled}
               onClick={() =>
                 void i.commandSpotify({ action: "next", deviceId })
@@ -252,7 +246,7 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
           <div className="spotify-connect-progress">
             <input
               type="range"
-              aria-label="Posición de la canción en Spotify"
+              aria-label={tr("SpotifyConnectPlayer.732210787b")}
               aria-valuetext={timeLabel(seekDraft ?? progress)}
               min="0"
               max={playing?.duration || 1}
@@ -276,8 +270,8 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
               className="icon-button"
               aria-label={
                 volume
-                  ? "Silenciar dispositivo de Spotify"
-                  : "Activar sonido del dispositivo de Spotify"
+                  ? tr("SpotifyConnectPlayer.704e15a3b9")
+                  : tr("SpotifyConnectPlayer.78fb606f0f")
               }
               disabled={!device?.supported || i.spotifyVolumeBusy}
               onClick={() => {
@@ -290,13 +284,13 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
               {volume ? <Volume2 size={17} /> : <VolumeX size={17} />}
             </button>
             <label>
-              <span>Volumen de {device?.name || "Spotify"}</span>
+              <span>{tr("SpotifyConnectPlayer.a143b31354")}{device?.name || "Spotify"}</span>
               <input
                 type="range"
                 min="0"
                 max="100"
                 step="1"
-                aria-label="Volumen del dispositivo de Spotify"
+                aria-label={tr("SpotifyConnectPlayer.62372b6234")}
                 aria-valuetext={`${volume}%`}
                 disabled={
                   !device?.supported ||
@@ -318,20 +312,18 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
           </div>
           {device && !device.supported && (
             <p className="music-hint">
-              Spotify no permite cambiar el volumen de este dispositivo. Usa su
-              control de volumen propio.
-            </p>
+              {tr("SpotifyConnectPlayer.fd5b8e93b8")}</p>
           )}
         </>
       )}
       <details className="spotify-play-link">
-        <summary>Playlist, álbum o canción</summary>
+        <summary>{tr("SpotifyConnectPlayer.dc0139a28e")}</summary>
         <form
           onSubmit={(event) => {
             event.preventDefault();
             const embed = spotifyEmbed(url);
             if (!embed) {
-              setError("Introduce un enlace válido de Spotify.");
+              setError(tr("SpotifyConnectPlayer.7357ab4e31"));
               return;
             }
             setError("");
@@ -348,13 +340,13 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
           }}
         >
           <input
-            aria-label="Enlace para reproducir en Spotify"
-            placeholder="https://open.spotify.com/playlist/…"
+            aria-label={tr("SpotifyConnectPlayer.10813a9930")}
+            placeholder={tr("SpotifyConnectPlayer.b1eb798643")}
             value={url}
             onChange={(event) => setUrl(event.target.value)}
           />
           <button className="secondary-button" type="submit">
-            {disabled ? "Guardar enlace" : "Reproducir enlace"}
+            {disabled ? tr("SpotifyConnectPlayer.3c530d7af3") : tr("SpotifyConnectPlayer.6fc464606e")}
           </button>
         </form>
       </details>
@@ -366,8 +358,8 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
       <div className="music-footer">
         <span>
           {device
-            ? `Sonido en ${device.name}`
-            : "Audio en la app o web de Spotify"}
+            ? tr("SpotifyConnectPlayer.c93bc4669f", { v0: device.name })
+            : tr("SpotifyConnectPlayer.be7cae543e")}
         </span>
         <a
           className="text-button"
@@ -375,7 +367,7 @@ export function SpotifyConnectPlayer({ onConnect }: { onConnect: () => void }) {
           target="_blank"
           rel="noreferrer"
         >
-          Abrir Spotify <ArrowUpRight size={13} />
+          {tr("SpotifyConnectPlayer.2a726fca93")}<ArrowUpRight size={13} />
         </a>
       </div>
     </section>

@@ -1,14 +1,17 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { useState } from "react";
 import { Play, Pause, RotateCcw, SkipForward, Bell, Timer } from "lucide-react";
 import { useDashboard } from "../context/DashboardStore";
 import { useTimer } from "../context/TimerStore";
 import type { TimerMode } from "../context/TimerStore";
 const modes: Record<TimerMode, string> = {
-  work: "Enfoque",
-  shortBreak: "Pausa corta",
-  longBreak: "Pausa larga",
+  get work(){return tr("Pomodoro.02d6a8538e");},
+  get shortBreak() { return tr("Pomodoro.980df6258c"); },
+  get longBreak() { return tr("Pomodoro.6de3a433f7"); },
 };
 export function Pomodoro() {
+  useInterfaceLocale();
   const { tasks, activeTaskId, setActiveTaskId, notify } = useDashboard();
   const timer = useTimer();
   const sessionStarted = !!timer.endAt || timer.remaining !== timer.duration;
@@ -19,19 +22,18 @@ export function Pomodoro() {
   return (
     <section
       className="glass-panel timer-card"
-      aria-label="Temporizador de enfoque"
+      aria-label={tr("Pomodoro.e4e70c2d10")}
     >
       <div className="widget-heading">
         <h3>
-          <Timer size={17} /> Un momento de enfoque
-        </h3>
+          <Timer size={17} /> {tr("Pomodoro.847cf4178f")}</h3>
         <button
           className="icon-button"
-          aria-label="Activar notificaciones del temporizador"
+          aria-label={tr("Pomodoro.7d5b1a5b5c")}
           aria-pressed={notifications}
           onClick={async () => {
             if (!("Notification" in window)) {
-              notify("Este navegador no admite notificaciones.");
+              notify(tr("Pomodoro.adbc8929f2"));
               return;
             }
             const result = await Notification.requestPermission();
@@ -39,7 +41,7 @@ export function Pomodoro() {
             notify(
               result === "granted"
                 ? "Notificaciones activadas."
-                : "Las notificaciones no están permitidas.",
+                : tr("Pomodoro.613e5a7fae"),
             );
           }}
         >
@@ -77,8 +79,8 @@ export function Pomodoro() {
           </span>
           <span className="eyebrow">
             {timer.endAt
-              ? "A tu ritmo. Una cosa a la vez."
-              : "Haz espacio para lo importante"}
+              ? tr("Pomodoro.c9a5488346")
+              : tr("Pomodoro.e653fa55cf")}
           </span>
         </div>
       </div>
@@ -86,7 +88,7 @@ export function Pomodoro() {
         <button
           className="icon-button"
           onClick={timer.reset}
-          aria-label="Reiniciar temporizador"
+          aria-label={tr("Pomodoro.1c0c0ed467")}
         >
           <RotateCcw size={17} />
         </button>
@@ -96,25 +98,25 @@ export function Pomodoro() {
           ) : (
             <Play size={16} fill="currentColor" />
           )}
-          {timer.endAt ? "Pausar sesión" : "Comenzar sesión"}
+          {timer.endAt ? tr("Pomodoro.67fc6bf00d") : tr("Pomodoro.aba1037440")}
         </button>
         <button
           className="icon-button"
           onClick={timer.skip}
-          aria-label="Saltar sesión sin registrar minutos"
+          aria-label={tr("Pomodoro.7fb3eda183")}
         >
           <SkipForward size={17} />
         </button>
       </div>
       <label className="timer-task">
-        <span className="eyebrow">DEDICAR ESTA SESIÓN A</span>
+        <span className="eyebrow">{tr("Pomodoro.b0304edfac")}</span>
         <select
-          aria-label="Tarea de la sesión"
+          aria-label={tr("Pomodoro.1fe95042bf")}
           disabled={sessionStarted}
           value={(sessionStarted ? timer.taskId : activeTaskId) || ""}
           onChange={(e) => setActiveTaskId(e.target.value || null)}
         >
-          <option value="">Mi enfoque personal</option>
+          <option value="">{tr("Pomodoro.dea1691dcb")}</option>
           {tasks
             .filter((t) => !t.completed)
             .map((t) => (

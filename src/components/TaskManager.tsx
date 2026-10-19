@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr, getFormatLocale } from "../lib/i18n.ts";
 import { newId } from "../lib/id";
 import { ReminderAdvance } from "./ReminderAdvance";
 import { useState } from "react";
@@ -17,6 +19,7 @@ import { useDashboard } from "../context/DashboardStore";
 import type { Task } from "../lib/dashboard";
 import { localDate } from "../lib/dashboard";
 export function TaskManager() {
+  useInterfaceLocale();
   const { tasks, setTasks, activeTaskId, setActiveTaskId, notify } =
     useDashboard();
   const [title, setTitle] = useState("");
@@ -38,7 +41,7 @@ export function TaskManager() {
     const index = tasks.findIndex((t) => t.id === task.id);
     setTasks((prev) => prev.filter((t) => t.id !== task.id));
     if (activeTaskId === task.id) setActiveTaskId(null);
-    notify("Tarea eliminada.", () =>
+    notify(tr("TaskManager.3959c2046e"), () =>
       setTasks((prev) => {
         const next = prev.filter((t) => t.id !== task.id);
         next.splice(index, 0, task);
@@ -60,22 +63,21 @@ export function TaskManager() {
     (t) => filter === "all" || (filter === "done" ? t.completed : !t.completed),
   );
   return (
-    <section className="glass-panel tasks-card" aria-label="Tareas y objetivos">
+    <section className="glass-panel tasks-card" aria-label={tr("TaskManager.11327f271b")}>
       <div className="widget-heading">
         <h3>
-          <ListTodo size={17} /> Un paso a la vez
-        </h3>
-        <span className="count-badge">{pending} pendientes</span>
+          <ListTodo size={17} /> {tr("TaskManager.7fee2a6035")}</h3>
+        <span className="count-badge">{pending} {tr("TaskManager.ba9357fd25")}</span>
       </div>
       <div className="task-tabs">
         {(
           [
-            { id: "pending", label: "Pendientes" },
+            { id: "pending", label: tr("TaskManager.bb6e430ce0") },
             {
               id: "done",
               label: `Completadas${completed ? ` · ${completed}` : ""}`,
             },
-            { id: "all", label: "Todas" },
+            { id: "all", label: tr("TaskManager.aff4d19d6e") },
           ] as const
         ).map((tab) => (
           <button
@@ -93,7 +95,7 @@ export function TaskManager() {
           e.preventDefault();
           if (!title.trim()) return;
           if (reminderMinutes !== undefined && (!due || !dueTime)) {
-            setScheduleError("Elige una fecha y hora para el aviso.");
+            setScheduleError(tr("TaskManager.3f4d83dc62"));
             return;
           }
           setScheduleError("");
@@ -121,44 +123,43 @@ export function TaskManager() {
       >
         <div className="inline-form">
           <input
-            aria-label="Nueva tarea"
+            aria-label={tr("TaskManager.28acc44bc7")}
             maxLength={300}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="¿Qué quieres lograr hoy?"
+            placeholder={tr("TaskManager.6824dbafd5")}
           />
           <button
             className="add-task-button"
-            aria-label="Añadir tarea"
+            aria-label={tr("TaskManager.04261cef7e")}
             disabled={!title.trim()}
           >
             <Plus size={18} />
           </button>
         </div>
         <details>
-          <summary>Prioridad, fecha y recordatorio</summary>
+          <summary>{tr("TaskManager.d84234c628")}</summary>
           <div className="form-row">
             <select
-              aria-label="Prioridad de la nueva tarea"
+              aria-label={tr("TaskManager.cabe0ca889")}
               value={priority}
               onChange={(e) => setPriority(e.target.value as Task["priority"])}
             >
-              <option value="low">Prioridad baja</option>
-              <option value="medium">Prioridad media</option>
-              <option value="high">Prioridad alta</option>
+              <option value="low">{tr("TaskManager.7a7c06f556")}</option>
+              <option value="medium">{tr("TaskManager.20e6f9f3e4")}</option>
+              <option value="high">{tr("TaskManager.a2bceccc02")}</option>
             </select>
             <input
-              aria-label="Fecha límite de la nueva tarea"
+              aria-label={tr("TaskManager.314bed12d5")}
               type="date"
               value={due}
               onChange={(e) => setDue(e.target.value)}
             />
           </div>
           <label>
-            Hora de la tarea
-            <input
+            {tr("TaskManager.a1b5a1f175")}<input
               type="time"
-              aria-label="Hora de la nueva tarea"
+              aria-label={tr("TaskManager.aabff8a89a")}
               value={dueTime}
               onChange={(event) => setDueTime(event.target.value)}
             />
@@ -173,7 +174,7 @@ export function TaskManager() {
                 if (!dueTime) setDueTime(next.toTimeString().slice(0, 5));
               }
             }}
-            label="Aviso de la nueva tarea"
+            label={tr("TaskManager.d1e1b81adb")}
           />
         </details>
         {scheduleError && (
@@ -190,13 +191,13 @@ export function TaskManager() {
             </span>
             <h4>
               {filter === "done"
-                ? "Cada paso cuenta."
-                : "Un poco de espacio mental."}
+                ? tr("TaskManager.84ca279491")
+                : tr("TaskManager.ca068d70b3")}
             </h4>
             <p>
               {filter === "done"
-                ? "Tus tareas completadas aparecerán aquí."
-                : "Anota lo importante. Lo demás puede esperar."}
+                ? tr("TaskManager.c60f097d10")
+                : tr("TaskManager.67e6647782")}
             </p>
           </div>
         ) : (
@@ -208,7 +209,7 @@ export function TaskManager() {
               <div className="task-main">
                 <button
                   className={`task-check ${task.completed ? "checked" : ""}`}
-                  aria-label={`${task.completed ? "Marcar pendiente" : "Completar"}: ${task.title}`}
+                  aria-label={`${task.completed ? tr("TaskManager.c94c654ba7") : tr("TaskManager.8975618f2a")}: ${task.title}`}
                   aria-pressed={task.completed}
                   onClick={() => {
                     update(task.id, { completed: !task.completed });
@@ -233,7 +234,7 @@ export function TaskManager() {
                       <span>
                         {task.dueTime}
                         {task.reminderMinutes !== undefined
-                          ? ` · aviso ${task.reminderMinutes} min antes`
+                          ? tr("TaskManager.237c04e110", { v0: task.reminderMinutes })
                           : ""}
                       </span>
                     )}
@@ -242,10 +243,10 @@ export function TaskManager() {
                     >
                       <i />
                       {task.priority === "high"
-                        ? "Alta"
+                        ? tr("TaskManager.42719229fd")
                         : task.priority === "medium"
-                          ? "Media"
-                          : "Baja"}
+                          ? tr("TaskManager.d357175cfe")
+                          : tr("TaskManager.0b6af7d377")}
                     </span>
                     {task.dueDate && (
                       <span
@@ -257,11 +258,11 @@ export function TaskManager() {
                       >
                         <CalendarDays size={11} />
                         {task.dueDate < localDate() && !task.completed
-                          ? "Vencida · "
+                          ? tr("TaskManager.e9f5a45cb3")
                           : ""}
                         {new Date(
                           `${task.dueDate}T12:00:00`,
-                        ).toLocaleDateString("es-CL", {
+                        ).toLocaleDateString(getFormatLocale(), {
                           day: "numeric",
                           month: "short",
                         })}
@@ -270,11 +271,10 @@ export function TaskManager() {
                     {task.subtasks.length > 0 && (
                       <span>
                         {task.subtasks.filter((s) => s.completed).length}/
-                        {task.subtasks.length} pasos
-                      </span>
+                        {task.subtasks.length} {tr("TaskManager.5d5a292b63")}</span>
                     )}
                     {task.pomodoros > 0 && (
-                      <span>{task.pomodoros} sesiones</span>
+                      <span>{task.pomodoros} {tr("TaskManager.44b235acef")}</span>
                     )}
                   </div>
                 </div>
@@ -282,7 +282,7 @@ export function TaskManager() {
                   <button
                     className="icon-button"
                     aria-expanded={expanded === task.id}
-                    aria-label={`Detalles de ${task.title}`}
+                    aria-label={tr("a11y.TaskManager.285", { v0: task.title })}
                     onClick={() => {
                       setExpanded(expanded === task.id ? null : task.id);
                       setSubtask("");
@@ -296,7 +296,7 @@ export function TaskManager() {
                   </button>
                   <button
                     className="icon-button danger"
-                    aria-label={`Eliminar tarea ${task.title}`}
+                    aria-label={tr("a11y.TaskManager.299", { v0: task.title })}
                     onClick={() => remove(task)}
                   >
                     <Trash2 size={14} />
@@ -306,9 +306,8 @@ export function TaskManager() {
               {expanded === task.id && (
                 <div className="task-details form-stack">
                   <label>
-                    Nombre de la tarea
-                    <input
-                      aria-label={`Editar tarea ${task.title}`}
+                    {tr("TaskManager.1ed9faaba9")}<input
+                      aria-label={tr("a11y.TaskManager.310", { v0: task.title })}
                       value={task.title}
                       maxLength={300}
                       onChange={(e) =>
@@ -318,8 +317,7 @@ export function TaskManager() {
                   </label>
                   <div className="form-row">
                     <label>
-                      Prioridad
-                      <select
+                      {tr("TaskManager.dbae0b2a1a")}<select
                         value={task.priority}
                         onChange={(e) =>
                           update(task.id, {
@@ -327,14 +325,13 @@ export function TaskManager() {
                           })
                         }
                       >
-                        <option value="low">Baja</option>
-                        <option value="medium">Media</option>
-                        <option value="high">Alta</option>
+                        <option value="low">{tr("TaskManager.0b6af7d377")}</option>
+                        <option value="medium">{tr("TaskManager.d357175cfe")}</option>
+                        <option value="high">{tr("TaskManager.42719229fd")}</option>
                       </select>
                     </label>
                     <label>
-                      Fecha límite
-                      <input
+                      {tr("TaskManager.e1e71c5243")}<input
                         type="date"
                         value={task.dueDate || ""}
                         onChange={(e) =>
@@ -349,10 +346,9 @@ export function TaskManager() {
                     </label>
                   </div>
                   <label>
-                    Hora
-                    <input
+                    {tr("TaskManager.503f312cde")}<input
                       type="time"
-                      aria-label={`Hora de ${task.title}`}
+                      aria-label={tr("a11y.TaskManager.351", { v0: task.title })}
                       value={task.dueTime || ""}
                       onChange={(event) =>
                         update(task.id, {
@@ -379,7 +375,7 @@ export function TaskManager() {
                           : {}),
                       });
                     }}
-                    label={`Aviso de ${task.title}`}
+                    label={tr("interface.TaskManager.22402bbba9", { v0: task.title })}
                   />
                   {!task.completed && (
                     <button
@@ -392,8 +388,8 @@ export function TaskManager() {
                     >
                       <Target size={14} />
                       {activeTaskId === task.id
-                        ? "Quitar del temporizador"
-                        : "Enfocarme en esta tarea"}
+                        ? tr("TaskManager.6d7fb9ef68")
+                        : tr("TaskManager.885aa11cd9")}
                       <ArrowRight size={13} />
                     </button>
                   )}
@@ -419,7 +415,7 @@ export function TaskManager() {
                       </label>
                       <button
                         className="icon-button danger"
-                        aria-label={`Eliminar subtarea ${s.title}`}
+                        aria-label={tr("a11y.TaskManager.418", { v0: s.title })}
                         onClick={() =>
                           update(task.id, {
                             subtasks: task.subtasks.filter(
@@ -434,8 +430,8 @@ export function TaskManager() {
                   ))}
                   <div className="inline-form">
                     <input
-                      aria-label="Nueva subtarea"
-                      placeholder="Divídela en un paso pequeño…"
+                      aria-label={tr("TaskManager.0972e89182")}
+                      placeholder={tr("TaskManager.7170b7d704")}
                       value={subtask}
                       onChange={(e) => setSubtask(e.target.value)}
                       onKeyDown={(e) => {
@@ -447,7 +443,7 @@ export function TaskManager() {
                     />
                     <button
                       className="icon-button"
-                      aria-label="Añadir subtarea"
+                      aria-label={tr("TaskManager.17f1ea14b9")}
                       onClick={() => addSubtask(task)}
                     >
                       <Plus size={16} />
@@ -461,8 +457,7 @@ export function TaskManager() {
       </div>
       <div className="widget-footnote">
         <span>
-          {completed} de {tasks.length} completadas
-        </span>
+          {completed} {tr("TaskManager.553c27d45c")}{tasks.length} {tr("TaskManager.80d2fd4779")}</span>
         <div className="mini-progress">
           <i
             style={{

@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 import { X } from "lucide-react";
@@ -16,6 +18,7 @@ export function Dialog({
   children: ReactNode;
   wide?: boolean;
 }) {
+  useInterfaceLocale();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = ref.current;
@@ -52,7 +55,7 @@ export function Dialog({
         </div>
         <button
           className="icon-button"
-          aria-label="Cerrar ventana"
+          aria-label={tr("Dialog.5d4bca945e")}
           onClick={onClose}
         >
           <X size={20} />

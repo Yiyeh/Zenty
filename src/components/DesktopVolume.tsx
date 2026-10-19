@@ -1,8 +1,11 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { APP_NAME } from "../lib/brand";
 import type { DesktopAudioState } from "../desktop";
 export function DesktopVolume() {
+  useInterfaceLocale();
   const audio = window.zentyDesktop?.audio;
   const [state, setState] = useState<DesktopAudioState | null>(null);
   const [error, setError] = useState("");
@@ -20,7 +23,7 @@ export function DesktopVolume() {
         .catch(() => {
           if (active)
             setError(
-              "No se pudo acceder al audio de la aplicación. Intenta mover el control de nuevo.",
+              tr("DesktopVolume.a94abfa6dc"),
             );
         });
     return () => {
@@ -47,7 +50,7 @@ export function DesktopVolume() {
         .catch(() => {
           if (version === latest.current)
             setError(
-              "Windows no pudo cambiar el volumen. Vuelve a intentarlo.",
+              tr("DesktopVolume.22799616ad"),
             );
         });
     }, 120);
@@ -59,15 +62,15 @@ export function DesktopVolume() {
     applied: false,
   };
   return (
-    <div className="desktop-volume-panel" aria-label={`Audio de ${APP_NAME}`}>
+    <div className="desktop-volume-panel" aria-label={tr("a11y.DesktopVolume.65", { v0: APP_NAME })}>
       <div className="desktop-volume-row">
         <button
           type="button"
           className="icon-button"
           aria-label={
             current.muted || current.volume === 0
-              ? `Activar sonido de ${APP_NAME}`
-              : `Silenciar ${APP_NAME}`
+              ? tr("interface.DesktopVolume.a80fab35d8", { v0: APP_NAME })
+              : tr("interface.DesktopVolume.2e0fd5433d", { v0: APP_NAME })
           }
           aria-pressed={current.muted}
           onClick={() =>
@@ -85,13 +88,13 @@ export function DesktopVolume() {
           )}
         </button>
         <label className="desktop-volume-label">
-          <span>Volumen de {APP_NAME}</span>
+          <span>{tr("DesktopVolume.a143b31354")}{APP_NAME}</span>
           <input
             type="range"
             min="0"
             max="100"
             step="1"
-            aria-label={`Volumen de ${APP_NAME}`}
+            aria-label={tr("DesktopVolume.71677b17b9", { v0: APP_NAME })}
             aria-valuetext={`${current.muted ? 0 : current.volume}%`}
             value={current.muted ? 0 : current.volume}
             onChange={(e) =>
@@ -107,7 +110,7 @@ export function DesktopVolume() {
       </div>
       <small>
         {error ||
-          "Incluye este reproductor. No modifica el volumen de otras aplicaciones."}
+          tr("DesktopVolume.ad96ebcfff")}
       </small>
     </div>
   );

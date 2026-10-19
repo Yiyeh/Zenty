@@ -1,3 +1,4 @@
+import { tr } from "../src/lib/i18n.ts";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { readdir, readFile, stat, realpath } from "node:fs/promises";
@@ -36,7 +37,7 @@ export async function isFile(path: string) {
 }
 export async function smallText(path: string) {
   if ((await stat(path)).size > 5_000_000)
-    throw new Error("Manifest too large");
+    throw new Error(tr("game_scanner.a2896e86ce"));
   return readFile(path, "utf8");
 }
 export async function list(path: string) {
@@ -57,7 +58,7 @@ export function parseVdf(source: string): Record<string, any> {
       ? token.slice(1, -1).replace(/\\\\/g, "\\").replace(/\\"/g, '"')
       : token;
   function block(depth = 0): Record<string, any> {
-    if (depth > 20) throw new Error("VDF nesting too deep");
+    if (depth > 20) throw new Error(tr("game_scanner.207c716fb2"));
     const out: Record<string, any> = Object.create(null);
     while (index < tokens.length) {
       const key = tokens[index++];
@@ -291,7 +292,7 @@ async function registryBatch(
     );
     const parsed = JSON.parse(stdout);
     if (!Array.isArray(parsed) || parsed.length !== keys.length)
-      throw new Error("Invalid registry response");
+      throw new Error(tr("game_scanner.490e5a2b46"));
     return parsed;
   } catch {
     return Promise.all(keys.map(registryTree));
@@ -560,7 +561,7 @@ export async function scanComputer(): Promise<{
     return {
       found: [],
       warnings: [
-        "La detección automática de launchers está disponible en Windows.",
+        tr("game_scanner.c1d9b692c5"),
       ],
     };
   const roots = [
@@ -638,7 +639,7 @@ export async function scanComputer(): Promise<{
     ],
     warnings: outputs.some((o) => o.status === "rejected")
       ? [
-          "No se pudo leer una de las bibliotecas. Las demás siguen disponibles.",
+          tr("game_scanner.3deb93fc02"),
         ]
       : [],
   };

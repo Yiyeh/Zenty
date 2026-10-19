@@ -1,4 +1,8 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr } from "../lib/i18n.ts";
 import { UpdateSettings } from "./UpdateSettings";
+import { PinSettings } from "./PinSecurity";
+import { LanguageSelector } from "./LanguageSelector";
 import { LanSettings } from "./LanSettings";
 import { APP_NAME, APP_SLUG } from "../lib/brand.ts";
 import { useEffect, useState } from "react";
@@ -25,6 +29,7 @@ import {
   LibraryBig,
   Gamepad2,
   Menu,
+  ShieldCheck,
 } from "lucide-react";
 import { useDashboard } from "../context/DashboardStore";
 import {
@@ -43,28 +48,27 @@ export type SettingsTab =
   | "widgets"
   | "integrations"
   | "data"
-  | "updates";
-const accents = [
-  { name: "Carbón", value: "#4a4b55" },
-  { name: "Índigo", value: "#5c62a9" },
-  { name: "Cobre", value: "#a9753f" },
-  { name: "Bosque", value: "#39745b" },
-  { name: "Lavanda", value: "#8260ac" },
-  { name: "Océano", value: "#377e9a" },
-  { name: "Terracota", value: "#b55f47" },
-  { name: "Rosa", value: "#b44f7b" },
-  { name: "Grafito", value: "#586573" },
-];
+  | "updates"
+  | "security";
+const accents = ([
+  { get name() { return tr("SettingsModal.f74bdc8e4d"); }, value: "#4a4b55" },
+  { get name() { return tr("SettingsModal.46a5f1fafb"); }, value: "#5c62a9" },
+  { get name() { return tr("SettingsModal.037fe5fbe2"); }, value: "#a9753f" },
+  { get name() { return tr("SettingsModal.bdaddc3866"); }, value: "#39745b" },
+  { get name() { return tr("SettingsModal.075e17b12b"); }, value: "#8260ac" },
+  { get name() { return tr("SettingsModal.48d8285e64"); }, value: "#377e9a" },
+  { get name() { return tr("SettingsModal.3d9f88d5b7"); }, value: "#b55f47" },
+  { get name() { return tr("SettingsModal.75f9577a16"); }, value: "#b44f7b" },
+  { get name() { return tr("SettingsModal.d18e4bf645"); }, value: "#586573" },
+]);
 const sectionDescriptions: Record<SectionId, string> = {
-  all: "Panel principal con reloj, tu intención diaria y los widgets habilitados.",
-  focus:
-    "Gestión de tareas, sesiones de enfoque Pomodoro, hábitos y estadísticas.",
-  calendar: "Agenda diaria, bloques de tiempo y conexión con Google Calendar.",
-  notes: "Bloc de notas adhesivas e ideas rápidas.",
-  reading: "Quiosco de noticias por temas/fuentes y lecturas guardadas.",
-  library:
-    "Tu biblioteca con libros EPUB/PDF, documentos y mangas de MangaDex.",
-  gaming: "Radar gamer con juegos gratis, ofertas destacadas y lanzamientos.",
+  get all() { return tr("SettingsModal.1d60d63c9b"); },
+  get focus() { return tr("SettingsModal.7774c86357"); },
+  get calendar() { return tr("SettingsModal.a454d28219"); },
+  get notes() { return tr("SettingsModal.3faa56724a"); },
+  get reading() { return tr("SettingsModal.ed594bebfd"); },
+  get library() { return tr("SettingsModal.af12e470f3"); },
+  get gaming() { return tr("SettingsModal.1adddb299a"); },
 };
 const sectionIcons: Record<SectionId, typeof Home> = {
   all: Home,
@@ -84,6 +88,7 @@ export function SettingsModal({
   onClose: () => void;
   initialTab?: SettingsTab;
 }) {
+  useInterfaceLocale();
   const { settings, setSettings, exportData, importData, notify } =
     useDashboard();
   const [tab, setTab] = useState<SettingsTab>(initialTab);
@@ -96,7 +101,7 @@ export function SettingsModal({
   useEffect(() => {
     if (!isOpen || !window.zentyDesktop?.startup) return;
     let active = true;
-    void window.zentyDesktop.startup.get().then((value) => { if (active) setStartup(value); }).catch(() => { if (active) setError("No se pudo consultar el inicio con Windows."); });
+    void window.zentyDesktop.startup.get().then((value) => { if (active) setStartup(value); }).catch(() => { if (active) setError(tr("SettingsModal.3e2fd44595")); });
     return () => { active = false; };
   }, [isOpen]);
   const [pendingImport, setPendingImport] = useState<string | null>(null);
@@ -149,7 +154,7 @@ export function SettingsModal({
       ([k, v]) => v && k !== id,
     );
     if (!enabled && currentEnabled.length === 0) {
-      notify("Debes mantener al menos una sección visible.");
+      notify(tr("SettingsModal.caf6a34c77"));
       return;
     }
     update("enabledNavSections", {
@@ -158,12 +163,12 @@ export function SettingsModal({
     });
   };
   const tabs = [
-    { id: "appearance", label: "Tu estilo", icon: Palette },
-    { id: "navigation", label: "Barra lateral", icon: Menu },
-    { id: "widgets", label: "Widgets", icon: LayoutGrid },
-    { id: "integrations", label: "Conexiones", icon: Link2 },
-    { id: "data", label: "Tus datos", icon: Database },
-    ...(window.zentyDesktop ? [{ id: "updates" as const, label: "Actualizaciones", icon: Download }] : []),
+    { id: "appearance", label: tr("SettingsModal.d15c3a78d6"), icon: Palette },
+    { id: "navigation", label: tr("SettingsModal.991b8edb36"), icon: Menu },
+    { id: "widgets", label: tr("SettingsModal.1fda79ffb6"), icon: LayoutGrid },
+    { id: "integrations", label: tr("SettingsModal.b91b4b93c2"), icon: Link2 },
+    { id: "data", label: tr("SettingsModal.2009220147"), icon: Database },
+    ...(window.zentyDesktop ? [{ id: "security" as const, label: tr("security.tab"), icon: ShieldCheck }, { id: "updates" as const, label: tr("SettingsModal.f165314f21"), icon: Download }] : []),
   ] as const;
   const stageImport = async (value: string) => {
     try {
@@ -172,7 +177,7 @@ export function SettingsModal({
       setError("");
     } catch {
       setError(
-        `El archivo no es un respaldo válido de ${APP_NAME}. Revisa su estructura y que no supere 5 MB. Tus datos no se han modificado.`,
+        tr("SettingsModal.8fda4c6950", { v0: APP_NAME }),
       );
     }
   };
@@ -180,11 +185,11 @@ export function SettingsModal({
     <Dialog
       open={isOpen}
       onClose={onClose}
-      title="Un espacio muy tuyo"
-      description="Los pequeños detalles hacen la diferencia."
+      title={tr("SettingsModal.0b94491c48")}
+      description={tr("SettingsModal.a376e24563")}
       wide
     >
-      <div className="settings-tabs" role="tablist" aria-label="Ajustes">
+      <div className="settings-tabs" role="tablist" aria-label={tr("SettingsModal.4f2debbbf4")}>
         {tabs.map((t) => (
           <button
             key={t.id}
@@ -205,29 +210,30 @@ export function SettingsModal({
         role="tabpanel"
         aria-labelledby={`tab-${tab}`}
       >
+        {tab === "security" && <div className="form-stack"><PinSettings /></div>}
         {tab === "updates" && <div className="form-stack"><UpdateSettings /></div>}
         {tab === "appearance" && (
           <div className="form-stack">
+            <LanguageSelector onChange={language => update("language", language)} />
             <div className="settings-section-title">
-              <span className="eyebrow">EMPIEZA POR TI</span>
-              <h3>Bienvenido a casa.</h3>
+              <span className="eyebrow">{tr("SettingsModal.77e3f84b31")}</span>
+              <h3>{tr("SettingsModal.13717416e0")}</h3>
             </div>
             <label>
-              Cómo te llamamos
-              <input
+              {tr("SettingsModal.bb286bdcfb")}<input
                 maxLength={40}
                 value={settings.userName}
                 onChange={(e) => update("userName", e.target.value)}
-                placeholder="Tu nombre"
+                placeholder={tr("SettingsModal.d36ae2c1bf")}
               />
             </label>
             <fieldset>
-              <legend>Apariencia</legend>
+              <legend>{tr("SettingsModal.e3e9cbacca")}</legend>
               <div className="theme-options">
                 {[
-                  { id: "light", label: "Luz de día", icon: Sun },
-                  { id: "dark", label: "Al anochecer", icon: Moon },
-                  { id: "system", label: "Con tu sistema", icon: Monitor },
+                  { id: "light", label: tr("SettingsModal.28a26bbee2"), icon: Sun },
+                  { id: "dark", label: tr("SettingsModal.1f51d50289"), icon: Moon },
+                  { id: "system", label: tr("SettingsModal.29c9f2a016"), icon: Monitor },
                 ].map((t) => (
                   <button
                     type="button"
@@ -244,49 +250,49 @@ export function SettingsModal({
               </div>
             </fieldset>
             <fieldset>
-              <legend>Paleta de toda la página</legend>
+              <legend>{tr("SettingsModal.fc12137797")}</legend>
               <div className="surface-palette-options">
                 {(
                   [
                     {
                       id: "stone",
-                      name: "Neutra",
+                      name: tr("SettingsModal.1d60e649ed"),
                       background: "#efeeeb",
                       accent: "#586573",
                     },
                     {
                       id: "sand",
-                      name: "Arena",
+                      name: tr("SettingsModal.77d7cd9907"),
                       background: "#f0e7d8",
                       accent: "#9a744e",
                     },
                     {
                       id: "blue",
-                      name: "Azul",
+                      name: tr("SettingsModal.b0bf526b23"),
                       background: "#e4edf6",
                       accent: "#4e75a0",
                     },
                     {
                       id: "lavender",
-                      name: "Lavanda",
+                      name: tr("SettingsModal.075e17b12b"),
                       background: "#ece6f4",
                       accent: "#8260ac",
                     },
                     {
                       id: "rose",
-                      name: "Rosa",
+                      name: tr("SettingsModal.75f9577a16"),
                       background: "#f5e7eb",
                       accent: "#aa647b",
                     },
                     {
                       id: "sage",
-                      name: "Verde",
+                      name: tr("SettingsModal.40598e1cb1"),
                       background: "#e5eddf",
                       accent: "#39745b",
                     },
                     {
                       id: "graphite",
-                      name: "Grafito",
+                      name: tr("SettingsModal.d18e4bf645"),
                       background: "#e5e7eb",
                       accent: "#4a4b55",
                     },
@@ -295,7 +301,7 @@ export function SettingsModal({
                   <button
                     key={palette.id}
                     type="button"
-                    aria-label={`Paleta ${palette.name}`}
+                    aria-label={tr("a11y.SettingsModal.304", { v0: palette.name })}
                     aria-pressed={settings.surfaceTone === palette.id}
                     onClick={() =>
                       setSettings((s) => ({
@@ -321,12 +327,10 @@ export function SettingsModal({
                 ))}
               </div>
               <p className="palette-hint">
-                Cambia fondos, paneles y ambiente. Después puedes combinarla con
-                cualquier color de acento.
-              </p>
+                {tr("SettingsModal.1ccdfdcf5f")}</p>
             </fieldset>
             <fieldset>
-              <legend>Color de acento</legend>
+              <legend>{tr("SettingsModal.c86ed6cd55")}</legend>
               <div className="accent-options">
                 {accents.map((c) => (
                   <button
@@ -334,18 +338,18 @@ export function SettingsModal({
                     className="accent-swatch"
                     style={{ backgroundColor: c.value }}
                     title={c.name}
-                    aria-label={`Color ${c.name}`}
+                    aria-label={tr("a11y.SettingsModal.341", { v0: c.name })}
                     aria-pressed={settings.accentColor === c.value}
                     onClick={() => update("accentColor", c.value)}
                   >
                     {settings.accentColor === c.value && <Check size={18} />}
                   </button>
                 ))}
-                <label className="custom-color" title="Elegir cualquier color">
+                <label className="custom-color" title={tr("SettingsModal.92e4934013")}>
                   <Palette size={19} />
                   <input
                     type="color"
-                    aria-label="Color de acento personalizado"
+                    aria-label={tr("SettingsModal.c7a1dfdffd")}
                     value={settings.accentColor}
                     onChange={(e) => update("accentColor", e.target.value)}
                   />
@@ -354,8 +358,7 @@ export function SettingsModal({
             </fieldset>
             <div className="form-row">
               <label>
-                Ambiente
-                <select
+                {tr("SettingsModal.0d2b7ca656")}<select
                   value={settings.background}
                   onChange={(e) =>
                     update(
@@ -364,14 +367,13 @@ export function SettingsModal({
                     )
                   }
                 >
-                  <option value="linen">Lino · cálido y natural</option>
-                  <option value="aurora">Aurora · un toque de color</option>
-                  <option value="plain">Esencial · sin distracciones</option>
+                  <option value="linen">{tr("SettingsModal.b193a7aabb")}</option>
+                  <option value="aurora">{tr("SettingsModal.5c9b6895c0")}</option>
+                  <option value="plain">{tr("SettingsModal.49bbddd4db")}</option>
                 </select>
               </label>
               <label>
-                Cabecera del inicio
-                <select
+                {tr("SettingsModal.46b8240f70")}<select
                   value={settings.homeLayout}
                   onChange={(e) =>
                     update(
@@ -381,16 +383,13 @@ export function SettingsModal({
                   }
                 >
                   <option value="compact">
-                    Compacta · más contenido a mano
-                  </option>
+                    {tr("SettingsModal.ef1268b2d1")}</option>
                   <option value="scenic">
-                    Panorámica · saludo e ilustración
-                  </option>
+                    {tr("SettingsModal.f04f796f3b")}</option>
                 </select>
               </label>
               <label>
-                Densidad
-                <select
+                {tr("SettingsModal.0d7d7140dd")}<select
                   value={settings.density}
                   onChange={(e) =>
                     update(
@@ -399,15 +398,15 @@ export function SettingsModal({
                     )
                   }
                 >
-                  <option value="comfortable">Con espacio para respirar</option>
-                  <option value="compact">Todo más compacto</option>
+                  <option value="comfortable">{tr("SettingsModal.3e9a311d71")}</option>
+                  <option value="compact">{tr("SettingsModal.93e0cfe19c")}</option>
                 </select>
               </label>
             </div>
             {window.zentyDesktop?.platform === "win32" && <fieldset>
-              <legend>Aplicación de escritorio</legend>
+              <legend>{tr("SettingsModal.d4d8fa3dfd")}</legend>
               <label className="switch-row">
-                <span>Iniciar {APP_NAME} con Windows</span>
+                <span>{tr("SettingsModal.078a3737dc")}{APP_NAME} {tr("SettingsModal.d82bf3961f")}</span>
                 <input type="checkbox" role="switch" checked={startup?.enabled ?? false}
                   disabled={!startup?.supported || startupBusy}
                   onChange={async (event) => {
@@ -418,24 +417,24 @@ export function SettingsModal({
                     finally { setStartupBusy(false); }
                   }} />
               </label>
-              <p className="muted">Desactivado por defecto. Se aplica a este usuario de Windows. {startup && !startup.supported ? "Disponible en la versión compilada." : "Mantén la carpeta de la aplicación en su ubicación para que Windows pueda abrirla."}</p>
-              {error && <p role="alert" className="error-message">{error}</p>}
+              <p className="muted">{tr("SettingsModal.b44ee05c60")}{startup && !startup.supported ? tr("SettingsModal.6086812108") : tr("SettingsModal.9b5798f3cb")}</p>
+              {error && <p role="alert" className="error-message">{translateMessage(error)}</p>}
             </fieldset>}
             <LanSettings />
             <fieldset>
-              <legend>Reloj y navegación</legend>
+              <legend>{tr("SettingsModal.6490a4edf4")}</legend>
               <div className="settings-switches">
                 {(
                   [
-                    { key: "showClock", label: "Mostrar reloj" },
-                    { key: "clock24", label: "Formato de 24 horas" },
-                    { key: "showSeconds", label: "Mostrar segundos" },
+                    { key: "showClock", label: tr("SettingsModal.d9f887036f") },
+                    { key: "clock24", label: tr("SettingsModal.cf5e22a3be") },
+                    { key: "showSeconds", label: tr("SettingsModal.d81e48715b") },
                     {
                       key: "openInNewTab",
-                      label: "Abrir enlaces en otra pestaña",
+                      label: tr("SettingsModal.6aa0827e87"),
                     },
-                    { key: "showBookmarks", label: "Mostrar accesos rápidos" },
-                    { key: "showSummary", label: "Mostrar resumen del día" },
+                    { key: "showBookmarks", label: tr("SettingsModal.4fd5d12370") },
+                    { key: "showSummary", label: tr("SettingsModal.b3bed9d15b") },
                   ] as const
                 ).map((t) => (
                   <label className="switch-row" key={t.key}>
@@ -451,27 +450,26 @@ export function SettingsModal({
               </div>
             </fieldset>
             <label>
-              Buscador predeterminado
-              <select
+              {tr("SettingsModal.962fe49fd2")}<select
                 value={settings.searchEngine}
                 onChange={(e) => update("searchEngine", e.target.value)}
               >
-                <option value="google">Google</option>
-                <option value="duckduckgo">DuckDuckGo</option>
-                <option value="bing">Bing</option>
-                <option value="brave">Brave</option>
+                <option value="google">{tr("SettingsModal.ce770667e5")}</option>
+                <option value="duckduckgo">{tr("SettingsModal.1f571f93ab")}</option>
+                <option value="bing">{tr("SettingsModal.7bd52326e6")}</option>
+                <option value="brave">{tr("SettingsModal.e7d91391c1")}</option>
               </select>
             </label>
             <div className="settings-section-title">
               <SlidersHorizontal size={18} />
-              <h3>Tu ritmo de enfoque</h3>
+              <h3>{tr("SettingsModal.21075d1c9f")}</h3>
             </div>
             <div className="form-row">
               {(
                 [
-                  { key: "workMinutes", label: "Enfoque (min)" },
-                  { key: "shortBreak", label: "Pausa corta (min)" },
-                  { key: "longBreak", label: "Pausa larga (min)" },
+                  { key: "workMinutes", label: tr("SettingsModal.b1729e16e1") },
+                  { key: "shortBreak", label: tr("SettingsModal.c7b3bff709") },
+                  { key: "longBreak", label: tr("SettingsModal.8e11138ec3") },
                 ] as const
               ).map((f) => (
                 <label key={f.key}>
@@ -492,8 +490,7 @@ export function SettingsModal({
               ))}
             </div>
             <label>
-              Meta diaria de enfoque (minutos)
-              <input
+              {tr("SettingsModal.dd21eed169")}<input
                 type="number"
                 min={1}
                 max={720}
@@ -507,25 +504,20 @@ export function SettingsModal({
               />
             </label>
             <small>
-              Los cambios de duración se aplican a sesiones nuevas. La sesión en
-              curso conserva su duración.
-            </small>
+              {tr("SettingsModal.499543ecca")}</small>
           </div>
         )}
         {tab === "navigation" && (
           <div className="form-stack">
             <div className="settings-section-title">
-              <span className="eyebrow">TU DÍA, A TU MANERA</span>
-              <h3>Personaliza la barra lateral</h3>
+              <span className="eyebrow">{tr("SettingsModal.639874ce61")}</span>
+              <h3>{tr("SettingsModal.b7c706ccde")}</h3>
               <p>
-                Elige qué secciones quieres ver en tu menú y en qué orden
-                aparecen. Puedes ocultar las que no uses y reordenarlas según tu
-                flujo de trabajo.
-              </p>
+                {tr("SettingsModal.7cc13d00e2")}</p>
             </div>
 
             <fieldset className="widget-settings-column">
-              <legend>Secciones del menú</legend>
+              <legend>{tr("SettingsModal.26b86ff753")}</legend>
               <div className="nav-settings-list">
                 {settings.navOrder.map((id, index) => {
                   const Icon = sectionIcons[id] || Home;
@@ -558,7 +550,7 @@ export function SettingsModal({
                           <strong>
                             {sectionLabels[id]}
                             {isHome && (
-                              <small className="nav-home-badge">Inicio</small>
+                              <small className="nav-home-badge">{tr("SettingsModal.58fcc9468f")}</small>
                             )}
                           </strong>
                           <small>{sectionDescriptions[id]}</small>
@@ -568,8 +560,8 @@ export function SettingsModal({
                       <div className="nav-setting-actions">
                         <button
                           className="icon-button"
-                          aria-label={`Subir ${sectionLabels[id]}`}
-                          title="Subir sección"
+                          aria-label={tr("a11y.SettingsModal.563", { v0: sectionLabels[id] })}
+                          title={tr("SettingsModal.02c6aafbe2")}
                           disabled={index === 0}
                           onClick={() => moveNav(id, -1)}
                         >
@@ -577,8 +569,8 @@ export function SettingsModal({
                         </button>
                         <button
                           className="icon-button"
-                          aria-label={`Bajar ${sectionLabels[id]}`}
-                          title="Bajar sección"
+                          aria-label={tr("a11y.SettingsModal.572", { v0: sectionLabels[id] })}
+                          title={tr("SettingsModal.d84c67821b")}
                           disabled={index === settings.navOrder.length - 1}
                           onClick={() => moveNav(id, 1)}
                         >
@@ -592,22 +584,18 @@ export function SettingsModal({
             </fieldset>
 
             <fieldset>
-              <legend>Elementos opcionales de la barra lateral</legend>
+              <legend>{tr("SettingsModal.bfbb81de40")}</legend>
               <div className="settings-switches">
                 <label className="switch-row">
                   <span>
-                    Mostrar tarjeta de bienvenida y enfoque («Menos ruido. Más
-                    tú.»)
-                    <small
+                    {tr("SettingsModal.141a64d68a")}<small
                       style={{
                         display: "block",
                         color: "var(--muted)",
                         fontSize: "11px",
                       }}
                     >
-                      Tarjeta decorativa con acceso al modo enfoque en la parte
-                      inferior.
-                    </small>
+                      {tr("SettingsModal.b9857b61de")}</small>
                   </span>
                   <input
                     type="checkbox"
@@ -629,25 +617,22 @@ export function SettingsModal({
                   ...defaultSettings.enabledNavSections,
                 });
                 update("showSidebarFocus", false);
-                notify("Barra lateral restablecida a valores originales.");
+                notify(tr("SettingsModal.004d2a7258"));
               }}
             >
-              <RotateCcw size={15} /> Restaurar menú original
-            </button>
+              <RotateCcw size={15} /> {tr("SettingsModal.2cf52b3dcf")}</button>
           </div>
         )}
         {tab === "widgets" && (
           <div className="form-stack">
             <div className="settings-section-title">
-              <span className="eyebrow">SOLO LO QUE NECESITAS</span>
-              <h3>Diseña tu día a tu manera.</h3>
+              <span className="eyebrow">{tr("SettingsModal.812daf2a02")}</span>
+              <h3>{tr("SettingsModal.bb5dde8fd8")}</h3>
               <p>
-                Activa tus widgets y elige su columna y orden. También puedes
-                arrastrarlos desde «Organizar» en el inicio.
-              </p>
+                {tr("SettingsModal.2ba5e61d17")}</p>
             </div>
             <div className="preset-options">
-              {["Equilibrado", "Esencial", "Productivo"].map(
+              {[tr("SettingsModal.9123685a0d"), tr("SettingsModal.2a380a4d32"), tr("SettingsModal.4ff9f654f3")].map(
                 (preset, index) => (
                   <button
                     className="secondary-button"
@@ -685,7 +670,7 @@ export function SettingsModal({
                           ]),
                         ) as DashboardSettings["enabledWidgets"],
                       }));
-                      notify(`Distribución ${preset.toLowerCase()} aplicada.`);
+                      notify(tr("SettingsModal.410ac5ca0e", { v0: preset.toLowerCase() }));
                     }}
                   >
                     {preset}
@@ -695,7 +680,7 @@ export function SettingsModal({
             </div>
             {settings.columnLayout.map((column, index) => (
               <fieldset className="widget-settings-column" key={index}>
-                <legend>Columna {index + 1}</legend>
+                <legend>{tr("SettingsModal.f5f33f6aa2")}{index + 1}</legend>
                 {column.map((id, position) => (
                   <div className="widget-setting" key={id}>
                     <label>
@@ -712,19 +697,19 @@ export function SettingsModal({
                       <span>{widgetLabels[id]}</span>
                     </label>
                     <select
-                      aria-label={`Columna de ${widgetLabels[id]}`}
+                      aria-label={tr("a11y.SettingsModal.700", { v0: widgetLabels[id] })}
                       value={index}
                       onChange={(e) => move(id, Number(e.target.value))}
                     >
                       {[0, 1, 2].map((n) => (
                         <option key={n} value={n}>
-                          Columna {n + 1}
+                          {tr("SettingsModal.f5f33f6aa2")}{n + 1}
                         </option>
                       ))}
                     </select>
                     <button
                       className="icon-button"
-                      aria-label={`Subir ${widgetLabels[id]}`}
+                      aria-label={tr("a11y.SettingsModal.712", { v0: widgetLabels[id] })}
                       disabled={position === 0}
                       onClick={() => move(id, index, -1)}
                     >
@@ -732,7 +717,7 @@ export function SettingsModal({
                     </button>
                     <button
                       className="icon-button"
-                      aria-label={`Bajar ${widgetLabels[id]}`}
+                      aria-label={tr("a11y.SettingsModal.720", { v0: widgetLabels[id] })}
                       disabled={position === column.length - 1}
                       onClick={() => move(id, index, 1)}
                     >
@@ -751,36 +736,34 @@ export function SettingsModal({
                 )
               }
             >
-              <RotateCcw size={15} /> Restaurar orden original
-            </button>
+              <RotateCcw size={15} /> {tr("SettingsModal.f5522edf7c")}</button>
           </div>
         )}
         {tab === "integrations" && <IntegrationsPanel />}
         {tab === "data" && (
           <div className="form-stack">
             <div className="settings-section-title">
-              <span className="eyebrow">SIEMPRE BAJO TU CONTROL</span>
-              <h3>Tu espacio te pertenece.</h3>
+              <span className="eyebrow">{tr("SettingsModal.7d22bff842")}</span>
+              <h3>{tr("SettingsModal.d814e8cd06")}</h3>
               <p>
                 {window.zentyDesktop
-                  ? `Tu save está en %APPDATA%\\${APP_NAME}. El respaldo completo incluye documentos, progreso de lectura, ajustes, alarmas, datos gamer e imágenes descargadas.`
-                  : "Los ajustes se guardan en este navegador y los documentos en el servidor local. La exportación completa está disponible en la app de escritorio."}
-                {" "}Las cuentas conectadas no sincronizan tu espacio. Las sesiones de acceso y los juegos o ROMs externos no se incluyen en el respaldo.
-              </p>
+                  ? tr("SettingsModal.b7710d75bd", { v0: APP_NAME })
+                  : tr("SettingsModal.ab0668b799")}
+                {" "}{tr("SettingsModal.addbdbf64e")}</p>
             </div>
             {window.zentyDesktop && <>
               <button className="primary-button" disabled={exportingSave} onClick={async () => {
                 setExportingSave(true); setError("");
                 try {
                   const result = await window.zentyDesktop!.exportSave(exportData());
-                  if (result) { setSavePath(result.path); notify(`Respaldo completo guardado: ${result.files} archivos.`); }
+                  if (result) { setSavePath(result.path); notify(tr("interface.SettingsModal.e89fdaea47", { v0: result.files })); }
                 } catch (error) { setError((error as Error).message); }
                 finally { setExportingSave(false); }
-              }}><Download size={17} /> {exportingSave ? "Preparando respaldo…" : "Exportar save completo en carpeta"}</button>
-              <button className="secondary-button" onClick={() => void window.zentyDesktop!.openDataFolder()}>Abrir carpeta de mi save</button>
-              {savePath && <p role="status" style={{ overflowWrap: "anywhere" }}>Respaldo guardado en {savePath}. Incluye instrucciones de restauración y un manifiesto para verificar los archivos.</p>}
+              }}><Download size={17} /> {exportingSave ? tr("SettingsModal.fc244c1744") : tr("SettingsModal.08952f6dbe")}</button>
+              <button className="secondary-button" onClick={() => void window.zentyDesktop!.openDataFolder()}>{tr("SettingsModal.bbb4a8a716")}</button>
+              {savePath && <p role="status" style={{ overflowWrap: "anywhere" }}>{tr("SettingsModal.b20da20de3")}{savePath}{tr("SettingsModal.85d6154215")}</p>}
             </>}
-            <p>El JSON ligero contiene tareas, notas, hábitos, agenda, alarmas y ajustes. No contiene documentos ni archivos de la biblioteca gamer.</p>
+            <p>{tr("SettingsModal.78941ce8e2")}</p>
             <button
               className="secondary-button"
               onClick={() =>
@@ -790,65 +773,59 @@ export function SettingsModal({
                 )
               }
             >
-              <Download size={17} /> Exportar datos y ajustes (JSON)
-            </button>
+              <Download size={17} /> {tr("SettingsModal.f421904ce4")}</button>
             <label className="file-upload">
               <Upload size={20} />
-              <span>Seleccionar un respaldo JSON</span>
+              <span>{tr("SettingsModal.e385174bf7")}</span>
               <input
                 type="file"
                 accept=".json,application/json"
-                aria-label="Seleccionar respaldo"
+                aria-label={tr("SettingsModal.af64d0cf35")}
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
                   if (file.size > 5_000_000) {
-                    setError("El archivo supera el máximo de 5 MB.");
+                    setError(tr("SettingsModal.b42a062344"));
                     return;
                   }
                   try {
                     await stageImport(await file.text());
                   } catch {
-                    setError("No se pudo leer el archivo.");
+                    setError(tr("SettingsModal.7a566c98ff"));
                   }
                   e.target.value = "";
                 }}
               />
             </label>
             <details>
-              <summary>Pegar el contenido de un respaldo</summary>
+              <summary>{tr("SettingsModal.78e7f0ccbc")}</summary>
               <div className="form-stack">
                 <textarea
-                  aria-label="Contenido del respaldo JSON"
+                  aria-label={tr("SettingsModal.c7c2e80912")}
                   rows={5}
                   value={raw}
                   onChange={(e) => setRaw(e.target.value)}
-                  placeholder='{"version":2, …}'
+                  placeholder={tr("SettingsModal.a488c1d6a4")}
                 />
                 <button
                   className="secondary-button"
                   disabled={!raw.trim()}
                   onClick={() => void stageImport(raw)}
                 >
-                  Revisar respaldo
-                </button>
+                  {tr("SettingsModal.82e10c987a")}</button>
               </div>
             </details>
             {pendingImport && (
               <div className="import-confirmation">
-                <h4>Respaldo válido, listo para restaurar</h4>
+                <h4>{tr("SettingsModal.77dc7ca50a")}</h4>
                 <p>
-                  Reemplazará tus tareas, hábitos, notas, accesos, juegoteca y
-                  ajustes actuales. Se guardará una copia de recuperación de tu
-                  espacio anterior.
-                </p>
+                  {tr("SettingsModal.0e3406ba73")}</p>
                 <div className="form-row">
                   <button
                     className="secondary-button"
                     onClick={() => setPendingImport(null)}
                   >
-                    Cancelar
-                  </button>
+                    {tr("SettingsModal.bb9dbb406d")}</button>
                   <button
                     className="primary-button"
                     onClick={() => {
@@ -858,18 +835,17 @@ export function SettingsModal({
                         setError("");
                       } else
                         setError(
-                          "No se pudo restaurar el respaldo ni crear la copia de recuperación. Exporta tus datos actuales antes de reintentar.",
+                          tr("SettingsModal.79d69fad2c"),
                         );
                     }}
                   >
-                    Restaurar este respaldo
-                  </button>
+                    {tr("SettingsModal.4a5ee0812b")}</button>
                 </div>
               </div>
             )}
             {error && (
               <p className="error-message" role="alert">
-                {error}
+                {translateMessage(error)}
               </p>
             )}
             <button
@@ -879,25 +855,21 @@ export function SettingsModal({
                   const previous = localStorage.getItem("mia_before_import");
                   if (!previous) {
                     notify(
-                      "Todavía no hay una copia anterior a una importación.",
+                      tr("SettingsModal.0de85deefe"),
                     );
                     return;
                   }
                   void stageImport(previous);
                 } catch {
-                  setError("No se pudo leer la copia de recuperación.");
+                  setError(tr("SettingsModal.29a1df3069"));
                 }
               }}
             >
-              <RotateCcw size={15} /> Recuperar el espacio anterior a la última
-              importación
-            </button>
+              <RotateCcw size={15} /> {tr("SettingsModal.3af019dbe9")}</button>
             <details>
-              <summary>Recuperar datos que el navegador no pudo leer</summary>
+              <summary>{tr("SettingsModal.42278c906c")}</summary>
               <p>
-                Descarga los datos originales para revisarlos sin
-                sobrescribirlos.
-              </p>
+                {tr("SettingsModal.b224aae572")}</p>
               <button
                 className="secondary-button"
                 onClick={() => {
@@ -915,23 +887,20 @@ export function SettingsModal({
                       `${APP_SLUG}-recuperacion-original.json`,
                     );
                   } catch {
-                    setError("El navegador no permite leer el almacenamiento.");
+                    setError(tr("SettingsModal.a0d1556a4d"));
                   }
                 }}
               >
-                Descargar datos originales
-              </button>
+                {tr("SettingsModal.f79986a68e")}</button>
             </details>
           </div>
         )}
       </div>
       <div className="settings-footer">
         <span>
-          <Check size={13} /> Los ajustes se aplican al instante
-        </span>
+          <Check size={13} /> {tr("SettingsModal.02ff8cb165")}</span>
         <button className="primary-button" onClick={onClose}>
-          Listo, volver a mi espacio
-        </button>
+          {tr("SettingsModal.bc4852dd71")}</button>
       </div>
     </Dialog>
   );

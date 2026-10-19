@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { newId } from "../lib/id";
 import { useState } from "react";
 import {
@@ -12,6 +14,7 @@ import { useNewsFeed } from "../lib/news-client";
 import { NEWS_CATEGORIES, formatRelativeTime } from "../lib/news";
 import type { DashboardSettings } from "../lib/dashboard";
 export function NewsWidget({ onOpen }: { onOpen?: () => void }) {
+  useInterfaceLocale();
   const { bookmarks, setBookmarks, settings, setSettings, notify } =
     useDashboard();
   const { articles, loading, refreshing, error, stale, refresh } =
@@ -38,14 +41,13 @@ export function NewsWidget({ onOpen }: { onOpen?: () => void }) {
   return (
     <section
       className="glass-panel news-widget"
-      aria-label="Widget de noticias"
+      aria-label={tr("NewsWidget.ca7df519b6")}
     >
       <div className="widget-heading">
         <h3>
-          <Newspaper size={17} /> Noticias
-        </h3>
+          <Newspaper size={17} /> {tr("NewsWidget.2039b01649")}</h3>
         <select
-          aria-label="Tema del widget de noticias"
+          aria-label={tr("NewsWidget.da0ff3eca9")}
           value={category}
           onChange={(event) =>
             setSettings((previous) => ({
@@ -57,7 +59,7 @@ export function NewsWidget({ onOpen }: { onOpen?: () => void }) {
         >
           {NEWS_CATEGORIES.filter((item) => item.id !== "saved").map((item) => (
             <option key={item.id} value={item.id}>
-              {item.id === "all" ? "Todos los temas" : item.label}
+              {item.id === "all" ? tr("NewsWidget.59abf9d784") : item.label}
             </option>
           ))}
         </select>
@@ -65,22 +67,21 @@ export function NewsWidget({ onOpen }: { onOpen?: () => void }) {
       <div
         className="news-widget-tabs"
         role="group"
-        aria-label="Contenido de noticias"
+        aria-label={tr("NewsWidget.42f53808b2")}
       >
         <button
           aria-pressed={tab === "headlines"}
           onClick={() => setTab("headlines")}
         >
-          Titulares
-        </button>
+          {tr("NewsWidget.e1c983199e")}</button>
         <button aria-pressed={tab === "saved"} onClick={() => setTab("saved")}>
-          Guardados{saved.length ? ` · ${saved.length}` : ""}
+          {tr("NewsWidget.2a5c020df6")}{saved.length ? ` · ${saved.length}` : ""}
         </button>
       </div>
       {tab === "headlines" && (error || stale) && (
         <p className="news-widget-status" role="status">
           {articles.length
-            ? "Mostrando las últimas noticias guardadas. No se pudo actualizar."
+            ? tr("NewsWidget.1e57db5e7a")
             : error}
         </p>
       )}
@@ -107,7 +108,7 @@ export function NewsWidget({ onOpen }: { onOpen?: () => void }) {
                 </a>
                 <button
                   className="icon-button"
-                  aria-label={`${isSaved ? "Quitar de guardados" : "Guardar noticia"}: ${item.title}`}
+                  aria-label={`${isSaved ? tr("NewsWidget.2660cdca46") : tr("NewsWidget.9ded631acf")}: ${item.title}`}
                   aria-pressed={isSaved}
                   onClick={() => {
                     setBookmarks((previous) =>
@@ -125,7 +126,7 @@ export function NewsWidget({ onOpen }: { onOpen?: () => void }) {
                               id: newId(),
                               title: item.title,
                               url: item.link,
-                              group: "Para leer",
+                              group: tr("NewsWidget.79cc9d2c71"),
                               color: settings.accentColor,
                             },
                           ],
@@ -133,7 +134,7 @@ export function NewsWidget({ onOpen }: { onOpen?: () => void }) {
                     notify(
                       isSaved
                         ? "Noticia quitada de guardados."
-                        : "Noticia guardada para después.",
+                        : tr("NewsWidget.634ed7caf6"),
                     );
                   }}
                 >
@@ -150,21 +151,21 @@ export function NewsWidget({ onOpen }: { onOpen?: () => void }) {
       ) : (
         <p className="news-widget-empty" role="status">
           {tab === "saved"
-            ? "Guarda un titular para encontrarlo aquí."
+            ? tr("NewsWidget.ab3a550d97")
             : loading
-              ? "Buscando los últimos titulares…"
-              : "No hay titulares para este tema. Prueba con otro o actualiza."}
+              ? tr("NewsWidget.80a216b369")
+              : tr("NewsWidget.28ec908258")}
         </p>
       )}
       <div className="news-widget-footer">
         {onOpen && (
           <button className="text-button" onClick={onOpen}>
-            Abrir noticias <ArrowUpRight size={14} />
+            {tr("NewsWidget.a47840eb96")}<ArrowUpRight size={14} />
           </button>
         )}
         <button
           className="icon-button"
-          aria-label="Actualizar noticias"
+          aria-label={tr("NewsWidget.b9a0a4a5c7")}
           disabled={loading || refreshing}
           onClick={() => void refresh()}
         >

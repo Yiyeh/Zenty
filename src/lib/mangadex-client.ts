@@ -1,3 +1,4 @@
+import { tr } from "./i18n.ts";
 import type { LibraryDocument } from "./library.ts";
 import { libraryRequest } from "./library-client.ts";
 
@@ -44,18 +45,18 @@ export interface LanguageOption {
   flag: string;
 }
 
-export const MANGA_LANGUAGES: LanguageOption[] = [
-  { code: "es-all", label: "Español (Todos)", flag: "🇪🇸" },
-  { code: "es-la", label: "Español (Latinoamérica)", flag: "🇲🇽" },
-  { code: "es", label: "Español (España)", flag: "🇪🇸" },
-  { code: "en", label: "English", flag: "🇬🇧" },
-  { code: "ja", label: "Japonés (日本語)", flag: "🇯🇵" },
-  { code: "pt-br", label: "Português (Brasil)", flag: "🇧🇷" },
-  { code: "fr", label: "Français", flag: "🇫🇷" },
-  { code: "it", label: "Italiano", flag: "🇮🇹" },
-  { code: "de", label: "Deutsch", flag: "🇩🇪" },
-  { code: "all", label: "Todos los idiomas", flag: "🌐" },
-];
+export const MANGA_LANGUAGES: LanguageOption[] = ([
+  { code: "es-all", get label() { return tr("mangadex_client.9d0bb303f3"); }, flag: "🇪🇸" },
+  { code: "es-la", get label() { return tr("mangadex_client.2781d74cee"); }, flag: "🇲🇽" },
+  { code: "es", get label() { return tr("mangadex_client.d3b018a72f"); }, flag: "🇪🇸" },
+  { code: "en", get label() { return tr("mangadex_client.ba118bf7fc"); }, flag: "🇬🇧" },
+  { code: "ja", get label() { return tr("mangadex_client.165eab2ae6"); }, flag: "🇯🇵" },
+  { code: "pt-br", get label() { return tr("mangadex_client.25c0623b1a"); }, flag: "🇧🇷" },
+  { code: "fr", get label() { return tr("mangadex_client.e495d53b96"); }, flag: "🇫🇷" },
+  { code: "it", get label() { return tr("mangadex_client.432a99a172"); }, flag: "🇮🇹" },
+  { code: "de", get label() { return tr("mangadex_client.801cfe0fa1"); }, flag: "🇩🇪" },
+  { code: "all", get label() { return tr("mangadex_client.9dc0bf86c4"); }, flag: "🌐" },
+]);
 
 export async function searchManga(
   query = "",
@@ -72,7 +73,7 @@ export async function searchManga(
   const res = await fetch(`/api/mangadex/search?${params.toString()}`);
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));
-    throw new Error(errorBody.error || "No se pudo buscar mangas en MangaDex.");
+    throw new Error(errorBody.error || tr("mangadex_client.cf48d3a374"));
   }
   return res.json();
 }
@@ -87,7 +88,7 @@ export async function getMangaChapters(
   const res = await fetch(`/api/mangadex/manga/${mangaId}/chapters?${params.toString()}`);
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));
-    throw new Error(errorBody.error || "No se pudieron obtener los capítulos de este manga.");
+    throw new Error(errorBody.error || tr("mangadex_client.5381f57374"));
   }
   return res.json();
 }
@@ -96,7 +97,7 @@ export async function getChapterPages(chapterId: string): Promise<ChapterPagesRe
   const res = await fetch(`/api/mangadex/chapter/${chapterId}/pages`);
   if (!res.ok) {
     const errorBody = await res.json().catch(() => ({}));
-    throw new Error(errorBody.error || "No se pudieron cargar las páginas de este capítulo.");
+    throw new Error(errorBody.error || tr("mangadex_client.86cd24d4e3"));
   }
   return res.json();
 }

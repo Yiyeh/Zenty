@@ -1,11 +1,14 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { useDashboard } from "../context/DashboardStore";
 export function SpotifyModeSelector() {
+  useInterfaceLocale();
   const { settings, setSettings } = useDashboard();
   return (
     <label className="spotify-mode-select">
-      <span>Reproductor</span>
+      <span>{tr("SpotifyModeSelector.7fa2ee4395")}</span>
       <select
-        aria-label="Tipo de reproductor de Spotify"
+        aria-label={tr("SpotifyModeSelector.0f1a5e8d28")}
         value={settings.spotifyMode}
         onChange={(event) =>
           setSettings((previous) => ({
@@ -14,8 +17,8 @@ export function SpotifyModeSelector() {
           }))
         }
       >
-        <option value="connect">Controlar app / navegador</option>
-        <option value="embed">Integrado · puede ofrecer muestras</option>
+        <option value="connect">{tr("SpotifyModeSelector.ef69da5ed3")}</option>
+        <option value="embed">{tr("SpotifyModeSelector.4a5997d9af")}</option>
       </select>
     </label>
   );

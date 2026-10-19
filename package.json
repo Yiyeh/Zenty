@@ -6,7 +6,7 @@
   "scripts": {
     "postinstall": "node scripts/pdf-assets.mjs",
     "predev": "node scripts/pdf-assets.mjs",
-    "prebuild": "node scripts/pdf-assets.mjs",
+    "prebuild": "node scripts/pdf-assets.mjs && node scripts/app-icon.mjs && npm run locales:check",
     "start": "node server/start.ts",
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -17,7 +17,8 @@
     "desktop": "npm run desktop:build && node scripts/launch-desktop.mjs",
     "desktop:package": "npm run desktop:build && node scripts/package-desktop.mjs",
     "desktop:installer": "npm run desktop:build && electron-builder --config electron-builder.config.mjs --win nsis --x64 --publish never",
-    "desktop:publish": "npm run desktop:build && electron-builder --config electron-builder.config.mjs --win nsis --x64 --publish always"
+    "desktop:publish": "npm run desktop:build && electron-builder --config electron-builder.config.mjs --win nsis --x64 --publish always",
+    "locales:check": "node scripts/check-locales.mjs"
   },
   "dependencies": {
     "electron-updater": "^6.8.9"

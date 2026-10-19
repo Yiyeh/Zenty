@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { useEffect, useRef } from "react";
 import { useSpotifyFrame } from "../context/SpotifyFrameStore";
 export function SpotifyFrameSlot({
@@ -7,6 +9,7 @@ export function SpotifyFrameSlot({
   embed: string;
   compact: boolean;
 }) {
+  useInterfaceLocale();
   const anchor = useRef<HTMLDivElement>(null);
   const register = useSpotifyFrame();
   useEffect(() => {
@@ -17,7 +20,7 @@ export function SpotifyFrameSlot({
       ref={anchor}
       className="spotify-frame-slot"
       style={{ height: compact ? 152 : 352 }}
-      aria-label="Espacio del reproductor de Spotify"
+      aria-label={tr("SpotifyFrameSlot.01fdbcb179")}
     />
   );
 }

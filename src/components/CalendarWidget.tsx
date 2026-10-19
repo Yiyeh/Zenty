@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr, getFormatLocale } from "../lib/i18n.ts";
 import { newId } from "../lib/id";
 import { ReminderAdvance } from "./ReminderAdvance";
 import { useState } from "react";
@@ -16,6 +18,7 @@ import { useDashboard } from "../context/DashboardStore";
 import { useIntegrations } from "../context/IntegrationsStore";
 import { localDate } from "../lib/dashboard";
 export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
+  useInterfaceLocale();
   const { timeBlocks, setTimeBlocks, settings, notify } = useDashboard();
   const i = useIntegrations();
   const [monthDate, setMonthDate] = useState(new Date());
@@ -52,8 +55,7 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
     <section className="glass-panel calendar-card">
       <div className="widget-heading">
         <h3>
-          <CalendarDays size={17} /> Tu agenda
-        </h3>
+          <CalendarDays size={17} /> {tr("CalendarWidget.a0d4135518")}</h3>
         <button
           className="text-button"
           onClick={() => {
@@ -61,12 +63,11 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
             setSelected(today);
           }}
         >
-          Hoy
-        </button>
+          {tr("CalendarWidget.55133d4e6e")}</button>
       </div>
       <div className="calendar-month">
         <strong>
-          {monthDate.toLocaleDateString("es-CL", {
+          {monthDate.toLocaleDateString(getFormatLocale(), {
             month: "long",
             year: "numeric",
           })}
@@ -74,14 +75,14 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
         <div>
           <button
             className="icon-button"
-            aria-label="Mes anterior"
+            aria-label={tr("CalendarWidget.52ee5f657f")}
             onClick={() => setMonthDate(new Date(year, month - 1, 1))}
           >
             <ChevronLeft size={16} />
           </button>
           <button
             className="icon-button"
-            aria-label="Mes siguiente"
+            aria-label={tr("CalendarWidget.8333498354")}
             onClick={() => setMonthDate(new Date(year, month + 1, 1))}
           >
             <ChevronRight size={16} />
@@ -89,7 +90,7 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
         </div>
       </div>
       <div className="calendar-weekdays">
-        {["L", "M", "M", "J", "V", "S", "D"].map((day, idx) => (
+        {Array.from({ length: 7 }, (_, index) => new Date(2026, 0, 5 + index).toLocaleDateString(getFormatLocale(), { weekday: "narrow" })).map((day, idx) => (
           <span key={idx}>{day}</span>
         ))}
       </div>
@@ -99,7 +100,7 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
             key={cell.date}
             className={`${cell.outside ? "outside-month" : ""} ${cell.date === today ? "is-today" : ""} ${cell.date === selected ? "is-selected" : ""}`}
             aria-label={new Date(`${cell.date}T12:00:00`).toLocaleDateString(
-              "es-CL",
+              getFormatLocale(),
               {
                 weekday: "long",
                 day: "numeric",
@@ -121,15 +122,15 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
       <div className="agenda-heading">
         <span>
           {selected === today
-            ? "HOY"
-            : new Date(`${selected}T12:00:00`).toLocaleDateString("es-CL", {
+            ? tr("CalendarWidget.98282ed202")
+            : new Date(`${selected}T12:00:00`).toLocaleDateString(getFormatLocale(), {
                 day: "numeric",
                 month: "short",
               })}
         </span>
         <button
           className="icon-button"
-          aria-label="Añadir evento personal"
+          aria-label={tr("CalendarWidget.058168ead4")}
           aria-expanded={adding}
           onClick={() => {
             setAdding(!adding);
@@ -155,13 +156,13 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
                 <small>
                   <Clock3 size={11} /> {block.startTime} – {block.endTime}
                   {block.reminderMinutes !== undefined
-                    ? ` · aviso ${block.reminderMinutes} min antes`
+                    ? tr("CalendarWidget.237c04e110", { v0: block.reminderMinutes })
                     : ""}
                 </small>
               </div>
               <button
                 className="icon-button"
-                aria-label={`Editar evento ${block.title}`}
+                aria-label={tr("a11y.CalendarWidget.165", { v0: block.title })}
                 onClick={() => {
                   setEditingId(block.id);
                   setTitle(block.title);
@@ -176,10 +177,10 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
               </button>
               <button
                 className="icon-button danger"
-                aria-label={`Eliminar evento ${block.title}`}
+                aria-label={tr("a11y.CalendarWidget.180", { v0: block.title })}
                 onClick={() => {
                   setTimeBlocks((p) => p.filter((b) => b.id !== block.id));
-                  notify("Evento eliminado.", () =>
+                  notify(tr("CalendarWidget.5ae239e1e9"), () =>
                     setTimeBlocks((p) =>
                       p.some((b) => b.id === block.id) ? p : [...p, block],
                     ),
@@ -194,7 +195,7 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
           <div className="agenda-empty">
             <span className="agenda-empty-dot" />
             <div>
-              Tu día tiene espacio.<small>Añade algo que valga la pena.</small>
+              {tr("CalendarWidget.3dae14636b")}<small>{tr("CalendarWidget.0220a2269b")}</small>
             </div>
           </div>
         )}
@@ -206,7 +207,7 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
             e.preventDefault();
             if (!title.trim() || start >= end) {
               setError(
-                "Añade un nombre y una hora de fin posterior al inicio.",
+                tr("CalendarWidget.80fad3bfc8"),
               );
               return;
             }
@@ -217,7 +218,7 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
               )
             ) {
               setError(
-                "Este horario coincide con otro bloque personal. Elige un horario libre.",
+                tr("CalendarWidget.0b6093cb03"),
               );
               return;
             }
@@ -247,16 +248,15 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
           <input
             autoFocus
             required
-            aria-label="Nombre del evento"
+            aria-label={tr("CalendarWidget.3e325d8158")}
             maxLength={200}
-            placeholder="¿Qué tienes en mente?"
+            placeholder={tr("CalendarWidget.284180e1ec")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
           <div className="form-row">
             <label>
-              Desde
-              <input
+              {tr("CalendarWidget.8b4e93e928")}<input
                 type="time"
                 required
                 value={start}
@@ -264,8 +264,7 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
               />
             </label>
             <label>
-              Hasta
-              <input
+              {tr("CalendarWidget.3c83e35581")}<input
                 type="time"
                 required
                 value={end}
@@ -276,27 +275,27 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
           <ReminderAdvance
             value={reminderMinutes}
             onChange={setReminderMinutes}
-            label="Aviso del evento"
+            label={tr("CalendarWidget.cc010dba90")}
           />
           {error && (
             <p className="error-message" role="alert">
-              {error}
+              {translateMessage(error)}
             </p>
           )}
           <button className="secondary-button">
             <Plus size={14} />{" "}
-            {editingId ? "Guardar cambios" : "Añadir a mi agenda"}
+            {editingId ? tr("CalendarWidget.14bdfaf2fa") : tr("CalendarWidget.d4275189c1")}
           </button>
         </form>
       )}
       {i.googleConnected ? (
         <div className="google-agenda">
           <div className="agenda-heading">
-            <span>GOOGLE · PRÓXIMOS 7 DÍAS</span>
+            <span>{tr("CalendarWidget.dae581c3b4")}</span>
             <button
               className="icon-button"
               disabled={i.googleBusy}
-              aria-label="Actualizar eventos de Google"
+              aria-label={tr("CalendarWidget.bf0b227156")}
               onClick={() => void i.refreshCalendar()}
             >
               <RefreshCw size={13} />
@@ -304,8 +303,7 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
           </div>
           {i.googleBusy && (
             <p className="muted" role="status">
-              Actualizando agenda…
-            </p>
+              {tr("CalendarWidget.0bf88365cf")}</p>
           )}
           {i.googleError && (
             <p className="error-message" role="alert">
@@ -323,17 +321,17 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
               <span>
                 {event.allDay
                   ? new Date(`${event.start}T12:00:00`).toLocaleDateString(
-                      "es-CL",
+                      getFormatLocale(),
                       { day: "numeric", month: "short" },
                     )
-                  : new Date(event.start).toLocaleDateString("es-CL", {
+                  : new Date(event.start).toLocaleDateString(getFormatLocale(), {
                       day: "numeric",
                       month: "short",
                     })}
                 <small>
                   {event.allDay
-                    ? "Todo el día"
-                    : new Date(event.start).toLocaleTimeString("es-CL", {
+                    ? tr("CalendarWidget.22765623c7")
+                    : new Date(event.start).toLocaleTimeString(getFormatLocale(), {
                         hour: "2-digit",
                         minute: "2-digit",
                       })}
@@ -344,13 +342,13 @@ export function CalendarWidget({ onConnect }: { onConnect: () => void }) {
             </a>
           ))}
           {!i.events.length && !i.googleBusy && !i.googleError && (
-            <p className="muted">No hay próximos eventos.</p>
+            <p className="muted">{tr("CalendarWidget.45a933ea10")}</p>
           )}
         </div>
       ) : (
         <button className="calendar-connect" onClick={onConnect}>
-          <span className="google-g">G</span>
-          <span>Conectar Google Calendar</span>
+          <span className="google-g">{tr("CalendarWidget.333e0a1e27")}</span>
+          <span>{tr("CalendarWidget.b862d93991")}</span>
           <ArrowUpRight size={13} />
         </button>
       )}

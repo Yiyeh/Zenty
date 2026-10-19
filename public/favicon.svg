@@ -1,1 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="18" fill="#edf1e7"/><g stroke="#39745b" stroke-width="4" stroke-linecap="round"><path d="M32 15v34M17.3 23.5l29.4 17M17.3 40.5l29.4-17"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#262737"/><stop offset="1" stop-color="#151723"/></linearGradient>
+    <linearGradient id="mark" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#d7caff"/><stop offset="1" stop-color="#9981e8"/></linearGradient>
+  </defs>
+  <rect x="16" y="16" width="224" height="224" rx="48" fill="url(#tile)" stroke="#ffffff" stroke-opacity=".07"/>
+  <path d="M79 80H178L80 176H179" fill="none" stroke="url(#mark)" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

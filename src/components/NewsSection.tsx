@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr } from "../lib/i18n.ts";
 import { newId } from "../lib/id";
 import { useState, useMemo } from "react";
 import {
@@ -38,6 +40,7 @@ import { safeUrl } from "../lib/dashboard";
 import "../news.css";
 
 export function NewsSection() {
+  useInterfaceLocale();
   const { bookmarks, setBookmarks, settings, setSettings, notify } =
     useDashboard();
   const {
@@ -135,13 +138,13 @@ export function NewsSection() {
     const trimmed = tagToAdd.trim().replace(/^#/, "");
     if (!trimmed) return;
     if (userTags.some((t) => t.toLowerCase() === trimmed.toLowerCase())) {
-      notify("Este tema ya está en tus etiquetas.");
+      notify(tr("NewsSection.a0b642cf6d"));
       return;
     }
     const updated = [...userTags, trimmed].join(", ");
     setSettings((s) => ({ ...s, newsTags: updated }));
     setNewTagInput("");
-    notify(`Tema "${trimmed}" guardado.`);
+    notify(tr("interface.NewsSection.912ff9aec1", { v0: trimmed }));
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
@@ -152,7 +155,7 @@ export function NewsSection() {
     if (activeTag?.toLowerCase() === tagToRemove.toLowerCase()) {
       setActiveTag(null);
     }
-    notify(`Tema "${tagToRemove}" eliminado.`);
+    notify(tr("interface.NewsSection.663a7efc7e", { v0: tagToRemove }));
   };
 
   // Bookmark toggle
@@ -164,7 +167,7 @@ export function NewsSection() {
           (b) => !(b.group === "Para leer" && b.url === article.link),
         ),
       );
-      notify("Artículo eliminado de guardados.");
+      notify(tr("NewsSection.489dded19d"));
     } else {
       setBookmarks((prev) => [
         ...prev,
@@ -172,11 +175,11 @@ export function NewsSection() {
           id: newId(),
           title: article.title,
           url: article.link,
-          group: "Para leer",
+          group: tr("NewsSection.79cc9d2c71"),
           color: settings.accentColor,
         },
       ]);
-      notify("Artículo guardado para leer con calma.");
+      notify(tr("NewsSection.56251ca84f"));
     }
   };
 
@@ -190,9 +193,9 @@ export function NewsSection() {
       await navigator.clipboard.writeText(article.link);
       setCopiedId(article.id);
       setTimeout(() => setCopiedId(null), 2000);
-      notify("Enlace copiado al portapapeles.");
+      notify(tr("NewsSection.1087133e59"));
     } catch {
-      notify("No se pudo copiar el enlace.");
+      notify(tr("NewsSection.08dff6f8f2"));
     }
   };
 
@@ -202,12 +205,12 @@ export function NewsSection() {
     const link = safeUrl(manualUrl);
     if (!link || !manualTitle.trim()) {
       setManualError(
-        "Introduce un título y una dirección web válida (https://...)",
+        tr("NewsSection.87cb46645b"),
       );
       return;
     }
     if (savedArticles.some((item) => item.url === link)) {
-      setManualError("Esta lectura ya está guardada.");
+      setManualError(tr("NewsSection.11dcb870c1"));
       return;
     }
     setBookmarks((prev) => [
@@ -216,14 +219,14 @@ export function NewsSection() {
         id: newId(),
         title: manualTitle.trim(),
         url: link,
-        group: "Para leer",
+        group: tr("NewsSection.79cc9d2c71"),
         color: settings.accentColor,
       },
     ]);
     setManualTitle("");
     setManualUrl("");
     setManualError("");
-    notify("Lectura guardada correctamente.");
+    notify(tr("NewsSection.e0d35df1f6"));
   };
 
   return (
@@ -231,14 +234,12 @@ export function NewsSection() {
       {/* Hero Header */}
       <section className="news-hero">
         <div className="news-hero-content">
-          <p className="eyebrow">TU QUIOSCO PERSONAL</p>
+          <p className="eyebrow">{tr("NewsSection.2920f18869")}</p>
           <h1>
-            Noticias & <span>Lecturas</span>
+            {tr("NewsSection.d6dd61f02f")}<span>{tr("NewsSection.c9920b5994")}</span>
           </h1>
           <p>
-            Información seleccionada de tus fuentes favoritas, organizada por
-            los temas que más te importan. Todo en un solo lugar.
-          </p>
+            {tr("NewsSection.fca84c6f87")}</p>
         </div>
         <div className="news-hero-actions">
           <div className="news-hero-status">
@@ -247,14 +248,14 @@ export function NewsSection() {
             />
             <span>
               {refreshing
-                ? "Actualizando noticias…"
+                ? tr("NewsSection.31d871060c")
                 : stale || error
-                  ? "Últimas noticias guardadas · sin conexión"
+                  ? tr("NewsSection.db33acdc6f")
                   : unavailableSources.length
-                    ? `${sources.length - unavailableSources.length} de ${sources.length} fuentes disponibles`
+                    ? tr("interface.NewsSection.85a8516eb3", { v0: sources.length - unavailableSources.length, v1: sources.length })
                     : updatedAt
                       ? `Actualizado ${formatRelativeTime(updatedAt)}`
-                      : "Listo"}
+                      : tr("NewsSection.b5fa51d564")}
             </span>
           </div>
           <div className="news-hero-buttons">
@@ -262,37 +263,35 @@ export function NewsSection() {
               className="secondary-button"
               onClick={() => refresh()}
               disabled={refreshing || loading}
-              title="Actualizar feeds de noticias"
+              title={tr("NewsSection.71ea738f4a")}
             >
               <RefreshCw
                 size={15}
                 className={refreshing ? "animate-spin" : ""}
               />
-              {refreshing ? "Actualizando…" : "Actualizar"}
+              {refreshing ? tr("NewsSection.211b1c3745") : tr("NewsSection.fe5f6628c7")}
             </button>
             <button
               className="primary-button"
               onClick={() => setActiveCategory("saved")}
             >
               <BookmarkPlus size={15} />
-              Guardados ({savedArticles.length})
+              {tr("NewsSection.cb80117fa8")}{savedArticles.length})
             </button>
           </div>
         </div>
       </section>
 
       {/* Saved Tags Bar */}
-      <div className="news-tags-bar" role="region" aria-label="Temas guardados">
+      <div className="news-tags-bar" role="region" aria-label={tr("NewsSection.18b8a6614f")}>
         <span className="news-tags-label">
           <Tag size={13} />
-          Temas:
-        </span>
+          {tr("NewsSection.e34361f52a")}</span>
         <button
           className={`news-tag-chip ${!activeTag ? "active" : ""}`}
           onClick={() => setActiveTag(null)}
         >
-          Todos los temas
-        </button>
+          {tr("NewsSection.59abf9d784")}</button>
         {userTags.map((tag) => (
           <div key={tag} className="news-tag-group">
             <button
@@ -304,7 +303,7 @@ export function NewsSection() {
             </button>
             <button
               className="tag-delete"
-              aria-label={`Eliminar tema ${tag}`}
+              aria-label={tr("a11y.NewsSection.306", { v0: tag })}
               onClick={() => handleRemoveTag(tag)}
             >
               <X size={12} />
@@ -314,11 +313,10 @@ export function NewsSection() {
         <button
           className="news-add-tag-btn"
           onClick={() => setTagModalOpen(true)}
-          title="Gestionar y añadir temas"
+          title={tr("NewsSection.80bdcd4d7c")}
         >
           <Plus size={13} />
-          Añadir tema
-        </button>
+          {tr("NewsSection.ab2d42cf18")}</button>
       </div>
 
       {/* Categories Navigation Bar */}
@@ -364,16 +362,16 @@ export function NewsSection() {
             <button
               className={viewMode === "grid" ? "active" : ""}
               onClick={() => setViewMode("grid")}
-              title="Vista cuadrícula"
-              aria-label="Vista cuadrícula"
+              title={tr("NewsSection.aa425ab6c1")}
+              aria-label={tr("NewsSection.aa425ab6c1")}
             >
               <LayoutGrid size={15} />
             </button>
             <button
               className={viewMode === "list" ? "active" : ""}
               onClick={() => setViewMode("list")}
-              title="Vista lista compacta"
-              aria-label="Vista lista compacta"
+              title={tr("NewsSection.15a048adba")}
+              aria-label={tr("NewsSection.15a048adba")}
             >
               <List size={15} />
             </button>
@@ -388,7 +386,7 @@ export function NewsSection() {
             <Search size={16} />
             <input
               type="search"
-              placeholder="Buscar por título, tema, palabras clave..."
+              placeholder={tr("NewsSection.cc13d5dba1")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -396,7 +394,7 @@ export function NewsSection() {
               <button
                 className="news-search-clear"
                 onClick={() => setSearchQuery("")}
-                title="Limpiar búsqueda"
+                title={tr("NewsSection.a7859bae87")}
               >
                 <X size={14} />
               </button>
@@ -407,9 +405,9 @@ export function NewsSection() {
             className="news-source-select"
             value={selectedSource}
             onChange={(e) => setSelectedSource(e.target.value)}
-            aria-label="Filtrar por fuente de noticias"
+            aria-label={tr("NewsSection.4e5f997b16")}
           >
-            <option value="all">Todas las fuentes ({sources.length})</option>
+            <option value="all">{tr("NewsSection.1c15d92fd2")}{sources.length})</option>
             {sources.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name} ({s.language.toUpperCase()})
@@ -424,16 +422,15 @@ export function NewsSection() {
         activeCategory !== "saved" && (
           <div className="news-active-filter-banner">
             <span>
-              Filtro activo: {activeTag && <strong>Tema #{activeTag} </strong>}
-              {searchQuery && <strong>Texto &quot;{searchQuery}&quot; </strong>}
+              {tr("NewsSection.8624fe4671")}{activeTag && <strong>{tr("NewsSection.9c5da071b7")}{activeTag} </strong>}
+              {searchQuery && <strong>{tr("NewsSection.7090a9d8d2")}{searchQuery}{tr("NewsSection.905ef1839d")}</strong>}
               {selectedSource !== "all" && (
                 <strong>
-                  Fuente{" "}
+                  {tr("NewsSection.382897b636")}{" "}
                   {sources.find((s) => s.id === selectedSource)?.name}{" "}
                 </strong>
               )}
-              ({filteredArticles.length} resultados)
-            </span>
+              ({filteredArticles.length} {tr("NewsSection.54402a727a")}</span>
             <button
               className="text-button"
               onClick={() => {
@@ -442,8 +439,7 @@ export function NewsSection() {
                 setSelectedSource("all");
               }}
             >
-              Limpiar todos los filtros
-            </button>
+              {tr("NewsSection.bcab4f79e9")}</button>
           </div>
         )}
 
@@ -454,26 +450,24 @@ export function NewsSection() {
           <div className="news-add-manual-form">
             <h3>
               <BookmarkPlus size={17} />
-              Añadir lectura manual por enlace web
-            </h3>
+              {tr("NewsSection.ab1d0b92dd")}</h3>
             <form onSubmit={handleAddManualBookmark}>
               <div className="news-add-manual-grid">
                 <input
                   required
-                  placeholder="Título del artículo o tema"
+                  placeholder={tr("NewsSection.535f61c214")}
                   value={manualTitle}
                   onChange={(e) => setManualTitle(e.target.value)}
                 />
                 <input
                   required
                   type="url"
-                  placeholder="https://ejemplo.com/articulo"
+                  placeholder={tr("NewsSection.fdc3daa8bd")}
                   value={manualUrl}
                   onChange={(e) => setManualUrl(e.target.value)}
                 />
                 <button className="primary-button" type="submit">
-                  Guardar lectura
-                </button>
+                  {tr("NewsSection.a83ffc5563")}</button>
               </div>
               {manualError && (
                 <p className="error-message" role="alert">
@@ -486,12 +480,9 @@ export function NewsSection() {
           {savedArticles.length === 0 ? (
             <div className="news-empty-state">
               <BookOpen size={36} />
-              <h3>Tu lista de lectura está vacía</h3>
+              <h3>{tr("NewsSection.84777daf43")}</h3>
               <p>
-                Puedes pulsar en el botón de guardar de cualquier noticia para
-                leerla más tarde con tranquilidad, o agregar cualquier enlace
-                con el formulario superior.
-              </p>
+                {tr("NewsSection.9c4163b5ea")}</p>
             </div>
           ) : (
             <div className="news-list-view">
@@ -523,18 +514,18 @@ export function NewsSection() {
                       className="icon-button"
                       target={settings.openInNewTab ? "_blank" : "_self"}
                       rel="noreferrer"
-                      title="Abrir enlace"
+                      title={tr("NewsSection.3225b785c5")}
                     >
                       <ExternalLink size={15} />
                     </a>
                     <button
                       className="icon-button"
-                      title="Eliminar de guardados"
+                      title={tr("NewsSection.8630af8089")}
                       onClick={() => {
                         setBookmarks((prev) =>
                           prev.filter((b) => b.id !== item.id),
                         );
-                        notify("Lectura eliminada.", () =>
+                        notify(tr("NewsSection.edf1f0d558"), () =>
                           setBookmarks((prev) =>
                             prev.some((b) => b.id === item.id)
                               ? prev
@@ -554,28 +545,24 @@ export function NewsSection() {
       ) : loading && articles.length === 0 ? (
         <div className="news-empty-state">
           <RefreshCw size={36} className="animate-spin" />
-          <h3>Cargando las últimas noticias…</h3>
+          <h3>{tr("NewsSection.6d85c13cb1")}</h3>
           <p>
-            Consultando fuentes de tecnología, videojuegos, manga y ciencia.
-          </p>
+            {tr("NewsSection.616e99c170")}</p>
         </div>
       ) : error && articles.length === 0 ? (
         <div className="news-empty-state">
           <Sparkles size={36} />
-          <h3>No se pudieron cargar las noticias</h3>
-          <p>{error}</p>
+          <h3>{tr("NewsSection.ad210cdf5d")}</h3>
+          <p>{translateMessage(error)}</p>
           <button className="primary-button" onClick={() => refresh()}>
-            Reintentar
-          </button>
+            {tr("NewsSection.a9254c5f81")}</button>
         </div>
       ) : filteredArticles.length === 0 ? (
         <div className="news-empty-state">
           <Search size={36} />
-          <h3>No se encontraron noticias</h3>
+          <h3>{tr("NewsSection.682606be2d")}</h3>
           <p>
-            No hay artículos que coincidan con los filtros o etiquetas
-            seleccionadas. Intenta cambiar de tema o ampliar la búsqueda.
-          </p>
+            {tr("NewsSection.e49a0fd272")}</p>
           <button
             className="secondary-button"
             onClick={() => {
@@ -585,8 +572,7 @@ export function NewsSection() {
               setActiveCategory("all");
             }}
           >
-            Ver todas las noticias
-          </button>
+            {tr("NewsSection.760eaa7b07")}</button>
         </div>
       ) : (
         <>
@@ -655,7 +641,7 @@ export function NewsSection() {
                         key={t}
                         className="news-mini-tag"
                         onClick={() => setActiveTag(t)}
-                        title={`Filtrar por #${t}`}
+                        title={tr("NewsSection.af4bfbddec", { v0: t })}
                       >
                         #{t}
                       </button>
@@ -670,16 +656,15 @@ export function NewsSection() {
                     rel="noreferrer"
                     className="news-read-link"
                   >
-                    Leer noticia completa
-                    <ExternalLink size={14} />
+                    {tr("NewsSection.fa78b914ee")}<ExternalLink size={14} />
                   </a>
                   <div className="news-action-btns">
                     <button
                       className="icon-button"
                       title={
                         isArticleSaved(featuredArticle.link)
-                          ? "Eliminar de guardados"
-                          : "Guardar para después"
+                          ? tr("NewsSection.8630af8089")
+                          : tr("NewsSection.6b73aa64de")
                       }
                       onClick={() => toggleBookmark(featuredArticle)}
                     >
@@ -691,7 +676,7 @@ export function NewsSection() {
                     </button>
                     <button
                       className="icon-button"
-                      title="Copiar enlace"
+                      title={tr("NewsSection.db164690a5")}
                       onClick={() => handleCopyLink(featuredArticle)}
                     >
                       {copiedId === featuredArticle.id ? (
@@ -769,7 +754,7 @@ export function NewsSection() {
                               key={t}
                               className="news-mini-tag"
                               onClick={() => setActiveTag(t)}
-                              title={`Filtrar por #${t}`}
+                              title={tr("NewsSection.af4bfbddec", { v0: t })}
                             >
                               #{t}
                             </button>
@@ -784,16 +769,15 @@ export function NewsSection() {
                           rel="noreferrer"
                           className="news-read-link"
                         >
-                          Leer
-                          <ExternalLink size={13} />
+                          {tr("NewsSection.f4e0ac0804")}<ExternalLink size={13} />
                         </a>
                         <div className="news-action-btns">
                           <button
                             className="icon-button"
                             title={
                               isSaved
-                                ? "Eliminar de guardados"
-                                : "Guardar para leer después"
+                                ? tr("NewsSection.8630af8089")
+                                : tr("NewsSection.ec6d42c994")
                             }
                             onClick={() => toggleBookmark(article)}
                           >
@@ -808,7 +792,7 @@ export function NewsSection() {
                           </button>
                           <button
                             className="icon-button"
-                            title="Copiar enlace"
+                            title={tr("NewsSection.db164690a5")}
                             onClick={() => handleCopyLink(article)}
                           >
                             {copiedId === article.id ? (
@@ -859,7 +843,7 @@ export function NewsSection() {
                     <div className="news-action-btns">
                       <button
                         className="icon-button"
-                        title={isSaved ? "Quitar guardado" : "Guardar lectura"}
+                        title={isSaved ? tr("NewsSection.1d23d7765e") : tr("NewsSection.a83ffc5563")}
                         onClick={() => toggleBookmark(article)}
                       >
                         {isSaved ? (
@@ -876,7 +860,7 @@ export function NewsSection() {
                         className="icon-button"
                         target={settings.openInNewTab ? "_blank" : "_self"}
                         rel="noreferrer"
-                        title="Abrir artículo"
+                        title={tr("NewsSection.affa1ba3d4")}
                       >
                         <ExternalLink size={16} />
                       </a>
@@ -894,14 +878,14 @@ export function NewsSection() {
           className="secondary-button news-load-more"
           onClick={() => setPage({ key: pageKey, count: visibleCount + 24 })}
         >
-          Cargar más noticias ({listArticles.length - visibleCount})
+          {tr("NewsSection.443a0888e6")}{listArticles.length - visibleCount})
         </button>
       )}
       <Dialog
         open={tagModalOpen}
         onClose={() => setTagModalOpen(false)}
-        title="Tus temas guardados"
-        description="Elige los temas que quieres tener a mano como filtros."
+        title={tr("NewsSection.74ef575f9f")}
+        description={tr("NewsSection.81f7871e76")}
       >
         <div className="dialog-body news-topic-manager">
           <form
@@ -912,15 +896,14 @@ export function NewsSection() {
             }}
           >
             <input
-              aria-label="Nuevo tema"
-              placeholder="Berserk, IA, Steam Deck…"
+              aria-label={tr("NewsSection.e2bc8aafe2")}
+              placeholder={tr("NewsSection.84037d3389")}
               maxLength={40}
               value={newTagInput}
               onChange={(event) => setNewTagInput(event.target.value)}
             />
             <button className="primary-button" type="submit">
-              <Plus size={15} /> Añadir
-            </button>
+              <Plus size={15} /> {tr("NewsSection.87aa1c4aa8")}</button>
           </form>
           <div className="news-modal-tags-list">
             {userTags.length ? (
@@ -929,7 +912,7 @@ export function NewsSection() {
                   #{tag}
                   <button
                     className="tag-delete"
-                    aria-label={`Eliminar tema ${tag}`}
+                    aria-label={tr("a11y.NewsSection.915", { v0: tag })}
                     onClick={() => handleRemoveTag(tag)}
                   >
                     <X size={12} />
@@ -937,11 +920,11 @@ export function NewsSection() {
                 </span>
               ))
             ) : (
-              <p className="muted">Todavía no has guardado temas.</p>
+              <p className="muted">{tr("NewsSection.34e8f4457f")}</p>
             )}
           </div>
           <div className="news-modal-suggestions">
-            <span>Sugerencias</span>
+            <span>{tr("NewsSection.70cf296fe1")}</span>
             <div className="news-suggestions-chips">
               {DEFAULT_PRESET_TAGS.filter(
                 (tag) =>

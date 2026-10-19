@@ -1,9 +1,12 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr, getFormatLocale } from "../lib/i18n.ts";
 import { newId } from "../lib/id";
 import { useState } from "react";
 import { Plus, Trash2, Check, Leaf, Flame } from "lucide-react";
 import { useDashboard } from "../context/DashboardStore";
 import { habitStreak, localDate } from "../lib/dashboard";
 export function HabitTracker() {
+  useInterfaceLocale();
   const { habits, setHabits, notify } = useDashboard();
   const [name, setName] = useState("");
   const [adding, setAdding] = useState(false);
@@ -13,7 +16,7 @@ export function HabitTracker() {
     d.setDate(d.getDate() - (6 - i));
     return {
       date: localDate(d),
-      label: d.toLocaleDateString("es-CL", { weekday: "narrow" }),
+      label: d.toLocaleDateString(getFormatLocale(), { weekday: "narrow" }),
       day: d.getDate(),
     };
   });
@@ -21,17 +24,16 @@ export function HabitTracker() {
     <section className="glass-panel habits-card">
       <div className="widget-heading">
         <h3>
-          <Leaf size={17} /> Pequeños rituales
-        </h3>
+          <Leaf size={17} /> {tr("HabitTracker.7f67e60d89")}</h3>
         <button
           className="icon-button"
-          aria-label="Crear hábito"
+          aria-label={tr("HabitTracker.1d867ce79f")}
           onClick={() => setAdding(!adding)}
         >
           <Plus size={17} />
         </button>
       </div>
-      <p className="muted">La constancia se construye de a poco.</p>
+      <p className="muted">{tr("HabitTracker.c614266dd0")}</p>
       {adding && (
         <form
           className="inline-form habit-form"
@@ -53,13 +55,13 @@ export function HabitTracker() {
         >
           <input
             autoFocus
-            aria-label="Nombre del nuevo hábito"
+            aria-label={tr("HabitTracker.a0a2ed81b2")}
             maxLength={100}
-            placeholder="Leer, caminar, tomar agua…"
+            placeholder={tr("HabitTracker.d4b9541d8b")}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
-          <button className="icon-button" aria-label="Guardar hábito">
+          <button className="icon-button" aria-label={tr("HabitTracker.fe50ab732d")}>
             <Check size={17} />
           </button>
         </form>
@@ -71,14 +73,13 @@ export function HabitTracker() {
               <div className="habit-title">
                 <strong>{h.name}</strong>
                 <span>
-                  <Flame size={12} /> {habitStreak(h.history)} días
-                </span>
+                  <Flame size={12} /> {habitStreak(h.history)} {tr("HabitTracker.cb3ee4ef47")}</span>
                 <button
                   className="icon-button danger"
-                  aria-label={`Eliminar hábito ${h.name}`}
+                  aria-label={tr("HabitTracker.c60bb4e73a", { v0: h.name })}
                   onClick={() => {
                     setHabits((p) => p.filter((item) => item.id !== h.id));
-                    notify("Hábito eliminado.", () =>
+                    notify(tr("HabitTracker.b640ddce74"), () =>
                       setHabits((p) =>
                         p.some((item) => item.id === h.id) ? p : [...p, h],
                       ),
@@ -96,7 +97,7 @@ export function HabitTracker() {
                       <span>{day.label}</span>
                       {day.date === today ? (
                         <button
-                          aria-label={`${done ? "Desmarcar" : "Completar"} ${h.name} hoy`}
+                          aria-label={tr("HabitTracker.b39be76255", { v0: done ? tr("HabitTracker.4a68467da3") : tr("HabitTracker.8975618f2a"), v1: h.name })}
                           aria-pressed={done}
                           className={done ? "habit-done" : "habit-today"}
                           onClick={() =>
@@ -120,7 +121,7 @@ export function HabitTracker() {
                       ) : (
                         <span
                           className={`habit-day ${done ? "habit-done" : ""}`}
-                          title={`${day.date}: ${done ? "Completado" : "Sin registrar"}`}
+                          title={`${day.date}: ${done ? tr("HabitTracker.856641d2b3") : tr("HabitTracker.4bd4c1909b")}`}
                         >
                           {done ? <Check size={14} /> : day.day}
                         </span>
@@ -135,9 +136,9 @@ export function HabitTracker() {
       ) : (
         <div className="empty-state small-empty">
           <Leaf size={25} strokeWidth={1.3} />
-          <span>Un hábito pequeño. Un cambio que crece.</span>
+          <span>{tr("HabitTracker.5b6f9b17a6")}</span>
           <button className="text-button" onClick={() => setAdding(true)}>
-            Crear mi primer hábito <Plus size={13} />
+            {tr("HabitTracker.650b44149c")}<Plus size={13} />
           </button>
         </div>
       )}

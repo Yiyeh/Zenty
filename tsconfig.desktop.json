@@ -8,6 +8,7 @@
     "rootDir": ".",
     "outDir": "desktop-server",
     "rewriteRelativeImportExtensions": true,
+    "resolveJsonModule": true,
     "verbatimModuleSyntax": true,
     "skipLibCheck": true,
     "strict": true,

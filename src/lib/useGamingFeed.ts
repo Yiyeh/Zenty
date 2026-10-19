@@ -1,3 +1,4 @@
+import { tr } from "./i18n.ts";
 import { APP_NAME } from "./brand.ts";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GamingFeed } from "./gaming";
@@ -19,10 +20,10 @@ export function useGamingFeed(kind: FeedKind | null) {
       const response = await fetch(`/api/gaming/${kind}`, {
         signal: AbortSignal.timeout(60_000),
       });
-      if (!response.ok) throw new Error("Servicio local no disponible");
+      if (!response.ok) throw new Error(tr("useGamingFeed.09dbdfca7a"));
       const body: GamingFeed = await response.json();
       if (!Array.isArray(body.items) || typeof body.stale !== "boolean")
-        throw new Error("Respuesta inválida");
+        throw new Error(tr("useGamingFeed.78bdd7baa6"));
       if (ticket === sequence.current)
         setResults((p) => ({ ...p, [kind]: body }));
     } catch {
@@ -33,7 +34,7 @@ export function useGamingFeed(kind: FeedKind | null) {
             items: p[kind]?.items || [],
             updatedAt: p[kind]?.updatedAt || null,
             stale: true,
-            warning: `No se pudo conectar con el radar. Comprueba tu conexión y que ${APP_NAME} esté en ejecución con npm run dev o npm start.`,
+            warning: tr("useGamingFeed.4ad1af9426", { v0: APP_NAME }),
           },
         }));
     } finally {

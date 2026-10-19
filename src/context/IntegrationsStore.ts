@@ -1,3 +1,4 @@
+import { tr } from "../lib/i18n.ts";
 import { createContext, useContext } from "react";
 export interface Session {
   accessToken: string;
@@ -93,6 +94,6 @@ export interface IntegrationValue {
 export const IntegrationContext = createContext<IntegrationValue | null>(null);
 export function useIntegrations() {
   const value = useContext(IntegrationContext);
-  if (!value) throw new Error("IntegrationsProvider missing");
+  if (!value) throw new Error(tr("IntegrationsStore.fbc92bf22c"));
   return value;
 }

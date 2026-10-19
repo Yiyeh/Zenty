@@ -1,3 +1,4 @@
+import { tr } from "../src/lib/i18n.ts";
 import { APP_NAME } from "../src/lib/brand.ts";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
@@ -29,7 +30,7 @@ export function normalizeGiveaways(
   if (!Array.isArray(value)) {
     if ((value as Row)?.status === 0 || (value as Row)?.status === 201)
       return [];
-    throw new Error("Unexpected GamerPower response");
+    throw new Error(tr("gaming_api.b8a0e0bbdb"));
   }
   return rows(value).flatMap((r) => {
     const url = httpsUrl(r.gamerpower_url, [
@@ -69,7 +70,7 @@ export function normalizeGiveaways(
 }
 export function normalizeDeals(value: unknown, stores: unknown): GameItem[] {
   if (!Array.isArray(value) || !Array.isArray(stores))
-    throw new Error("Unexpected CheapShark response");
+    throw new Error(tr("gaming_api.2e521fa962"));
   const names = new Map(
     rows(stores).map((s) => [String(s.storeID), text(s.storeName, 100)]),
   );
@@ -204,7 +205,7 @@ export function createGamingApi({
     });
     if (!response.ok) throw new Error(`Source HTTP ${response.status}`);
     const body = await response.text();
-    if (body.length > 8_000_000) throw new Error("Source too large");
+    if (body.length > 8_000_000) throw new Error(tr("gaming_api.d43e62944a"));
     return JSON.parse(body);
   }
   async function releases(): Promise<GameItem[]> {
@@ -215,7 +216,7 @@ export function createGamingApi({
       !Array.isArray(categories?.coming_soon?.items) ||
       !Array.isArray(categories?.new_releases?.items)
     )
-      throw new Error("Unexpected Steam response");
+      throw new Error(tr("gaming_api.d752736849"));
     const incoming = rows(categories.coming_soon.items).slice(0, 10);
     const details = new Map<number, Row>();
     // Small fixed batch, never an unbounded scan of Steam's catalogue.
@@ -272,7 +273,7 @@ export function createGamingApi({
         updatedAt: old?.updatedAt || null,
         stale: true,
         warning:
-          "La fuente no respondió. Puedes volver a intentar en un minuto.",
+          tr("gaming_api.5fca477dc1"),
       };
     attempts.set(kind, now());
     const pending = load(kind)
@@ -295,7 +296,7 @@ export function createGamingApi({
             return {
               ...result,
               warning:
-                "La consulta está disponible, pero no se pudo guardar en disco para la próxima sesión.",
+                tr("gaming_api.10620a5143"),
             };
           }
         }
@@ -306,8 +307,8 @@ export function createGamingApi({
         updatedAt: old?.updatedAt || null,
         stale: true,
         warning: old
-          ? "La fuente no respondió. Se muestra la última consulta; comprueba la vigencia en la tienda."
-          : "No se pudo consultar esta fuente. Reintenta en un minuto o abre su sitio.",
+          ? tr("gaming_api.00dbea595b")
+          : tr("gaming_api.bd9597f995"),
       }))
       .finally(() => flights.delete(kind));
     flights.set(kind, pending);
@@ -342,12 +343,12 @@ export function createGamingApi({
         req.headers.origin !== `https://${host}`)
     ) {
       reply(403, {
-        error: `Solo disponible desde ${APP_NAME} en este equipo.`,
+        error: tr("gaming_api.b0d2ede4ec", { v0: APP_NAME }),
       });
       return;
     }
     if (req.method !== "GET") {
-      reply(405, { error: "Método no permitido." });
+      reply(405, { error: tr("gaming_api.1bd43567cd") });
       return;
     }
     const kind = req.url.split("?")[0].slice("/api/gaming/".length);

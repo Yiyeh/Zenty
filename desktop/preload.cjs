@@ -2,6 +2,16 @@ const { contextBridge, ipcRenderer } = require("electron");
 if (process.isMainFrame)
   contextBridge.exposeInMainWorld("zentyDesktop", {
     platform: process.platform,
+    setLocale: (language) => ipcRenderer.invoke("zenty:locale:set", language),
+    security: {
+      get: () => ipcRenderer.invoke("zenty:security:get"),
+      unlock: (pin) => ipcRenderer.invoke("zenty:security:unlock", pin),
+      lock: () => ipcRenderer.invoke("zenty:security:lock"),
+      configure: (current, pin) => ipcRenderer.invoke("zenty:security:configure", current, pin),
+      disable: (pin) => ipcRenderer.invoke("zenty:security:disable", pin),
+      recover: (code) => ipcRenderer.invoke("zenty:security:recover", code),
+      onState: (listener) => { const callback = (_event, value) => listener(value); ipcRenderer.on("zenty:security:state", callback); return () => ipcRenderer.removeListener("zenty:security:state", callback); },
+    },
     updates: {
       get:()=>ipcRenderer.invoke("zenty:updates:get"),check:()=>ipcRenderer.invoke("zenty:updates:check"),download:()=>ipcRenderer.invoke("zenty:updates:download"),install:()=>ipcRenderer.invoke("zenty:updates:install"),
       onState:(listener)=>{const callback=(_event,state)=>listener(state);ipcRenderer.on("zenty:updates:state",callback);return()=>ipcRenderer.removeListener("zenty:updates:state",callback);},

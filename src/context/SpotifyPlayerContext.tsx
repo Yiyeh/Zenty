@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "./Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { useCallback, useLayoutEffect, useState } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -8,6 +10,7 @@ import { spotifyEmbed } from "../lib/dashboard";
 import { DesktopVolume } from "../components/DesktopVolume";
 
 export function SpotifyPlayerProvider({ children }: { children: ReactNode }) {
+  useInterfaceLocale();
   const { settings } = useDashboard();
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const [source, setSource] = useState<{ url: string; embed: string } | null>(
@@ -91,13 +94,13 @@ export function SpotifyPlayerProvider({ children }: { children: ReactNode }) {
           >
             <div className="floating-player-heading" hidden={!!anchor}>
               <Music2 size={16} />
-              <span>Tu música sigue aquí</span>
+              <span>{tr("SpotifyPlayerContext.cae4eb1b5a")}</span>
               <button
                 className="icon-button"
                 aria-label={
                   expanded
-                    ? "Contraer reproductor flotante"
-                    : "Mostrar reproductor flotante"
+                    ? tr("SpotifyPlayerContext.7f35d00348")
+                    : tr("SpotifyPlayerContext.d6a4269394")
                 }
                 aria-expanded={expanded}
                 onClick={() => setExpanded((value) => !value)}
@@ -107,7 +110,7 @@ export function SpotifyPlayerProvider({ children }: { children: ReactNode }) {
             </div>
             <iframe
               id="persistent-spotify-frame"
-              title="Reproductor oficial de Spotify"
+              title={tr("SpotifyPlayerContext.6056aea78a")}
               src={`${activeSource}?utm_source=generator&theme=0`}
               width="100%"
               height={anchor ? "100%" : "152"}

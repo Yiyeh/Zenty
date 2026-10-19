@@ -125,3 +125,19 @@ El save continúa en `%APPDATA%\Zenty`, independiente del instalador. Antes de a
 El workflow utiliza `GITHUB_TOKEN` temporal de Actions. No hay tokens de GitHub incrustados en la app. Para compilar sin publicar: `npm run desktop:installer`; el instalador queda en `releases/Zenty-Installer`. La versión portable sigue generándose con `npm run desktop:package`.
 
 Los datos personales, documentos, sesiones, cachés, artefactos y compilaciones se excluyen de Git. Las releases distribuyen únicamente el programa. Las primeras compilaciones no tienen certificado Authenticode; la firma de Windows puede configurarse posteriormente en el proceso de publicación.
+
+## Idiomas
+
+La primera bienvenida pregunta el idioma y el nombre. El idioma también se cambia desde **Personalizar → Tu estilo**. Se guarda en el perfil y en los respaldos; la interfaz cambia sin reiniciar el lector o Spotify. Se incluyen español, inglés, portugués, francés, alemán, italiano, japonés, chino simplificado y coreano.
+
+Los catálogos están organizados en `src/locales/{es,en,pt,fr,de,it,ja,zh,ko}/`, con archivos `common`, `home`, `settings`, `reader`, `gaming`, `services` y `system`. Cada idioma se carga bajo demanda desde archivos locales. `src/lib/i18n.ts` resuelve mensajes, variables, plurales y formatos regionales. Los componentes usan claves, sin cadenas de interfaz en JSX. Los identificadores técnicos y los valores antiguos del save conservan su forma para mantener la compatibilidad. El contenido de libros, mangas, noticias, nombres de juegos y textos escritos por el usuario conserva su idioma original.
+
+`npm run locales:check` comprueba claves, variables y textos/atributos JSX; también forma parte de la compilación. Al añadir un mensaje, utiliza una clave descriptiva y agrégala en todos los idiomas. Las traducciones iniciales se han generado con asistencia automática y necesitan revisión lingüística para pulir matices, especialmente en los idiomas asiáticos. El programa no llama a servicios de traducción al utilizarse.
+
+## PIN opcional
+
+En escritorio, **Personalizar → Seguridad** permite activar, cambiar, desactivar y bloquear la app con un PIN de 6 a 12 dígitos. Está desactivado por defecto. Al reiniciar se exige el PIN; tras cinco fallos hay una espera creciente, conservada en disco. Cada configuración genera un código de recuperación que se muestra una sola vez; guardarlo permite quitar un PIN olvidado sin borrar documentos.
+
+El perfil guarda únicamente hashes scrypt con sal aleatoria en `%APPDATA%\Zenty\security\pin.json`. El PIN no cifra los documentos ni sustituye la protección de Windows. Sus credenciales y el código de recuperación se excluyen de las exportaciones. Al bloquear se guardan los cambios, se detiene el acceso Wi-Fi y las API de datos rechazan peticiones; al desbloquear se puede volver a activar el servidor local desde sus opciones.
+
+El icono geométrico de Zenty se define en `public/favicon.svg`. La compilación genera `desktop/icon.ico` y `public/favicon.ico` con ocho tamaños entre 16 y 256 píxeles, además de un PNG de 512 píxeles. Se utiliza en la ventana, el ejecutable, el instalador y los accesos directos.

@@ -1,3 +1,4 @@
+import { tr } from "../lib/i18n.ts";
 import { createContext, useContext } from "react";
 import type { Dispatch, SetStateAction } from "react";
 import type { DashboardData } from "../lib/dashboard";
@@ -31,6 +32,6 @@ export const DashboardContext = createContext<ContextValue | undefined>(
 );
 export function useDashboard() {
   const value = useContext(DashboardContext);
-  if (!value) throw new Error("DashboardProvider missing");
+  if (!value) throw new Error(tr("DashboardStore.abb32c3e42"));
   return value;
 }

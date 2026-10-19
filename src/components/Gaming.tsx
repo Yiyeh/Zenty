@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr, getFormatLocale } from "../lib/i18n.ts";
 import { newId } from "../lib/id";
 import { APP_NAME, APP_SLUG } from "../lib/brand.ts";
 import { lazy, Suspense, useMemo, useState } from "react";
@@ -51,27 +53,28 @@ const InstalledGames = lazy(() =>
     default: module.InstalledGames,
   })),
 );
-const tabs = [
-  { id: "installed", label: "Mis juegos", icon: MonitorDown },
-  { id: "giveaways", label: "Juegos gratis", icon: Gift },
-  { id: "releases", label: "Lanzamientos", icon: CalendarDays },
-  { id: "deals", label: "Ofertas de PC", icon: Tag },
-  { id: "saved", label: "Mi juegoteca", icon: Heart },
-] as const;
+const tabs = ([
+  { id: "installed", get label() { return tr("Gaming.93810150ff"); }, icon: MonitorDown },
+  { id: "giveaways", get label() { return tr("Gaming.7b620f49f8"); }, icon: Gift },
+  { id: "releases", get label() { return tr("Gaming.2a0d096ded"); }, icon: CalendarDays },
+  { id: "deals", get label() { return tr("Gaming.ebf8f47b9f"); }, icon: Tag },
+  { id: "saved", get label() { return tr("Gaming.7cd4459f57"); }, icon: Heart },
+] as const);
 type Tab = (typeof tabs)[number]["id"];
 const sources: Record<FeedKind, { title: string; url: string }> = {
-  giveaways: { title: "GamerPower", url: "https://www.gamerpower.com/" },
+  giveaways: { get title() { return tr("Gaming.f8e0aae1be"); }, url: "https://www.gamerpower.com/" },
   releases: {
     title: "Steam",
     url: "https://store.steampowered.com/explore/upcoming/",
   },
-  deals: { title: "CheapShark", url: "https://www.cheapshark.com/" },
+  deals: { get title() { return tr("Gaming.727c458fd7"); }, url: "https://www.cheapshark.com/" },
 };
 function Price({ game }: { game: GameItem }) {
+  useInterfaceLocale();
   return game.price !== null ? (
     <span className="gamer-price">
       <strong>
-        {new Intl.NumberFormat("es-CL", {
+        {new Intl.NumberFormat(getFormatLocale(), {
           style: "currency",
           currency: "USD",
           currencyDisplay: "code",
@@ -79,7 +82,7 @@ function Price({ game }: { game: GameItem }) {
       </strong>
       {game.regularPrice !== null && (
         <del>
-          {new Intl.NumberFormat("es-CL", {
+          {new Intl.NumberFormat(getFormatLocale(), {
             style: "currency",
             currency: "USD",
             currencyDisplay: "code",
@@ -113,7 +116,7 @@ function exportDate(game: GameItem) {
     `DTSTART;VALUE=DATE:${game.releaseDate.replace(/-/g, "")}`,
     `DTEND;VALUE=DATE:${date.toISOString().slice(0, 10).replace(/-/g, "")}`,
     `SUMMARY:${escape(game.title)}`,
-    `DESCRIPTION:${escape("Lanzamiento según la fuente. La fecha puede cambiar. " + game.url)}`,
+    `DESCRIPTION:${escape(tr("Gaming.f7cbf7dea0") + game.url)}`,
     "END:VEVENT",
     "END:VCALENDAR",
     "",
@@ -128,6 +131,7 @@ function exportDate(game: GameItem) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 export function Gaming() {
+  useInterfaceLocale();
   const { settings, setSettings, games, setGames, notify } = useDashboard();
   const [tab, setTab] = useState<Tab>("installed");
   const [query, setQuery] = useState("");
@@ -174,7 +178,7 @@ export function Gaming() {
   };
   const save = (game: GameItem) => {
     if (games.some((s) => s.id === game.id)) {
-      notify("Ya está en tu juegoteca.");
+      notify(tr("Gaming.cdc22f214c"));
       return;
     }
     setGames((p) =>
@@ -191,13 +195,13 @@ export function Gaming() {
             ...p,
           ],
     );
-    notify("Guardado en tu juegoteca.");
+    notify(tr("Gaming.5b3c2e0c43"));
   };
   const remove = (id: string) => {
     const previous = games.find((g) => g.id === id);
     setGames((p) => p.filter((g) => g.id !== id));
     if (previous)
-      notify("Juego quitado de tu lista.", () =>
+      notify(tr("Gaming.7a7ab9be6c"), () =>
         setGames((p) => (p.some((g) => g.id === id) ? p : [previous, ...p])),
       );
   };
@@ -271,13 +275,13 @@ export function Gaming() {
     setQuery("");
   };
   const feedTime = feed?.updatedAt
-    ? new Date(feed.updatedAt).toLocaleString("es-CL", {
+    ? new Date(feed.updatedAt).toLocaleString(getFormatLocale(), {
         day: "numeric",
         month: "short",
         hour: "2-digit",
         minute: "2-digit",
       })
-    : "Sin consulta disponible";
+    : tr("Gaming.b687c1dd9a");
   return (
     <div
       className={`gaming-page ${tab === "installed" ? "gaming-library-active" : ""}`}
@@ -285,32 +289,29 @@ export function Gaming() {
       <section className="gamer-hero">
         <div className="gamer-hero-copy">
           <span className="gamer-eyebrow">
-            <span /> TU PRÓXIMA PARTIDA EMPIEZA AQUÍ
-          </span>
+            <span /> {tr("Gaming.3176301bcb")}</span>
           <h1>
-            Tu rincón <em>gamer.</em>
+            {tr("Gaming.8f15da15ba")}<em>{tr("Gaming.53d807042f")}</em>
           </h1>
           <p>
-            Descubre, guarda y juega. Un lugar para todo lo que te entusiasma.
-          </p>
+            {tr("Gaming.0f3b311974")}</p>
           <div className="gamer-hero-actions">
             <button onClick={() => changeTab("saved")}>
-              <Heart size={16} /> Mi juegoteca <span>{games.length}</span>
+              <Heart size={16} /> {tr("Gaming.08d1ae9569")}<span>{games.length}</span>
             </button>
             <button onClick={() => setPreferences(true)}>
-              <Settings2 size={16} /> A mi manera
-            </button>
+              <Settings2 size={16} /> {tr("Gaming.3f3d1c15be")}</button>
           </div>
         </div>
         <div className="gamer-hero-art" aria-hidden="true">
           <i />
           <i />
           <Gamepad2 strokeWidth={0.85} />
-          <span>PRESS PLAY. MAKE TIME.</span>
+          <span>{tr("Gaming.071cce523a")}</span>
         </div>
       </section>
       <div className="gamer-quick-links">
-        <span>TUS PUNTOS DE ENCUENTRO</span>
+        <span>{tr("Gaming.5f415a8d73")}</span>
         {[
           { name: "Steam", url: "https://store.steampowered.com/" },
           {
@@ -318,8 +319,8 @@ export function Gaming() {
             url: "https://store.epicgames.com/es-ES/free-games",
           },
           { name: "GOG", url: "https://www.gog.com/" },
-          { name: "Twitch", url: "https://www.twitch.tv/" },
-          { name: "Discord", url: "https://discord.com/channels/@me" },
+          { name: tr("Gaming.a731a58c4c"), url: "https://www.twitch.tv/" },
+          { name: tr("Gaming.053bc65874"), url: "https://discord.com/channels/@me" },
         ].map((a) => (
           <a
             key={a.name}
@@ -333,7 +334,7 @@ export function Gaming() {
         ))}
       </div>
       <div className="gamer-tabbar">
-        <div className="gamer-tabs" aria-label="Secciones gamer">
+        <div className="gamer-tabs" aria-label={tr("Gaming.056db8cad2")}>
           {tabs.map((t) => (
             <button
               key={t.id}
@@ -349,7 +350,7 @@ export function Gaming() {
         </div>
         <button
           className="icon-button"
-          aria-label="Preferencias del rincón gamer"
+          aria-label={tr("Gaming.ea4866f02c")}
           onClick={() => setPreferences(true)}
         >
           <Settings2 size={18} />
@@ -359,8 +360,7 @@ export function Gaming() {
         <Suspense
           fallback={
             <div className="empty-state" role="status">
-              Preparando tus juegos…
-            </div>
+              {tr("Gaming.f4740a3db8")}</div>
           }
         >
           <InstalledGames />
@@ -371,30 +371,30 @@ export function Gaming() {
             <div>
               <span className="eyebrow">
                 {tab === "giveaways"
-                  ? "QUE NO SE TE ESCAPEN"
+                  ? tr("Gaming.3307ff5b5b")
                   : tab === "releases"
-                    ? "EN TU RADAR"
+                    ? tr("Gaming.996bba849c")
                     : tab === "deals"
-                      ? "MÁS JUEGOS POR MENOS"
-                      : "TU LISTA, TU RITMO"}
+                      ? tr("Gaming.9c982f0ee3")
+                      : tr("Gaming.86e485d9b2")}
               </span>
               <h2>
                 {tab === "giveaways"
-                  ? "Una buena excusa para jugar"
+                  ? tr("Gaming.ad8d17acd6")
                   : tab === "releases"
-                    ? "Lo que viene. Lo que acaba de llegar."
+                    ? tr("Gaming.f08b46bafa")
                     : tab === "deals"
-                      ? "Ofertas para tu próxima aventura"
-                      : "Tu colección de próximas partidas"}
+                      ? tr("Gaming.2c8cfcd4c8")
+                      : tr("Gaming.6c7aea43df")}
               </h2>
               <p>
                 {tab === "giveaways"
-                  ? "Promociones publicadas por GamerPower. Revisa los requisitos antes de reclamarlas."
+                  ? tr("Gaming.0384f83f53")
                   : tab === "releases"
-                    ? "Selección de próximos y nuevos lanzamientos de Steam para PC; puede incluir demos."
+                    ? tr("Gaming.0fab4c647b")
                     : tab === "deals"
-                      ? "Una selección de descuentos en tiendas de PC. Precios en USD; confirma tu región al comprar."
-                      : "Tus favoritos, pendientes y juegos terminados, con tus propias notas."}
+                      ? tr("Gaming.ed26088a27")
+                      : tr("Gaming.cd51e451ab")}
               </p>
             </div>
             {tab === "saved" ? (
@@ -405,8 +405,7 @@ export function Gaming() {
                   setFormError("");
                 }}
               >
-                <Plus size={16} /> Añadir juego
-              </button>
+                <Plus size={16} /> {tr("Gaming.cff3f9a490")}</button>
             ) : (
               <button
                 className="secondary-button"
@@ -417,7 +416,7 @@ export function Gaming() {
                   size={15}
                   className={loading ? "gamer-spinning" : ""}
                 />
-                {loading ? "Consultando…" : "Actualizar"}
+                {loading ? tr("Gaming.75c4bfe48d") : tr("Gaming.fe5f6628c7")}
               </button>
             )}
           </div>
@@ -425,8 +424,8 @@ export function Gaming() {
             <label className="gamer-search">
               <Search size={16} />
               <input
-                aria-label="Buscar juegos"
-                placeholder="Encuentra tu próxima aventura…"
+                aria-label={tr("Gaming.42f759fc1a")}
+                placeholder={tr("Gaming.378aa05e10")}
                 value={query}
                 onChange={(e) => {
                   setQuery(e.target.value);
@@ -436,7 +435,7 @@ export function Gaming() {
               {query && (
                 <button
                   className="icon-button"
-                  aria-label="Limpiar búsqueda de juegos"
+                  aria-label={tr("Gaming.1e32cebcdb")}
                   onClick={() => setQuery("")}
                 >
                   <X size={14} />
@@ -444,51 +443,51 @@ export function Gaming() {
               )}
             </label>
             <select
-              aria-label="Plataforma de juegos"
+              aria-label={tr("Gaming.94525bedd1")}
               value={settings.gamingPlatform}
               onChange={(e) => {
                 setSettings((s) => ({ ...s, gamingPlatform: e.target.value }));
                 setLimit(12);
               }}
             >
-              <option value="all">Todas las plataformas</option>
+              <option value="all">{tr("Gaming.b9878aa1da")}</option>
               {platformOptions.map((p) => (
                 <option key={p}>{p}</option>
               ))}
             </select>
             {tab === "giveaways" && (
               <select
-                aria-label="Tipo de regalo"
+                aria-label={tr("Gaming.926574ebbd")}
                 value={kind}
                 onChange={(e) => {
                   setKind(e.target.value);
                   setLimit(12);
                 }}
               >
-                <option value="game">Juegos completos</option>
-                <option value="loot">DLC y contenido</option>
-                <option value="beta">Betas y pruebas</option>
-                <option value="all">Todos los regalos</option>
+                <option value="game">{tr("Gaming.f37b469740")}</option>
+                <option value="loot">{tr("Gaming.2a08544b02")}</option>
+                <option value="beta">{tr("Gaming.f1530710d5")}</option>
+                <option value="all">{tr("Gaming.66d78ef837")}</option>
               </select>
             )}
             {tab === "releases" && (
               <select
-                aria-label="Estado del lanzamiento"
+                aria-label={tr("Gaming.235ac74c89")}
                 value={releaseFilter}
                 onChange={(e) => setReleaseFilter(e.target.value)}
               >
-                <option value="all">Próximos y recientes</option>
-                <option value="upcoming">Próximamente</option>
-                <option value="recent">Ya disponibles</option>
+                <option value="all">{tr("Gaming.b92c58a457")}</option>
+                <option value="upcoming">{tr("Gaming.f44cddb1bb")}</option>
+                <option value="recent">{tr("Gaming.137c2f8b46")}</option>
               </select>
             )}
             {tab === "saved" && (
               <select
-                aria-label="Estado de mis juegos"
+                aria-label={tr("Gaming.70b7057851")}
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
-                <option value="all">Todos los estados</option>
+                <option value="all">{tr("Gaming.ecda92faab")}</option>
                 {Object.entries(gameStatuses).map(([id, title]) => (
                   <option key={id} value={id}>
                     {title}
@@ -497,22 +496,22 @@ export function Gaming() {
               </select>
             )}
             <select
-              aria-label="Ordenar juegos"
+              aria-label={tr("Gaming.c913c519aa")}
               value={sort}
               onChange={(e) => setSort(e.target.value)}
             >
               <option value="recommended">
                 {tab === "saved"
-                  ? "Guardados recientemente"
-                  : "Orden de la fuente"}
+                  ? tr("Gaming.bbbb3f5ee0")
+                  : tr("Gaming.cca6e2b503")}
               </option>
-              <option value="title">Nombre A–Z</option>
+              <option value="title">{tr("Gaming.15d998a2ae")}</option>
               {tab === "giveaways" && (
-                <option value="ending">Terminan antes</option>
+                <option value="ending">{tr("Gaming.8b8e55c6b5")}</option>
               )}
-              {tab === "deals" && <option value="price">Menor precio</option>}
+              {tab === "deals" && <option value="price">{tr("Gaming.64d7a5a9da")}</option>}
               {tab === "releases" && (
-                <option value="date">Fecha de lanzamiento</option>
+                <option value="date">{tr("Gaming.31b614ced2")}</option>
               )}
             </select>
           </div>
@@ -525,11 +524,11 @@ export function Gaming() {
                   }
                 />
                 {loading
-                  ? "Consultando la fuente…"
-                  : `Última consulta: ${feedTime}`}
+                  ? tr("Gaming.c0815c0652")
+                  : tr("Gaming.09d5213e89", { v0: feedTime })}
               </span>
               <span>
-                Fuente:{" "}
+                {tr("Gaming.afbe242aa0")}{" "}
                 <a
                   href={sources[tab].url}
                   target="_blank"
@@ -538,8 +537,7 @@ export function Gaming() {
                   {sources[tab].title}
                   <ArrowUpRight size={11} />
                 </a>{" "}
-                · Consultas cada 15 min
-              </span>
+                {tr("Gaming.bf7d7f4336")}</span>
             </div>
           )}
           {feed?.warning && tab !== "saved" && (
@@ -553,21 +551,16 @@ export function Gaming() {
               <div className="gamer-notice">
                 <CalendarDays size={18} />
                 <span>
-                  Esta selección automática cubre PC. Para consolas, abre sus
-                  calendarios oficiales más abajo o añade un juego a tu
-                  juegoteca.
-                </span>
+                  {tr("Gaming.d6f419bdf6")}</span>
               </div>
             )}
           {loading && !feed ? (
             <div className="gamer-loading" role="status">
               <Sparkles size={26} />
-              <h3>Preparando tu próxima partida</h3>
+              <h3>{tr("Gaming.086e839b52")}</h3>
               <p>
-                Estamos consultando{" "}
-                {tab === "saved" ? "tus juegos" : sources[tab].title}. Puede
-                tardar unos segundos.
-              </p>
+                {tr("Gaming.226934e3d3")}{" "}
+                {tab === "saved" ? tr("Gaming.5f3f6b4d93") : sources[tab].title}{tr("Gaming.a39d183bf8")}</p>
               <div className="gamer-skeletons">
                 {[1, 2, 3].map((i) => (
                   <span key={i} />
@@ -579,8 +572,8 @@ export function Gaming() {
               <div className="gamer-result-count">
                 {items.length}{" "}
                 {items.length === 1
-                  ? "juego en tu radar"
-                  : "resultados en tu radar"}
+                  ? tr("Gaming.794c88d1e4")
+                  : tr("Gaming.2d16bbff53")}
                 {settings.gamingPlatform !== "all" && (
                   <span> · {settings.gamingPlatform}</span>
                 )}
@@ -616,19 +609,19 @@ export function Gaming() {
                             ? `−${g.discount}%`
                             : g.kind === "release"
                               ? g.demo
-                                ? "Demo"
+                                ? tr("Gaming.8a2cc0673b")
                                 : g.comingSoon
-                                  ? "Próximamente"
-                                  : "Ya disponible"
+                                  ? tr("Gaming.f44cddb1bb")
+                                  : tr("Gaming.1d0471fb0e")
                               : kindNames[g.kind]}
                         </span>
                         <button
                           className={`gamer-save ${saved ? "saved" : ""}`}
-                          aria-label={`${saved ? "Ver" : "Guardar"} ${g.title}`}
+                          aria-label={`${saved ? tr("Gaming.20ab386d12") : tr("Gaming.13e51a210f")} ${g.title}`}
                           title={
                             saved
-                              ? "Ya está en tu juegoteca"
-                              : "Guardar en mi juegoteca"
+                              ? tr("Gaming.ed1b5976ef")
+                              : tr("Gaming.6309e313ab")
                           }
                           onClick={() => (saved ? setDetail(g) : save(g))}
                         >
@@ -643,7 +636,7 @@ export function Gaming() {
                         <span className="gamer-platforms">
                           {g.store ||
                             g.platforms.join(" · ") ||
-                            "Ver plataforma en la fuente"}
+                            tr("Gaming.001a330b15")}
                         </span>
                         <button
                           className="gamer-title"
@@ -661,25 +654,24 @@ export function Gaming() {
                                 ? displayGameDate(g.releaseDate)
                                 : g.releaseLabel ||
                                   (g.comingSoon
-                                    ? "Fecha por confirmar"
-                                    : "Disponible en Steam")}
+                                    ? tr("Gaming.8dc549b61f")
+                                    : tr("Gaming.8a22cbfd7c"))}
                             </span>
                           ) : (
                             <span className={expired ? "gamer-expired" : ""}>
                               <Clock3 size={13} />
                               {expired
-                                ? "Fecha de cierre pasada"
+                                ? tr("Gaming.1dbb36839f")
                                 : g.endDate
-                                  ? `Finaliza el ${displayGameDate(g.endDate)}`
-                                  : "Sin fecha de cierre indicada"}
+                                  ? tr("Gaming.54865e1528", { v0: displayGameDate(g.endDate) })
+                                  : tr("Gaming.e909824c87")}
                             </span>
                           )}
                         </div>
                         {tab === "saved" && saved && (
                           <label className="gamer-status-label">
-                            Estado
-                            <select
-                              aria-label={`Estado de ${g.title}`}
+                            {tr("Gaming.98e5acddb6")}<select
+                              aria-label={tr("a11y.Gaming.674", { v0: g.title })}
                               value={saved.status}
                               onChange={(e) =>
                                 setGames((p) =>
@@ -711,21 +703,20 @@ export function Gaming() {
                             onClick={() => void launchSaved(g)}
                           >
                             <Play size={15} fill="currentColor" />
-                            {launching === g.id ? "Abriendo…" : "Jugar"}
+                            {launching === g.id ? tr("Gaming.2d5bf11d9a") : tr("Gaming.b61eda6f4b")}
                           </button>
                         )}
                         <div className="gamer-card-bottom">
                           <button onClick={() => setDetail(g)}>
                             {tab === "saved"
-                              ? "Detalles y notas"
-                              : "Ver detalles"}
+                              ? tr("Gaming.fb3af826f5")
+                              : tr("Gaming.73389e60ff")}
                             <ChevronRight size={14} />
                           </button>
                           {saved?.status === "claimed" ? (
                             <span className="gamer-claimed">
                               <Check size={13} />
-                              Reclamado
-                            </span>
+                              {tr("Gaming.2869d2c9d8")}</span>
                           ) : (
                             <small>{sourceNames[g.source]}</small>
                           )}
@@ -740,7 +731,7 @@ export function Gaming() {
                   className="secondary-button gamer-load-more"
                   onClick={() => setLimit((n) => n + 12)}
                 >
-                  Ver más juegos <Plus size={15} />
+                  {tr("Gaming.c6d977a68a")}<Plus size={15} />
                 </button>
               )}
             </>
@@ -749,13 +740,13 @@ export function Gaming() {
               <Gamepad2 size={40} strokeWidth={1} />
               <h3>
                 {tab === "saved" && !games.length
-                  ? "Tus próximas aventuras viven aquí"
-                  : "No hay juegos para estos filtros"}
+                  ? tr("Gaming.283d388fdb")
+                  : tr("Gaming.6048037f10")}
               </h3>
               <p>
                 {tab === "saved" && !games.length
-                  ? "Guarda un juego desde el radar o añade uno que ya tengas en mente."
-                  : "Prueba otra plataforma, otro tipo de regalo o una búsqueda más corta."}
+                  ? tr("Gaming.6d35b04810")
+                  : tr("Gaming.46ef15f32a")}
               </p>
               <button
                 className="secondary-button"
@@ -769,16 +760,16 @@ export function Gaming() {
                 }}
               >
                 {tab === "saved" && !games.length
-                  ? "Explorar regalos"
-                  : "Limpiar filtros"}
+                  ? tr("Gaming.781a6c60dc")
+                  : tr("Gaming.bfc2d16235")}
               </button>
             </div>
           )}
           <section className="gamer-bottom-panel">
             <div>
               <CalendarDays size={22} />
-              <h3>Más allá de tu PC</h3>
-              <p>Calendarios y novedades de las plataformas oficiales.</p>
+              <h3>{tr("Gaming.143ebb2496")}</h3>
+              <p>{tr("Gaming.77bb30d9ba")}</p>
             </div>
             <div className="gamer-console-links">
               <a
@@ -786,36 +777,33 @@ export function Gaming() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                PlayStation <ArrowUpRight size={14} />
+                {tr("Gaming.6d7ba99c81")}<ArrowUpRight size={14} />
               </a>
               <a
                 href="https://www.xbox.com/es-CL/games/all-games"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Xbox <ArrowUpRight size={14} />
+                {tr("Gaming.313deb7d7b")}<ArrowUpRight size={14} />
               </a>
               <a
                 href="https://www.nintendo.com/us/store/games/coming-soon/"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Nintendo <ArrowUpRight size={14} />
+                {tr("Gaming.81ffab4798")}<ArrowUpRight size={14} />
               </a>
             </div>
           </section>
           <p className="gamer-footnote">
-            Los regalos pueden requerir cuenta, región o un juego base.
-            Disponibilidad y fechas pueden cambiar; confirma siempre en la
-            fuente. Tus juegos guardados y preferencias se incluyen en el
-            respaldo de {APP_NAME}.
+            {tr("Gaming.3ddc08030c")}{APP_NAME}.
           </p>
         </>
       )}
       <Dialog
         open={!!detail}
         onClose={() => setDetail(null)}
-        title={detail?.title || "Detalles del juego"}
+        title={detail?.title || tr("Gaming.dec48422ec")}
         description={
           detail
             ? `${kindNames[detail.kind]} · ${sourceNames[detail.source]}`
@@ -836,44 +824,37 @@ export function Gaming() {
               {detail.platforms.map((p) => (
                 <span key={p}>{p}</span>
               ))}
-              {detail.demo && <span>Demo</span>}
+              {detail.demo && <span>{tr("Gaming.8a2cc0673b")}</span>}
             </div>
             <Price game={detail} />
             {giveawayExpired(detail) && (
               <p className="error-message">
-                La fecha de cierre publicada ya pasó. Este favorito se conserva
-                como referencia.
-              </p>
+                {tr("Gaming.6c6171b025")}</p>
             )}
             {detail.description && (
               <div>
-                <h3>Sobre este juego</h3>
+                <h3>{tr("Gaming.47ba145715")}</h3>
                 <p>{detail.description}</p>
               </div>
             )}
             {detail.instructions && (
               <div>
-                <h3>Cómo reclamarlo</h3>
+                <h3>{tr("Gaming.a7d467cc96")}</h3>
                 <p className="gamer-instructions">{detail.instructions}</p>
                 <small className="muted">
-                  Texto original de GamerPower. Revisa los requisitos y la
-                  vigencia antes de continuar.
-                </small>
+                  {tr("Gaming.17ba2e074a")}</small>
               </div>
             )}
             {detail.endDate && (
               <p className="muted">
-                Cierre indicado: {displayGameDate(detail.endDate)}. La fuente no
-                especifica zona horaria.
-              </p>
+                {tr("Gaming.101b794c1c")}{displayGameDate(detail.endDate)}{tr("Gaming.db08cd5a3d")}</p>
             )}
             {detail.kind === "release" && (
               <p className="muted">
                 {detail.releaseDate
                   ? `Fecha: ${displayGameDate(detail.releaseDate)}`
-                  : detail.releaseLabel || "Fecha por confirmar"}
-                . Puede cambiar según plataforma y región.
-              </p>
+                  : detail.releaseLabel || tr("Gaming.8dc549b61f")}
+                {tr("Gaming.d10699bebc")}</p>
             )}
             <div className="gamer-detail-actions">
               {localGameFavorite(detail) && (
@@ -883,7 +864,7 @@ export function Gaming() {
                   onClick={() => void launchSaved(detail)}
                 >
                   <Play size={16} />
-                  {launching === detail.id ? "Abriendo…" : "Jugar ahora"}
+                  {launching === detail.id ? tr("Gaming.2d5bf11d9a") : tr("Gaming.ee42856979")}
                 </button>
               )}
               {detail.url && (
@@ -898,10 +879,10 @@ export function Gaming() {
                   rel="noopener noreferrer"
                 >
                   {detail.source === "gamerpower"
-                    ? "Ver promoción y requisitos"
+                    ? tr("Gaming.6db0107f9b")
                     : detail.source === "cheapshark"
-                      ? "Ver oferta en CheapShark"
-                      : "Abrir página del juego"}
+                      ? tr("Gaming.a90a78d228")
+                      : tr("Gaming.6733875d17")}
                   <ArrowUpRight size={16} />
                 </a>
               )}
@@ -910,27 +891,23 @@ export function Gaming() {
                   className="secondary-button"
                   onClick={() => save(detail)}
                 >
-                  <Bookmark size={16} /> Guardar juego
-                </button>
+                  <Bookmark size={16} /> {tr("Gaming.f4ed64c9ef")}</button>
               )}
               {detail.releaseDate && (
                 <button
                   className="secondary-button"
                   onClick={() => exportDate(detail)}
                 >
-                  <ArrowDownToLine size={15} /> Añadir a mi calendario (.ics)
-                </button>
+                  <ArrowDownToLine size={15} /> {tr("Gaming.6060262ed5")}</button>
               )}
             </div>
             {selected && (
               <div className="gamer-saved-editor">
                 <h3>
-                  <CheckCircle2 size={17} /> En tu juegoteca
-                </h3>
+                  <CheckCircle2 size={17} /> {tr("Gaming.5cc3498176")}</h3>
                 <label>
-                  Estado
-                  <select
-                    aria-label="Estado del juego guardado"
+                  {tr("Gaming.98e5acddb6")}<select
+                    aria-label={tr("Gaming.fa0a6b0fca")}
                     value={selected.status}
                     onChange={(e) =>
                       setGames((p) =>
@@ -950,10 +927,9 @@ export function Gaming() {
                   </select>
                 </label>
                 <label>
-                  Mis notas
-                  <textarea
-                    aria-label="Mis notas del juego"
-                    placeholder="Con quién jugarlo, por qué te llama la atención, dónde lo tienes…"
+                  {tr("Gaming.53699273ec")}<textarea
+                    aria-label={tr("Gaming.28c22ef272")}
+                    placeholder={tr("Gaming.f2e22e2a8b")}
                     maxLength={5000}
                     rows={3}
                     value={selected.note}
@@ -968,7 +944,7 @@ export function Gaming() {
                     }
                   />
                 </label>
-                <span className="muted">Se guarda al escribir.</span>
+                <span className="muted">{tr("Gaming.86a81e1247")}</span>
                 <button
                   className="text-button danger"
                   onClick={() => {
@@ -976,8 +952,7 @@ export function Gaming() {
                     setDetail(null);
                   }}
                 >
-                  <Trash2 size={14} /> Quitar de mi lista
-                </button>
+                  <Trash2 size={14} /> {tr("Gaming.f4e602ef67")}</button>
               </div>
             )}
           </div>
@@ -986,19 +961,18 @@ export function Gaming() {
       <Dialog
         open={preferences}
         onClose={() => setPreferences(false)}
-        title="Tu radar, a tu manera"
-        description="Estas preferencias se guardan con tu espacio."
+        title={tr("Gaming.3e55b5926b")}
+        description={tr("Gaming.9e1cb8de7d")}
       >
         <div className="dialog-body form-stack gamer-preferences">
           <label>
-            Mi plataforma favorita
-            <select
+            {tr("Gaming.b9e3fd4d3f")}<select
               value={settings.gamingPlatform}
               onChange={(e) =>
                 setSettings((s) => ({ ...s, gamingPlatform: e.target.value }))
               }
             >
-              <option value="all">Todas las plataformas</option>
+              <option value="all">{tr("Gaming.b9878aa1da")}</option>
               {platformOptions.map((p) => (
                 <option key={p}>{p}</option>
               ))}
@@ -1015,8 +989,7 @@ export function Gaming() {
                 }))
               }
             />
-            Ocultar regalos que marqué como reclamados
-          </label>
+            {tr("Gaming.5bc96bb571")}</label>
           <label className="gamer-check">
             <input
               type="checkbox"
@@ -1028,8 +1001,7 @@ export function Gaming() {
                 }))
               }
             />
-            Incluir demos en los lanzamientos
-          </label>
+            {tr("Gaming.e6231c02af")}</label>
           <label className="gamer-check">
             <input
               type="checkbox"
@@ -1044,26 +1016,22 @@ export function Gaming() {
                 }))
               }
             />
-            Mostrar el widget Radar gamer en Mi espacio
-          </label>
+            {tr("Gaming.67fb02b86f")}</label>
           <p className="muted">
-            El radar consulta las fuentes al abrir cada apartado y reutiliza la
-            consulta durante 15 minutos. Puedes explorar sin conectar cuentas.
-            Reclama los juegos en el sitio de cada promoción.
-          </p>
+            {tr("Gaming.f5fe37b235")}</p>
           <button
             className="primary-button"
             onClick={() => setPreferences(false)}
           >
-            Listo, a jugar <Gamepad2 size={16} />
+            {tr("Gaming.6256597055")}<Gamepad2 size={16} />
           </button>
         </div>
       </Dialog>
       <Dialog
         open={adding}
         onClose={() => setAdding(false)}
-        title="Una aventura para tu lista"
-        description="Añade cualquier juego, de cualquier plataforma."
+        title={tr("Gaming.88b6e03bd0")}
+        description={tr("Gaming.4514687dad")}
       >
         <form
           className="dialog-body form-stack gamer-manual"
@@ -1076,7 +1044,7 @@ export function Gaming() {
               (manual.date && !dateOnly(manual.date))
             ) {
               setFormError(
-                "Escribe un nombre, un enlace HTTPS válido (si lo incluyes) y una fecha real.",
+                tr("Gaming.5d93e6cd7e"),
               );
               return;
             }
@@ -1099,8 +1067,7 @@ export function Gaming() {
           }}
         >
           <label>
-            Nombre del juego
-            <input
+            {tr("Gaming.27839f10af")}<input
               autoFocus
               required
               maxLength={500}
@@ -1108,12 +1075,11 @@ export function Gaming() {
               onChange={(e) =>
                 setManual((p) => ({ ...p, title: e.target.value }))
               }
-              placeholder="Ese juego que tienes en mente"
+              placeholder={tr("Gaming.2de99b73e0")}
             />
           </label>
           <label>
-            Plataforma
-            <select
+            {tr("Gaming.5d7325dd00")}<select
               value={manual.platform}
               onChange={(e) =>
                 setManual((p) => ({ ...p, platform: e.target.value }))
@@ -1125,10 +1091,9 @@ export function Gaming() {
             </select>
           </label>
           <label>
-            Página del juego (opcional)
-            <input
+            {tr("Gaming.c7f66b46c0")}<input
               type="url"
-              placeholder="https://…"
+              placeholder={tr("Gaming.ab04e20ed4")}
               value={manual.url}
               onChange={(e) =>
                 setManual((p) => ({ ...p, url: e.target.value }))
@@ -1136,8 +1101,7 @@ export function Gaming() {
             />
           </label>
           <label>
-            Fecha de lanzamiento (opcional)
-            <input
+            {tr("Gaming.e7a13fabaf")}<input
               type="date"
               value={manual.date}
               onChange={(e) =>
@@ -1151,8 +1115,7 @@ export function Gaming() {
             </p>
           )}
           <button className="primary-button">
-            <Plus size={16} /> Guardar en mi juegoteca
-          </button>
+            <Plus size={16} /> {tr("Gaming.b4a652a29c")}</button>
         </form>
       </Dialog>
     </div>

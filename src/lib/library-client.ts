@@ -1,3 +1,4 @@
+import { translateMessage, tr } from "./i18n.ts";
 import { isRemoteLibrary } from "./remote";
 import { APP_NAME } from "./brand.ts";
 import type {
@@ -19,16 +20,16 @@ export async function libraryRequest<T>(
     });
   } catch {
     throw new Error(
-      isRemoteLibrary ? "No se pudo contactar con el PC. Comprueba que Zenty esté abierto y que ambos dispositivos estén en la misma red." : `No se pudo contactar la biblioteca local. Inicia ${APP_NAME} con npm run dev o npm start.`,
+      isRemoteLibrary ? tr("library_client.071534e757") : tr("library_client.b8c2fbccc4", { v0: APP_NAME }),
     );
   }
   if (!response.headers.get("Content-Type")?.includes("application/json"))
     throw new Error(
-      `La biblioteca necesita el servidor local de ${APP_NAME}. Usa npm run dev, npm run preview o npm start.`,
+      tr("library_client.a5f0baf927", { v0: APP_NAME }),
     );
   const body = await response.json();
   if (!response.ok)
-    throw new Error(body.error || "No se pudo guardar el cambio.");
+    throw new Error(translateMessage(body.error || tr("library_client.76ae2d7993")));
   return body;
 }
 export const loadLibrary = () => libraryRequest<LibraryResponse>();

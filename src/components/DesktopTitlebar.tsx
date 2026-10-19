@@ -1,8 +1,9 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { APP_NAME } from "../lib/brand.ts";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import {
-  Asterisk,
   Copy,
   FolderOpen,
   Maximize,
@@ -12,7 +13,15 @@ import {
   X,
 } from "lucide-react";
 export function DesktopTitlebar() {
+  useInterfaceLocale();
   const api = window.zentyDesktop;
+  const [locked, setLocked] = useState(!!api?.security);
+  useEffect(() => {
+    if (!api?.security) return;
+    const remove = api.security.onState(value => setLocked(value.locked));
+    void api.security.get().then(value => setLocked(value.locked)).catch(() => setLocked(true));
+    return remove;
+  }, [api]);
   const [state, setState] = useState({
     maximized: false,
     fullscreen: true,
@@ -48,39 +57,40 @@ export function DesktopTitlebar() {
       onDoubleClick={() => void api.maximize()}
     >
       <div className="desktop-titlebar-brand">
-        <Asterisk size={16} strokeWidth={1.6} />
+        <img src="/favicon.svg" width={20} height={20} alt="" />
         <strong>{APP_NAME}</strong>
-        <span>Tu espacio personal</span>
+        <span>{tr("DesktopTitlebar.ad96093bce")}</span>
       </div>
       <div
         className="desktop-titlebar-controls"
         onDoubleClick={(event) => event.stopPropagation()}
       >
         <button
-          title="Abrir mis datos"
-          aria-label={`Abrir carpeta de datos de ${APP_NAME}`}
+          title={tr("DesktopTitlebar.f9e5cdbeae")}
+          aria-label={tr("DesktopTitlebar.77e6d4f489", { v0: APP_NAME })}
           onClick={() => void api.openDataFolder()}
+          disabled={locked}
         >
           <FolderOpen size={13} />
         </button>
         <button
           title={
             state.fullscreen
-              ? "Salir de pantalla completa (F11)"
-              : "Pantalla completa (F11)"
+              ? tr("DesktopTitlebar.a160ccf2bb")
+              : tr("DesktopTitlebar.62ed146992")
           }
           aria-label={
             state.fullscreen
-              ? "Salir de pantalla completa"
-              : "Pantalla completa"
+              ? tr("DesktopTitlebar.2de6e8b7c9")
+              : tr("DesktopTitlebar.93f2f91137")
           }
           onClick={() => void api.fullscreen()}
         >
           {state.fullscreen ? <Minimize size={13} /> : <Maximize size={13} />}
         </button>
         <button
-          aria-label="Minimizar ventana"
-          title="Minimizar"
+          aria-label={tr("DesktopTitlebar.a5209dc332")}
+          title={tr("DesktopTitlebar.3fc5f90b27")}
           onClick={() => void api.minimize()}
         >
           <Minus size={14} />
@@ -88,11 +98,11 @@ export function DesktopTitlebar() {
         <button
           aria-label={
             state.maximized || state.fullscreen
-              ? "Restaurar ventana"
-              : "Maximizar ventana"
+              ? tr("DesktopTitlebar.a36ab91521")
+              : tr("DesktopTitlebar.ce16368f6a")
           }
           title={
-            state.maximized || state.fullscreen ? "Restaurar" : "Maximizar"
+            state.maximized || state.fullscreen ? tr("DesktopTitlebar.eda02893d3") : tr("DesktopTitlebar.092b9ccfbf")
           }
           onClick={() => void api.maximize()}
         >
@@ -104,8 +114,8 @@ export function DesktopTitlebar() {
         </button>
         <button
           className="desktop-close"
-          aria-label={`Cerrar ${APP_NAME}`}
-          title="Cerrar"
+          aria-label={tr("DesktopTitlebar.335580ee44", { v0: APP_NAME })}
+          title={tr("DesktopTitlebar.aeccae342e")}
           onClick={() => void api.close()}
         >
           <X size={15} />

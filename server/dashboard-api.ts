@@ -1,3 +1,4 @@
+import { tr } from "../src/lib/i18n.ts";
 import { APP_NAME } from "../src/lib/brand.ts";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
@@ -43,7 +44,7 @@ export function createDashboardApi(directory: string) {
       req.headers["x-mia-dashboard"] !== "1"
     ) {
       reply(403, {
-        error: `Solo disponible desde ${APP_NAME} en este equipo.`,
+        error: tr("dashboard_api.b0d2ede4ec", { v0: APP_NAME }),
       });
       return;
     }
@@ -61,7 +62,7 @@ export function createDashboardApi(directory: string) {
         return;
       }
       if (!["PUT", "PATCH"].includes(req.method || "")) {
-        reply(405, { error: "Método no permitido." });
+        reply(405, { error: tr("dashboard_api.1bd43567cd") });
         return;
       }
       let size = 0;
@@ -69,7 +70,7 @@ export function createDashboardApi(directory: string) {
       for await (const chunk of req) {
         size += chunk.length;
         if (size > (req.method === "PATCH" ? 10_000_000 : 5_000_000)) {
-          reply(413, { error: "El espacio supera 5 MB." });
+          reply(413, { error: tr("dashboard_api.6da004d1b7") });
           return;
         }
         chunks.push(Buffer.from(chunk));
@@ -84,7 +85,7 @@ export function createDashboardApi(directory: string) {
           data = parseBackup(JSON.stringify({ ...input.data, version: 2 }));
         } else data = parseBackup(raw);
       } catch {
-        reply(400, { error: "El respaldo no contiene un espacio válido." });
+        reply(400, { error: tr("dashboard_api.e654bc6234") });
         return;
       }
       const work = pending.then(async () => {
@@ -114,7 +115,7 @@ export function createDashboardApi(directory: string) {
     } catch {
       reply(500, {
         error:
-          "No se pudo leer o guardar el espacio en disco. La copia existente se ha conservado.",
+          tr("dashboard_api.ee11916ca2"),
       });
     }
   };

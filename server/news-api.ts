@@ -1,3 +1,4 @@
+import { tr } from "../src/lib/i18n.ts";
 import { createGameImages } from "./game-images.ts";
 import { normalizeNewsFeed } from "../src/lib/news.ts";
 import { APP_NAME } from "../src/lib/brand.ts";
@@ -11,10 +12,10 @@ import type {
   NewsSourceInfo,
 } from "../src/lib/news.ts";
 
-export const DEFAULT_SOURCES: NewsSourceInfo[] = [
+export const DEFAULT_SOURCES: NewsSourceInfo[] = ([
   {
     id: "xataka",
-    name: "Xataka",
+    get name() { return "Xataka"; },
     siteUrl: "https://www.xataka.com",
     feedUrl: "https://feeds.weblogssl.com/xataka2",
     category: "tech",
@@ -24,7 +25,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "genbeta",
-    name: "Genbeta",
+    get name() { return "Genbeta"; },
     siteUrl: "https://www.genbeta.com",
     feedUrl: "https://feeds.weblogssl.com/genbeta",
     category: "tech",
@@ -34,7 +35,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "theverge",
-    name: "The Verge",
+    get name() { return "The Verge"; },
     siteUrl: "https://www.theverge.com",
     feedUrl: "https://www.theverge.com/rss/index.xml",
     category: "tech",
@@ -44,7 +45,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "arstechnica",
-    name: "Ars Technica",
+    get name() { return "Ars Technica"; },
     siteUrl: "https://arstechnica.com",
     feedUrl: "https://feeds.arstechnica.com/arstechnica/index",
     category: "tech",
@@ -54,7 +55,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "3djuegos",
-    name: "3DJuegos",
+    get name() { return "3DJuegos"; },
     siteUrl: "https://www.3djuegos.com",
     feedUrl: "https://www.3djuegos.com/universo/rss/rss.php",
     category: "gaming",
@@ -64,7 +65,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "eurogamer",
-    name: "Eurogamer",
+    get name() { return "Eurogamer"; },
     siteUrl: "https://www.eurogamer.es",
     feedUrl: "https://www.eurogamer.es/feed",
     category: "gaming",
@@ -74,7 +75,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "polygon",
-    name: "Polygon",
+    get name() { return "Polygon"; },
     siteUrl: "https://www.polygon.com",
     feedUrl: "https://www.polygon.com/rss/index.xml",
     category: "gaming",
@@ -84,7 +85,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "ramenparados",
-    name: "Ramen Para Dos",
+    get name() { return tr("news_api.3f58b915d4"); },
     siteUrl: "https://ramenparados.com",
     feedUrl: "https://ramenparados.com/feed/",
     category: "anime",
@@ -94,7 +95,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "ann",
-    name: "Anime News Network",
+    get name() { return "Anime News Network"; },
     siteUrl: "https://www.animenewsnetwork.com",
     feedUrl: "https://www.animenewsnetwork.com/news/rss.xml",
     category: "anime",
@@ -104,7 +105,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "elpais_ciencia",
-    name: "El País Ciencia",
+    get name() { return "El País Ciencia"; },
     siteUrl: "https://elpais.com/ciencia",
     feedUrl:
       "https://feeds.elpais.com/mrss-s/pages/ep/site/elpais.com/section/ciencia/portada",
@@ -115,7 +116,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "physorg",
-    name: "Phys.org",
+    get name() { return "Phys.org"; },
     siteUrl: "https://phys.org",
     feedUrl: "https://phys.org/rss-feed/",
     category: "science",
@@ -125,7 +126,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "espinof",
-    name: "Espinof",
+    get name() { return "Espinof"; },
     siteUrl: "https://www.espinof.com",
     feedUrl: "https://feeds.weblogssl.com/espinof",
     category: "culture",
@@ -135,7 +136,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
   },
   {
     id: "bbcmundo",
-    name: "BBC Mundo",
+    get name() { return tr("news_api.f59ff44ce9"); },
     siteUrl: "https://www.bbc.com/mundo",
     feedUrl: "https://feeds.bbci.co.uk/mundo/rss.xml",
     category: "general",
@@ -143,7 +144,7 @@ export const DEFAULT_SOURCES: NewsSourceInfo[] = [
     color: "#bb1919",
     enabled: true,
   },
-];
+]);
 
 const NAMED_ENTITIES: Record<string, string> = {
   amp: "&",
@@ -152,20 +153,20 @@ const NAMED_ENTITIES: Record<string, string> = {
   quot: '"',
   apos: "'",
   nbsp: " ",
-  aacute: "á",
-  eacute: "é",
-  iacute: "í",
-  oacute: "ó",
-  uacute: "ú",
-  ntilde: "ñ",
-  Aacute: "Á",
-  Eacute: "É",
-  Iacute: "Í",
-  Oacute: "Ó",
-  Uacute: "Ú",
-  Ntilde: "Ñ",
-  uuml: "ü",
-  Uuml: "Ü",
+  get aacute() { return "á"; },
+  get eacute() { return "é"; },
+  get iacute() { return "í"; },
+  get oacute() { return "ó"; },
+  get uacute() { return "ú"; },
+  get ntilde() { return "ñ"; },
+  get Aacute() { return "Á"; },
+  get Eacute() { return "É"; },
+  get Iacute() { return "Í"; },
+  get Oacute() { return "Ó"; },
+  get Uacute() { return "Ú"; },
+  get Ntilde() { return "Ñ"; },
+  get uuml() { return "ü"; },
+  get Uuml() { return "Ü"; },
   iexcl: "¡",
   iquest: "¿",
   ndash: "–",
@@ -417,9 +418,9 @@ export function createNewsApi({
 
       const xml = await response.text();
       if (!xml || xml.length < 50 || xml.length > 3_000_000)
-        throw new Error("Feed inválido");
+        throw new Error(tr("news_api.6b6f5760d5"));
       const parsed = parseRssOrAtom(xml, source);
-      if (!parsed.length) throw new Error("Feed vacío");
+      if (!parsed.length) throw new Error(tr("news_api.dfede8b832"));
       unavailableSources.delete(source.id);
       if (parsed.length > 0) {
         sourceArticles.set(source.id, parsed);
@@ -486,7 +487,7 @@ export function createNewsApi({
           total: uniqueArticles.length,
         };
 
-        if (!uniqueArticles.length) throw new Error("Sin noticias disponibles");
+        if (!uniqueArticles.length) throw new Error(tr("news_api.8c5d82601e"));
         cachedFeed = feedResult;
         cacheTime = now();
 
@@ -549,7 +550,7 @@ export function createNewsApi({
         req.headers.origin !== `https://${host}`)
     ) {
       reply(403, {
-        error: `Solo disponible desde ${APP_NAME} en este equipo.`,
+        error: tr("news_api.b0d2ede4ec", { v0: APP_NAME }),
       });
       return;
     }
@@ -560,7 +561,7 @@ export function createNewsApi({
     }
 
     if (req.method !== "GET") {
-      reply(405, { error: "Método no permitido." });
+      reply(405, { error: tr("news_api.1bd43567cd") });
       return;
     }
 
@@ -627,7 +628,7 @@ export function createNewsApi({
         unavailableSources: feed.unavailableSources,
       });
     } catch {
-      reply(500, { error: "Error al recopilar el quiosco de noticias." });
+      reply(500, { error: tr("news_api.309b093fe5") });
     }
   };
 }

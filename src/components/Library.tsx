@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { translateMessage, tr } from "../lib/i18n.ts";
 import { isRemoteLibrary } from "../lib/remote";
 import { useReaderPreference } from "../lib/useReaderPreference";
 import { useDashboard } from "../context/DashboardStore";
@@ -58,35 +60,32 @@ const MangaReader = lazy(() =>
     default: module.MangaReader,
   })),
 );
-const sources = [
+const sources = ([
   {
     name: "Project Gutenberg",
-    type: "Clásicos · varios idiomas",
-    description:
-      "Libros gratuitos en EPUB y otros formatos. Comprueba la ficha y los derechos aplicables a tu país.",
+    get type() { return tr("Library.8e2b96f021"); },
+    get description() { return tr("Library.0e4fdb2c0a"); },
     url: "https://www.gutenberg.org/browse/languages/es",
     letter: "G",
     color: "#8e7053",
   },
   {
-    name: "Standard Ebooks",
-    type: "Libros · principalmente inglés",
-    description:
-      "Ediciones cuidadas de clásicos de dominio público en EE. UU. Descarga un EPUB e impórtalo aquí.",
+    get name() { return tr("Library.d5883600e6"); },
+    get type() { return tr("Library.1ae4f08d6f"); },
+    get description() { return tr("Library.f7f9857fdf"); },
     url: "https://standardebooks.org/ebooks",
     letter: "S",
     color: "#648278",
   },
   {
     name: "MANGA Plus",
-    type: "Manga · editorial oficial",
-    description:
-      "Capítulos gratuitos de Shueisha según título, idioma y región. La lectura y su progreso se gestionan en el servicio.",
+    get type() { return tr("Library.68d5d51b74"); },
+    get description() { return tr("Library.3e4c4e6268"); },
     url: "https://mangaplus.shueisha.co.jp/",
     letter: "M",
     color: "#b17361",
   },
-];
+]);
 const formatSize = (bytes: number) =>
   bytes < 1024 * 1024
     ? `${Math.ceil(bytes / 1024)} KB`
@@ -102,6 +101,7 @@ export function resolveMangaCoverUrl(url?: string | null): string {
 }
 
 export function Library() {
+  useInterfaceLocale();
   const [state, setState] = useState<LibraryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -174,14 +174,14 @@ export function Library() {
     const failures: string[] = [];
     for (const [index, file] of files.entries()) {
       if (!documentFormat(file.name)) {
-        failures.push(`${file.name}: formato no compatible`);
+        failures.push(tr("Library.d5379d4a9e", { v0: file.name }));
         continue;
       }
       if (file.size > MAX_DOCUMENT_BYTES || !file.size) {
-        failures.push(`${file.name}: archivo vacío o superior a 150 MB`);
+        failures.push(tr("Library.120a1698ca", { v0: file.name }));
         continue;
       }
-      setUploading(`Guardando ${index + 1} de ${files.length} · ${file.name}`);
+      setUploading(tr("interface.Library.a6b8d9edcd", { v0: index + 1, v1: files.length, v2: file.name }));
       try {
         const result = await libraryRequest<{
           document: LibraryDocument;
@@ -201,7 +201,7 @@ export function Library() {
     uploadLock.current = false;
     await reload();
     setMessage(
-      `${count} ${count === 1 ? "archivo guardado" : "archivos guardados"}${duplicates ? ` · ${duplicates} ya estaban en tu biblioteca (o se restauraron)` : ""}.`,
+      `${tr("common.files", { count })}${duplicates ? tr("Library.2e03b828c9", { v0: duplicates }) : ""}.`,
     );
     if (failures.length) setError(failures.join("\n"));
     if (input.current) input.current.value = "";
@@ -290,8 +290,7 @@ export function Library() {
       <Suspense
         fallback={
           <div className="reader-loading" role="status">
-            Abriendo tu lector…
-          </div>
+            {tr("Library.4eb3ed0229")}</div>
         }
       >
         {current.format === "manga" ? (
@@ -340,16 +339,15 @@ export function Library() {
     >
       <section className="library-hero">
         <div>
-          <span className="eyebrow">UN CAPÍTULO PARA TI</span>
+          <span className="eyebrow">{tr("Library.259ec15140")}</span>
           <h1>
-            Tu biblioteca personal<span>.</span>
+            {tr("Library.2dbd6bb247")}<span>.</span>
           </h1>
           <p>
-            Libros, mangas, documentos e historias. Vuelve justo a donde te quedaste.
-          </p>
+            {tr("Library.8865360ef2")}</p>
           <div className="library-storage-badge">
             <ShieldCheck size={13} />
-            <span>Archivos y mangas en tu equipo · progreso guardado en disco</span>
+            <span>{tr("Library.5510e79c79")}</span>
           </div>
         </div>
         <span className="library-hero-art">
@@ -363,22 +361,20 @@ export function Library() {
             onClick={() => setMangaModalOpen(true)}
           >
             <Compass size={16} />
-            Explorar MangaDex
-          </button>
+            {tr("Library.5910070458")}</button>
           <button
             className="primary-button"
             disabled={!!uploading || !state}
             onClick={() => input.current?.click()}
           >
             <Upload size={16} />
-            Subir documentos
-          </button>
+            {tr("Library.ecaaa289cb")}</button>
         </div>
         <input
           ref={input}
           type="file"
           multiple
-          aria-label="Subir archivos a la biblioteca"
+          aria-label={tr("Library.457dd3d356")}
           accept={allowedFormats.map((f) => `.${f}`).join(",")}
           onChange={(e) => void importFiles(Array.from(e.target.files || []))}
           hidden
@@ -387,8 +383,8 @@ export function Library() {
       {dragging && (
         <div className="library-drop-overlay">
           <Upload size={42} />
-          <h2>Déjalos aquí. Les haremos un lugar.</h2>
-          <p>PDF, EPUB, DOCX, CBZ, texto e imágenes</p>
+          <h2>{tr("Library.b8b2aea79e")}</h2>
+          <p>{tr("Library.5cc3cbb17b")}</p>
         </div>
       )}
       {(error || message || uploading) && (
@@ -405,7 +401,7 @@ export function Library() {
               {message}
               <button
                 className="icon-button"
-                aria-label="Cerrar confirmación"
+                aria-label={tr("Library.5c6324d1b0")}
                 onClick={() => setMessage("")}
               >
                 <X size={13} />
@@ -414,11 +410,10 @@ export function Library() {
           )}
           {error && (
             <div className="error-message" role="alert">
-              <p>{error}</p>
+              <p>{translateMessage(error)}</p>
               <button className="text-button" onClick={() => void reload()}>
                 <RefreshCw size={13} />
-                Reintentar
-              </button>
+                {tr("Library.a9254c5f81")}</button>
             </div>
           )}
         </div>
@@ -440,50 +435,48 @@ export function Library() {
             )}
           </span>
           <div>
-            <span className="eyebrow">DONDE DEJASTE LA HISTORIA</span>
+            <span className="eyebrow">{tr("Library.651a3dcb70")}</span>
             <h2>{last.title}</h2>
             <p>
               {last.format === "manga"
-                ? `Capítulo ${last.manga?.currentChapterNumber || last.position.unit + 1} · Pág. ${last.position.anchor + 1}${last.manga?.totalPages ? ` de ${last.manga.totalPages}` : ""}`
+                ? tr("Library.b2585c59ba", { v0: last.manga?.currentChapterNumber || last.position.unit + 1, v1: last.position.anchor + 1, v2: last.manga?.totalPages ? tr("interface.Library.553c27d45c", { v0: last.manga.totalPages }) : "" })
                 : ["pdf", "cbz", "jpg", "jpeg", "png", "webp"].includes(
                     last.format,
                   )
-                  ? "Página"
-                  : "Sección"}{" "}
-              {last.format !== "manga" && `${last.position.unit + 1}${last.totalUnits ? ` de ${last.totalUnits}` : ""}`}
+                  ? tr("Library.8f63f4d759")
+                  : tr("Library.cf76294834")}{" "}
+              {last.format !== "manga" && `${last.position.unit + 1}${last.totalUnits ? tr("interface.Library.553c27d45c", { v0: last.totalUnits }) : ""}`}
               {" · "}
-              {Math.round(last.position.progress * 100)}% leído
-            </p>
+              {Math.round(last.position.progress * 100)}{tr("Library.04fce4a79d")}</p>
           </div>
           <button
             className="secondary-button"
             onClick={() => setSelected(last.id)}
           >
-            Continuar leyendo
-            <ChevronRight size={16} />
+            {tr("Library.70d0eb008b")}<ChevronRight size={16} />
           </button>
         </section>
       )}
       <div className="library-navigation">
-        <div className="library-filters" aria-label="Filtrar biblioteca">
+        <div className="library-filters" aria-label={tr("Library.29bf08c1d7")}>
           {(
             [
-              { id: "all", label: "Mi colección", count: active.length },
-              { id: "reading", label: "En lectura", count: reading.length },
+              { id: "all", label: tr("Library.79d4e64cf6"), count: active.length },
+              { id: "reading", label: tr("Library.5cbb853b1f"), count: reading.length },
               {
                 id: "favorites",
-                label: "Favoritos",
+                label: tr("Library.ad2c8ba9ac"),
                 count: active.filter((d) => d.favorite).length,
               },
               {
                 id: "finished",
-                label: "Terminados",
+                label: tr("Library.4a76229cd4"),
                 count: active.filter((d) => d.position.progress >= 0.995)
                   .length,
               },
               {
                 id: "trash",
-                label: "Papelera",
+                label: tr("Library.c5181f9453"),
                 count: documents.filter((d) => d.deletedAt).length,
               },
             ] as const
@@ -500,7 +493,7 @@ export function Library() {
         </div>
         <button
           className="icon-button"
-          aria-label="Actualizar biblioteca"
+          aria-label={tr("Library.da735c2eb6")}
           onClick={() => void reload()}
           disabled={loading}
         >
@@ -509,14 +502,14 @@ export function Library() {
       </div>
 
       <div className="library-source-filter-bar">
-        <div className="library-source-segmented" role="radiogroup" aria-label="Filtrar por origen">
+        <div className="library-source-segmented" role="radiogroup" aria-label={tr("Library.5e692c19cb")}>
           <button
             type="button"
             className={`source-segment-btn ${sourceFilter === "all" ? "active" : ""}`}
             onClick={() => setSourceFilter("all")}
           >
             <LibraryBig size={14} />
-            <span>Todos los contenidos</span>
+            <span>{tr("Library.77e946a85e")}</span>
             <span className="source-segment-count">{active.length}</span>
           </button>
           <button
@@ -525,7 +518,7 @@ export function Library() {
             onClick={() => setSourceFilter("local")}
           >
             <FolderOpen size={14} />
-            <span>Archivos propios</span>
+            <span>{tr("Library.3c1bbefb07")}</span>
             <span className="source-segment-count">{localCount}</span>
           </button>
           <button
@@ -534,14 +527,14 @@ export function Library() {
             onClick={() => setSourceFilter("manga")}
           >
             <BookOpen size={14} />
-            <span>Mangas (MangaDex)</span>
+            <span>{tr("Library.a95c310773")}</span>
             <span className="source-segment-count">{mangaCount}</span>
           </button>
         </div>
 
         {mangaCount > 0 && (
-          <div className="library-preview-mode-pill" title="Modo de vista previa para mangas">
-            <span className="preview-mode-label">Vista de mangas:</span>
+          <div className="library-preview-mode-pill" title={tr("Library.a8cd13d807")}>
+            <span className="preview-mode-label">{tr("Library.71af2609ba")}</span>
             <button
               type="button"
               className={`preview-pill-btn ${mangaCoverMode === "official" ? "active" : ""}`}
@@ -549,11 +542,10 @@ export function Library() {
                 setMangaCoverMode("official");
                 setCardPreviewOverrides({});
               }}
-              title="Mostrar portada oficial de los mangas"
+              title={tr("Library.62df2a1437")}
             >
               <Image size={13} />
-              Portada oficial
-            </button>
+              {tr("Library.e222cd1538")}</button>
             <button
               type="button"
               className={`preview-pill-btn ${mangaCoverMode === "lastPage" ? "active" : ""}`}
@@ -561,11 +553,10 @@ export function Library() {
                 setMangaCoverMode("lastPage");
                 setCardPreviewOverrides({});
               }}
-              title="Mostrar vista previa de la última página leída"
+              title={tr("Library.3b148f5476")}
             >
               <FileText size={13} />
-              Última página leída
-            </button>
+              {tr("Library.3dae461dde")}</button>
           </div>
         )}
       </div>
@@ -574,19 +565,19 @@ export function Library() {
         <div className="input-icon">
           <Search size={17} />
           <input
-            aria-label="Buscar en mi biblioteca"
-            placeholder="Encuentra tu próxima lectura…"
+            aria-label={tr("Library.b8c44f4adf")}
+            placeholder={tr("Library.ed5706402f")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
         <select
-          aria-label="Formato de documento"
+          aria-label={tr("Library.2097ed7214")}
           value={format}
           onChange={(e) => setFormat(e.target.value)}
         >
-          <option value="all">Todos los formatos</option>
-          <option value="manga">MANGA (MANGADEX)</option>
+          <option value="all">{tr("Library.e4e50fe62f")}</option>
+          <option value="manga">{tr("Library.48839435ad")}</option>
           {allowedFormats.map((f) => (
             <option value={f} key={f}>
               {f.toUpperCase()}
@@ -594,19 +585,18 @@ export function Library() {
           ))}
         </select>
         <select
-          aria-label="Orden de biblioteca"
+          aria-label={tr("Library.a6181501c1")}
           value={sort}
           onChange={(e) => setSort(e.target.value)}
         >
-          <option value="recent">Lecturas recientes</option>
-          <option value="added">Últimos añadidos</option>
-          <option value="title">Por título</option>
+          <option value="recent">{tr("Library.0b0a936a7d")}</option>
+          <option value="added">{tr("Library.a991f6ac15")}</option>
+          <option value="title">{tr("Library.5b3d39a6af")}</option>
         </select>
       </div>
       {loading && !state ? (
         <div className="empty-state" role="status">
-          Preparando tu biblioteca…
-        </div>
+          {tr("Library.c854bfa4e7")}</div>
       ) : visible.length ? (
         <div className="library-grid">
           {visible.map((document) => {
@@ -618,7 +608,7 @@ export function Library() {
                     className={`library-cover cover-${document.format} ${mangaCover?.url ? "has-real-cover" : ""}`}
                     disabled={!!document.deletedAt}
                     onClick={() => setSelected(document.id)}
-                    aria-label={`Leer ${document.title}`}
+                    aria-label={tr("a11y.Library.611", { v0: document.title })}
                   >
                     <span className="book-format">
                       {document.format.toUpperCase()}
@@ -656,12 +646,12 @@ export function Library() {
                       }}
                       title={
                         mangaCover.isLastPage
-                          ? "Viendo última página. Clic para ver portada oficial."
-                          : "Viendo portada oficial. Clic para ver última página leída."
+                          ? tr("Library.21f57bbcdd")
+                          : tr("Library.ae453f3f88")
                       }
-                      aria-label="Alternar entre portada oficial y última página leída"
+                      aria-label={tr("Library.ee73005cf2")}
                     >
-                      {mangaCover.isLastPage ? "📖 Pág. leída" : "🖼️ Portada"}
+                      {mangaCover.isLastPage ? tr("Library.e595ad1b43") : tr("Library.2a6f468ed5")}
                     </button>
                   )}
                 </div>
@@ -675,7 +665,7 @@ export function Library() {
                   </button>
                   <button
                     className="icon-button"
-                    aria-label={`Opciones de ${document.title}`}
+                    aria-label={tr("a11y.Library.668", { v0: document.title })}
                     onClick={() => {
                       setActions(document);
                       setRename(document.title);
@@ -687,16 +677,16 @@ export function Library() {
                 <p>
                   {document.format === "manga"
                     ? document.deletedAt
-                      ? "En la papelera"
+                      ? tr("Library.1414d5e2e6")
                       : document.lastReadAt
-                        ? `Cap. ${document.manga?.currentChapterNumber || document.position.unit + 1} · Pág. ${document.position.anchor + 1}${document.manga?.totalPages ? ` / ${document.manga.totalPages}` : ""}`
-                        : `Sin empezar · ${document.totalUnits ? `${document.totalUnits} caps.` : "Manga"}`
+                        ? tr("Library.90bf701f28", { v0: document.manga?.currentChapterNumber || document.position.unit + 1, v1: document.position.anchor + 1, v2: document.manga?.totalPages ? ` / ${document.manga.totalPages}` : "" })
+                        : tr("Library.f42576ac83", { v0: document.totalUnits ? tr("interface.Library.0912e3e9aa", { v0: document.totalUnits }) : "Manga" })
                     : `${formatSize(document.size)} · ${
                         document.deletedAt
-                          ? "En la papelera"
+                          ? tr("Library.1414d5e2e6")
                           : document.lastReadAt
-                            ? `${document.position.unit + 1}${document.totalUnits ? ` / ${document.totalUnits}` : ""} ${["epub", "docx", "txt", "md"].includes(document.format) ? "secciones" : "páginas"}`
-                            : "Una historia por empezar"
+                            ? `${document.position.unit + 1}${document.totalUnits ? ` / ${document.totalUnits}` : ""} ${["epub", "docx", "txt", "md"].includes(document.format) ? tr("Library.8adf82c5a1") : tr("Library.594f311bb7")}`
+                            : tr("Library.21fab5755e")
                       }`}
                 </p>
                 <div className="book-progress">
@@ -708,7 +698,7 @@ export function Library() {
                   <span>{Math.round(document.position.progress * 100)}%</span>
                   <button
                     className="icon-button"
-                    aria-label={`${document.favorite ? "Quitar de favoritos" : "Favorito"} ${document.title}`}
+                    aria-label={`${document.favorite ? tr("Library.66ba4c7c28") : tr("Library.e7a2c0c4db")} ${document.title}`}
                     aria-pressed={document.favorite}
                     onClick={() =>
                       void updateDocument(document.id, {
@@ -734,8 +724,7 @@ export function Library() {
                     }
                   >
                     <RotateCcw size={13} />
-                    Restaurar documento
-                  </button>
+                    {tr("Library.555168865b")}</button>
                 )}
               </div>
             </article>
@@ -749,19 +738,19 @@ export function Library() {
           </span>
           <h2>
             {query
-              ? "No encontramos esa lectura"
+              ? tr("Library.a9b4c7b534")
               : filter === "trash"
-                ? "Todo en su lugar"
+                ? tr("Library.d4cb35436d")
                 : filter === "all"
-                  ? "Hay un mundo por leer."
-                  : "Todavía no hay lecturas aquí"}
+                  ? tr("Library.a2f0a48086")
+                  : tr("Library.eaa05166b8")}
           </h2>
           <p>
             {filter === "trash"
-              ? "Los documentos que quites de tu biblioteca podrán recuperarse aquí."
+              ? tr("Library.265048bb1b")
               : filter === "all" && !query
-                ? "Sube tus documentos o descubre una historia. Nosotros recordamos dónde te quedaste."
-                : "Prueba otro filtro o añade una nueva lectura."}
+                ? tr("Library.654cf8f4b6")
+                : tr("Library.f47dbd9fbc")}
           </p>
           {filter === "all" && !query && (
             <button
@@ -770,24 +759,18 @@ export function Library() {
               onClick={() => input.current?.click()}
             >
               <Upload size={16} />
-              Añadir mi primera lectura
-            </button>
+              {tr("Library.ea50a0d85e")}</button>
           )}
           <small>
-            PDF · EPUB · DOCX · CBZ · TXT · MD · JPG · PNG · WebP
-            <br />
-            Hasta 150 MB por archivo · sin DRM
-          </small>
+            {tr("Library.deb3d6d85b")}<br />
+            {tr("Library.d3fe49c20c")}</small>
         </div>
       )}
       <section className="library-discover">
         <div className="section-heading">
           <h2>
-            Historias para descubrir
-            <span>
-              Fuentes oficiales, gratuitas y con sus propias condiciones de
-              acceso.
-            </span>
+            {tr("Library.1a9b8f3062")}<span>
+              {tr("Library.8d335a9229")}</span>
           </h2>
         </div>
         <div className="library-sources">
@@ -812,49 +795,37 @@ export function Library() {
                 <small>{source.type}</small>
                 <p>{source.description}</p>
                 <span>
-                  Abrir catálogo oficial
-                  <ArrowUpRight size={12} />
+                  {tr("Library.cd39a98c54")}<ArrowUpRight size={12} />
                 </span>
               </div>
             </a>
           ))}
         </div>
         <p className="library-source-note">
-          Descarga los archivos que el catálogo permita y súbelos aquí. Los
-          capítulos de MANGA Plus se leen en su web o aplicación; {APP_NAME} no
-          los descarga ni copia su progreso.
-        </p>
+          {tr("Library.e3691a5ade")}{APP_NAME} {tr("Library.17cddf8ad6")}</p>
       </section>
       {!isRemoteLibrary && <details className="library-folder-info">
         <summary>
           <FolderOpen size={16} />
-          Dónde viven tus lecturas
-        </summary>
+          {tr("Library.e7016b4149")}</summary>
         <p>
-          Tus originales, marcadores y posiciones se conservan en esta carpeta
-          del equipo:
-        </p>
+          {tr("Library.d728fb0e61")}</p>
         <code>
-          {state?.storagePath || `library-data · servidor local de ${APP_NAME}`}
+          {state?.storagePath || tr("interface.Library.676f05531f", { v0: APP_NAME })}
         </code>
         <p>
-          Para respaldar o mover tu biblioteca, copia la carpeta completa
-          mientras {APP_NAME} esté cerrado. El respaldo JSON del dashboard no
-          incluye estos archivos. Quitar un libro lo envía a la papelera; solo
-          «Eliminar definitivamente» borra su archivo.
-        </p>
+          {tr("Library.6cfe96e499")}{APP_NAME} {tr("Library.38301f7e78")}</p>
       </details>}
       <Dialog
         open={!!actions}
         onClose={() => setActions(null)}
-        title="Un lugar para esta lectura"
+        title={tr("Library.1a6f2aa5da")}
         description={actions?.name}
       >
         <div className="dialog-body form-stack">
           <label>
-            Título en mi biblioteca
-            <input
-              aria-label="Título del documento"
+            {tr("Library.c56574701d")}<input
+              aria-label={tr("Library.5ded91c4bb")}
               maxLength={200}
               value={rename}
               onChange={(e) => setRename(e.target.value)}
@@ -870,8 +841,7 @@ export function Library() {
             }
           >
             <Pencil size={14} />
-            Guardar título
-          </button>
+            {tr("Library.ec75893e43")}</button>
           {actions?.format === "manga" ? (
             <a
               className="secondary-button"
@@ -880,8 +850,7 @@ export function Library() {
               rel="noreferrer"
             >
               <ExternalLink size={15} />
-              Ver ficha en MangaDex
-            </a>
+              {tr("Library.d25652226b")}</a>
           ) : (
             <a
               className="secondary-button"
@@ -889,8 +858,7 @@ export function Library() {
               download={actions?.name}
             >
               <Download size={15} />
-              Descargar archivo original
-            </a>
+              {tr("Library.11e3fdc2ed")}</a>
           )}
           {actions?.deletedAt ? (
             <>
@@ -904,8 +872,7 @@ export function Library() {
                 }
               >
                 <RotateCcw size={15} />
-                Restaurar de la papelera
-              </button>
+                {tr("Library.17926a329a")}</button>
               <button
                 className="text-button danger"
                 onClick={() => {
@@ -914,8 +881,7 @@ export function Library() {
                 }}
               >
                 <Trash2 size={15} />
-                Eliminar definitivamente…
-              </button>
+                {tr("Library.0724538ab4")}</button>
             </>
           ) : (
             <button
@@ -925,27 +891,25 @@ export function Library() {
                 void mutate(async () => {
                   await libraryRequest(`/${actions!.id}`, { method: "DELETE" });
                   setMessage(
-                    "Lectura movida a la papelera. Puedes restaurarla cuando quieras.",
+                    tr("Library.8e1feda273"),
                   );
                 })
               }
             >
               <Trash2 size={15} />
-              Mover a la papelera
-            </button>
+              {tr("Library.b9a042ebc7")}</button>
           )}
         </div>
       </Dialog>
       <Dialog
         open={!!remove}
         onClose={() => setRemove(null)}
-        title="Eliminar el archivo definitivamente"
-        description={`Se borrarán «${remove?.title}», su progreso y sus marcadores de la carpeta de ${APP_NAME}. Esta acción no se puede deshacer.`}
+        title={tr("Library.35b260cb80")}
+        description={tr("Library.ed4fe9e859", { v0: remove?.title, v1: APP_NAME })}
       >
         <div className="dialog-body dialog-actions">
           <button className="secondary-button" onClick={() => setRemove(null)}>
-            Conservar en la papelera
-          </button>
+            {tr("Library.f5ef95037b")}</button>
           <button
             className="primary-button destructive-button"
             disabled={actionBusy}
@@ -954,12 +918,11 @@ export function Library() {
                 await libraryRequest(`/${remove!.id}?permanent=1`, {
                   method: "DELETE",
                 });
-                setMessage("Archivo eliminado definitivamente.");
+                setMessage(tr("Library.7a111da5d6"));
               })
             }
           >
-            Eliminar archivo
-          </button>
+            {tr("Library.161314a27e")}</button>
         </div>
       </Dialog>
       <MangaSearchModal

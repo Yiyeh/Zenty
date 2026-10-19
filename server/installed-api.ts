@@ -1,3 +1,4 @@
+import { tr } from "../src/lib/i18n.ts";
 import { APP_NAME } from "../src/lib/brand.ts";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { spawn, execFile } from "node:child_process";
@@ -55,10 +56,10 @@ export async function validateExecutable(value: unknown): Promise<string> {
     extname(value).toLowerCase() !== ".exe" ||
     blockedExecutables.test(basename(value))
   )
-    throw new LocalError("Selecciona el ejecutable .exe del juego o emulador.");
+    throw new LocalError(tr("installed_api.89652a45ad"));
   const path = await realpath(value).catch(() => "");
   if (!path || !(await isFile(path)))
-    throw new LocalError("No encontramos ese ejecutable. Comprueba la ruta.");
+    throw new LocalError(tr("installed_api.fcb314180b"));
   return path;
 }
 export function validateArgs(value: unknown, rom = false): string[] {
@@ -76,7 +77,7 @@ export function validateArgs(value: unknown, rom = false): string[] {
     (rom && !value.some((a) => a.includes("{rom}")))
   )
     throw new LocalError(
-      rom ? "Los argumentos deben incluir {rom}." : "Argumentos no válidos.",
+      rom ? tr("installed_api.1292c48d2b") : tr("installed_api.307d9f36d1"),
     );
   return value;
 }
@@ -94,12 +95,12 @@ export function allowedLaunchUri(uri: string): boolean {
 export async function launchGame(spec: LaunchSpec): Promise<void> {
   if (process.platform !== "win32")
     throw new LocalError(
-      "El lanzamiento de juegos está disponible en Windows.",
+      tr("installed_api.953d0b041b"),
     );
   let executable: string, args: string[], cwd: string | undefined;
   if (spec.type === "uri") {
     if (!allowedLaunchUri(spec.uri))
-      throw new LocalError("Este acceso del launcher no es válido.");
+      throw new LocalError(tr("installed_api.61f367cbc9"));
     executable = join(process.env.WINDIR || "C:\\Windows", "explorer.exe");
     args = [spec.uri];
   } else {
@@ -124,10 +125,10 @@ export async function launchGame(spec: LaunchSpec): Promise<void> {
 }
 async function pickPath(kind: string): Promise<string> {
   if (process.platform !== "win32")
-    throw new LocalError("Escribe la ruta completa en este sistema.");
+    throw new LocalError(tr("installed_api.29c4d41f79"));
   if (!["executable", "folder"].includes(kind))
     throw new LocalError("Selector desconocido.");
-  const script = `[Console]::OutputEncoding=[System.Text.Encoding]::UTF8; Add-Type -AssemblyName System.Windows.Forms; ${kind === "folder" ? "$picker=New-Object System.Windows.Forms.FolderBrowserDialog; $picker.Description='Elige tu carpeta de ROMs'; if($picker.ShowDialog() -eq 'OK'){Write-Output $picker.SelectedPath}" : "$picker=New-Object System.Windows.Forms.OpenFileDialog; $picker.Filter='Aplicaciones (*.exe)|*.exe'; $picker.Title='Elige el juego o emulador'; if($picker.ShowDialog() -eq 'OK'){Write-Output $picker.FileName}"}; $picker.Dispose()`;
+  const script = `[Console]::OutputEncoding=[System.Text.Encoding]::UTF8; Add-Type -AssemblyName System.Windows.Forms; ${kind === "folder" ? tr("installed_api.c177a2e97b") : tr("installed_api.c54e67bc25")}; $picker.Dispose()`;
   const result = await promisify(execFile)(
     "powershell.exe",
     [
@@ -201,7 +202,7 @@ export function createInstalledApi({
     if (state) return state;
     try {
       const raw = await readFile(manifest, "utf8");
-      if (raw.length > 10_000_000) throw new Error("Too large");
+      if (raw.length > 10_000_000) throw new Error(tr("installed_api.03191ddddc"));
       const data = JSON.parse(raw);
       if (
         data.version !== 1 ||
@@ -210,7 +211,7 @@ export function createInstalledApi({
         !data.metadata ||
         typeof data.metadata !== "object"
       )
-        throw new Error("Invalid state");
+        throw new Error(tr("installed_api.9d82037b26"));
       for (const entry of data.manual)
         if (
           typeof entry.id !== "string" ||
@@ -220,7 +221,7 @@ export function createInstalledApi({
           typeof entry.enabled !== "boolean" ||
           !Object.hasOwn(launcherNames, entry.launcher)
         )
-          throw new Error("Invalid manual game");
+          throw new Error(tr("installed_api.75570b38db"));
       for (const entry of data.emulators)
         if (
           typeof entry.id !== "string" ||
@@ -231,12 +232,12 @@ export function createInstalledApi({
           !Array.isArray(entry.extensions) ||
           typeof entry.enabled !== "boolean"
         )
-          throw new Error("Invalid emulator");
+          throw new Error(tr("installed_api.af5a1da18f"));
       state = data;
     } catch (e) {
       if ((e as NodeJS.ErrnoException).code !== "ENOENT")
         throw new LocalError(
-          "No se pudo leer tu configuración local. Conserva gaming-data para recuperarla; no se ha sobrescrito.",
+          tr("installed_api.a689b50b6c"),
           500,
         );
       state = { version: 1, manual: [], emulators: [], metadata: {} };
@@ -259,17 +260,17 @@ export function createInstalledApi({
       if (!force && !snapshot) {
         try {
           const raw = await readFile(libraryCache, "utf8");
-          if (raw.length > 20_000_000) throw new Error("Large cache");
+          if (raw.length > 20_000_000) throw new Error(tr("installed_api.b414fee200"));
           const cached = JSON.parse(raw);
           if (cached.version !== 1 || cached.configKey !== configKey || !Array.isArray(cached.entries) || cached.entries.length > 20000 ||
-              !cached.snapshot || !Array.isArray(cached.snapshot.warnings) || !Number.isFinite(Date.parse(cached.snapshot.scannedAt))) throw new Error("Invalid cache");
+              !cached.snapshot || !Array.isArray(cached.snapshot.warnings) || !Number.isFinite(Date.parse(cached.snapshot.scannedAt))) throw new Error(tr("installed_api.36b4ed1e4c"));
           for (const entry of cached.entries) {
             if (!entry?.game || typeof entry.game.id !== "string" || typeof entry.game.title !== "string" ||
                 typeof entry.game.installPath !== "string" || !isAbsolute(entry.game.installPath) ||
-                !Object.hasOwn(launcherNames, entry.game.launcher)) throw new Error("Invalid cached game");
-            if (entry.launch?.type === "uri") { if (!allowedLaunchUri(entry.launch.uri)) throw new Error("Invalid launch"); }
-            else if (entry.launch?.type === "exe") { if (!isAbsolute(entry.launch.executable) || !isAbsolute(entry.launch.cwd)) throw new Error("Invalid executable"); validateArgs(entry.launch.args, entry.game.launcher === "emulator"); }
-            else throw new Error("Invalid launch");
+                !Object.hasOwn(launcherNames, entry.game.launcher)) throw new Error(tr("installed_api.b47bd452d1"));
+            if (entry.launch?.type === "uri") { if (!allowedLaunchUri(entry.launch.uri)) throw new Error(tr("installed_api.74e6db6fda")); }
+            else if (entry.launch?.type === "exe") { if (!isAbsolute(entry.launch.executable) || !isAbsolute(entry.launch.cwd)) throw new Error(tr("installed_api.b85e653111")); validateArgs(entry.launch.args, entry.game.launcher === "emulator"); }
+            else throw new Error(tr("installed_api.74e6db6fda"));
           }
           found = new Map(cached.entries.map((entry: FoundGame) => [entry.game.id, entry]));
           snapshot = { ...cached.snapshot, games: cached.entries.map((entry: FoundGame) => entry.game), emulators: structuredClone(config.emulators), removed: config.manual.filter((entry) => !entry.enabled).map(({ id, title }) => ({ id, title })) };
@@ -284,7 +285,7 @@ export function createInstalledApi({
       for (const item of config.manual.filter((m) => m.enabled)) {
         if (!(await isFile(item.executable))) {
           warnings.push(
-            `No se encuentra el ejecutable de ${item.title}. Puedes corregirlo o quitar el acceso.`,
+            tr("installed_api.c94690c780", { v0: item.title }),
           );
           continue;
         }
@@ -312,7 +313,7 @@ export function createInstalledApi({
         if (output.status === "fulfilled") entries.push(...output.value);
         else
           warnings.push(
-            "No se pudo leer una carpeta de ROMs. Revisa su ruta en Emuladores.",
+            tr("installed_api.9bd5f4ca82"),
           );
       found = new Map(entries.map((e) => [e.game.id, e]));
       snapshot = {
@@ -347,9 +348,9 @@ export function createInstalledApi({
       redirect: "error",
       headers: { "User-Agent": `${APP_NAME}-PersonalDashboard/1.0` },
     });
-    if (!response.ok) throw new Error("Metadata unavailable");
+    if (!response.ok) throw new Error(tr("installed_api.602e4ec874"));
     const raw = await response.text();
-    if (raw.length > 4_000_000) throw new Error("Metadata too large");
+    if (raw.length > 4_000_000) throw new Error(tr("installed_api.653b9d63d5"));
     return JSON.parse(raw);
   }
   async function metadata(id: string, priority = false): Promise<GameMetadata> {
@@ -377,7 +378,7 @@ export function createInstalledApi({
     const entry = found.get(id);
     if (!entry)
       throw new LocalError(
-        "Vuelve a detectar los juegos antes de completar la ficha.",
+        tr("installed_api.6f46126a47"),
         404,
       );
     const operation = metadataSlot(async () => {
@@ -512,11 +513,11 @@ export function createInstalledApi({
         (origin && ![`http://${host}`, `https://${host}`].includes(origin))
       )
         throw new LocalError(
-          `Solo puedes usar tus juegos desde ${APP_NAME} en este equipo.`,
+          tr("installed_api.e0490991ab", { v0: APP_NAME }),
           403,
         );
       if (req.headers["x-mia-games"] !== "1")
-        throw new LocalError("Petición local no autorizada.", 403);
+        throw new LocalError(tr("installed_api.d6b9eb0bfb"), 403);
       let body: any = {};
       if (req.method === "POST" || req.method === "PATCH") {
         const chunks: Buffer[] = [];
@@ -524,16 +525,16 @@ export function createInstalledApi({
         for await (const chunk of req) {
           size += chunk.length;
           if (size > 30_000)
-            throw new LocalError("La configuración es demasiado grande.", 413);
+            throw new LocalError(tr("installed_api.54f4e19d87"), 413);
           chunks.push(Buffer.from(chunk));
         }
         try {
           body = JSON.parse(Buffer.concat(chunks).toString() || "{}");
         } catch {
-          throw new LocalError("Configuración no válida.");
+          throw new LocalError(tr("installed_api.dcb7758686"));
         }
         if (!body || typeof body !== "object" || Array.isArray(body))
-          throw new LocalError("Configuración no válida.");
+          throw new LocalError(tr("installed_api.dcb7758686"));
       }
       const action = path.slice("/api/installed/".length);
       if (req.method === "GET" && action === "scan") {
@@ -555,12 +556,12 @@ export function createInstalledApi({
         const entry = found.get(body.id);
         if (!entry)
           throw new LocalError(
-            "Este juego ya no está en la detección. Actualiza tu biblioteca.",
+            tr("installed_api.02db90ab96"),
             404,
           );
         if (now() - (launches.get(body.id) ?? 0) < 2000)
           throw new LocalError(
-            "El acceso ya se está abriendo. Espera un momento.",
+            tr("installed_api.abd9eaed51"),
             429,
           );
         if (
@@ -568,24 +569,24 @@ export function createInstalledApi({
           !(await isFile(entry.game.installPath))
         )
           throw new LocalError(
-            "No encontramos esta ROM. Actualiza la detección.",
+            tr("installed_api.86b08cf9c4"),
           );
         if (
           entry.game.launcher !== "emulator" &&
           !(await isDirectory(entry.game.installPath))
         )
           throw new LocalError(
-            "La carpeta de este juego ya no está disponible. Actualiza la detección.",
+            tr("installed_api.b4ec24ed78"),
           );
         if (
           entry.launch.type === "exe" &&
           !(await isFile(entry.launch.executable))
         )
           throw new LocalError(
-            "El ejecutable ya no está disponible. Actualiza la detección.",
+            tr("installed_api.fa44a0dbc6"),
           );
         if (entry.launch.type === "uri" && !allowedLaunchUri(entry.launch.uri))
-          throw new LocalError("Acceso inválido.");
+          throw new LocalError(tr("installed_api.f996aebb2c"));
         launches.set(body.id, now());
         try {
           await launcher(entry.launch);
@@ -595,13 +596,13 @@ export function createInstalledApi({
         }
         reply(200, {
           message:
-            "Se envió la solicitud para abrir el juego. El launcher puede pedirte iniciar sesión.",
+            tr("installed_api.fbf258aff3"),
         });
         return;
       }
       if (req.method === "POST" && action === "pick") {
         if (activePick)
-          throw new LocalError("Ya hay un selector de archivos abierto.", 409);
+          throw new LocalError(tr("installed_api.430b4e7228"), 409);
         activePick = true;
         try {
           reply(200, { path: await pickPath(body.kind) });
@@ -618,7 +619,7 @@ export function createInstalledApi({
           !body.title.trim() ||
           body.title.length > 500
         )
-          throw new LocalError("Añade un nombre para el juego.");
+          throw new LocalError(tr("installed_api.1229db22ab"));
         const item: ManualEntry = {
           id: `local:${randomUUID()}`,
           title: body.title.trim(),
@@ -641,7 +642,7 @@ export function createInstalledApi({
                 (m) => m.executable.toLowerCase() === executable.toLowerCase(),
               )
           )
-            throw new LocalError("Ese acceso ya está añadido.");
+            throw new LocalError(tr("installed_api.00f53f61c2"));
           config.manual.push(item);
           await save();
         });
@@ -660,7 +661,7 @@ export function createInstalledApi({
           !(await isDirectory(body.folder))
         )
           throw new LocalError(
-            "Añade un nombre y una carpeta de ROMs que exista.",
+            tr("installed_api.56efbf8450"),
           );
         const extensions: string[] = Array.isArray(body.extensions)
           ? [
@@ -695,12 +696,12 @@ export function createInstalledApi({
         };
         if (item.args.some((a) => a.includes("RUTA_AL_CORE")))
           throw new LocalError(
-            "En Opciones de inicio, reemplaza RUTA_AL_CORE.dll por la ruta real del core de RetroArch.",
+            tr("installed_api.19a262c5fc"),
           );
         await sequence(async () => {
           const config = await read();
           if (config.emulators.filter((e) => e.enabled).length >= 30)
-            throw new LocalError("El máximo es de 30 emuladores activos.");
+            throw new LocalError(tr("installed_api.d3c06e91dc"));
           config.emulators.push(item);
           await save();
         });
@@ -715,7 +716,7 @@ export function createInstalledApi({
             action === "manual" ? config.manual : config.emulators;
           const entry = entries.find((e) => e.id === body.id);
           if (!entry || typeof body.enabled !== "boolean")
-            throw new LocalError("Acceso no encontrado.", 404);
+            throw new LocalError(tr("installed_api.d1eb0c4e60"), 404);
           entry.enabled = body.enabled;
           await save();
         });
@@ -725,9 +726,9 @@ export function createInstalledApi({
       }
       if (req.method === "PATCH" && action === "artwork") {
         if (!found.has(body.id))
-          throw new LocalError("Juego no encontrado.", 404);
+          throw new LocalError(tr("installed_api.025c1997e3"), 404);
         const image = httpsUrl(body.image);
-        if (!image) throw new LocalError("Usa un enlace HTTPS de una imagen.");
+        if (!image) throw new LocalError(tr("installed_api.f5d2e683f2"));
         await sequence(async () => {
           const config = await read();
           config.metadata[body.id] = {
@@ -745,13 +746,13 @@ export function createInstalledApi({
         reply(200, { ok: true });
         return;
       }
-      throw new LocalError("Acción no disponible.", 404);
+      throw new LocalError(tr("installed_api.84a12681de"), 404);
     } catch (e) {
       reply(e instanceof LocalError ? e.status : 500, {
         error:
           e instanceof LocalError
             ? e.message
-            : "No se pudo completar la acción. Revisa que el launcher, archivo o carpeta sigan disponibles.",
+            : tr("installed_api.8653a73aa1"),
       });
     }
   };

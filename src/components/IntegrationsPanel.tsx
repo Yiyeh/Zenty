@@ -1,3 +1,5 @@
+import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
+import { tr } from "../lib/i18n.ts";
 import { isRemoteLibrary } from "../lib/remote";
 import { APP_NAME } from "../lib/brand.ts";
 import {
@@ -26,6 +28,7 @@ function ClientIdField({
   onChange: (value: string) => void;
   placeholder: string;
 }) {
+  useInterfaceLocale();
   const [visible, setVisible] = useState(false);
   const id = useId();
   useEffect(() => {
@@ -56,7 +59,7 @@ function ClientIdField({
         <button
           type="button"
           className="icon-button"
-          aria-label={`${visible ? "Ocultar" : "Mostrar"} ${label}`}
+          aria-label={`${visible ? tr("IntegrationsPanel.dd68077287") : tr("IntegrationsPanel.5c492f37a6")} ${label}`}
           aria-pressed={visible}
           onClick={() => setVisible((v) => !v)}
         >
@@ -65,28 +68,27 @@ function ClientIdField({
       </div>
       <small>
         {value
-          ? "Configurado. Se oculta automáticamente después de 30 segundos."
-          : "Usa el identificador público de tu aplicación."}
+          ? tr("IntegrationsPanel.46b2277171")
+          : tr("IntegrationsPanel.bc38e9438c")}
       </small>
     </div>
   );
 }
 export function IntegrationsPanel() {
+  useInterfaceLocale();
   const { settings, setSettings } = useDashboard();
   const i = useIntegrations();
   const redirect = location.origin + location.pathname;
-  if (isRemoteLibrary) return <div className="form-stack integrations-panel"><div className="info-banner"><ShieldCheck size={20}/><p>Usas las conexiones del PC anfitrión. Las credenciales permanecen en el PC; conecta o desconecta las cuentas desde allí.</p></div><section className="integration-card"><h3>Spotify</h3><p>{i.spotifyConnected ? `Conectado · ${i.spotifyName || "Cuenta del PC"}` : "Sin conectar en el PC"}</p><p className="muted">Controla la música y el volumen desde el widget de inicio.</p><button className="secondary-button" onClick={() => void i.refreshSpotify()}>Actualizar Spotify</button>{i.spotifyError && <p role="alert">{i.spotifyError}</p>}</section><section className="integration-card"><h3>Google Calendar</h3><p>{i.googleConnected ? `Conectado · ${i.events.length} eventos` : "Sin conectar en el PC"}</p><button className="secondary-button" onClick={() => void i.refreshCalendar()}>Actualizar agenda</button>{i.googleError && <p role="alert">{i.googleError}</p>}</section></div>;
+  if (isRemoteLibrary) return <div className="form-stack integrations-panel"><div className="info-banner"><ShieldCheck size={20}/><p>{tr("IntegrationsPanel.c4195744c9")}</p></div><section className="integration-card"><h3>{tr("IntegrationsPanel.7005c0064b")}</h3><p>{i.spotifyConnected ? `Conectado · ${i.spotifyName || tr("IntegrationsPanel.fa82a9b951")}` : tr("IntegrationsPanel.f81a8a4ae9")}</p><p className="muted">{tr("IntegrationsPanel.079796b1f9")}</p><button className="secondary-button" onClick={() => void i.refreshSpotify()}>{tr("IntegrationsPanel.1e850dd4cd")}</button>{i.spotifyError && <p role="alert">{i.spotifyError}</p>}</section><section className="integration-card"><h3>{tr("IntegrationsPanel.b074310e91")}</h3><p>{i.googleConnected ? `Conectado · ${i.events.length} eventos` : tr("IntegrationsPanel.f81a8a4ae9")}</p><button className="secondary-button" onClick={() => void i.refreshCalendar()}>{tr("IntegrationsPanel.e812cff079")}</button>{i.googleError && <p role="alert">{i.googleError}</p>}</section></div>;
   return (
     <div className="form-stack integrations-panel">
       <div className="info-banner">
         <ShieldCheck size={20} />
         <p>
-          Tú decides qué conectar. La autorización ocurre en cada servicio. Los
-          {window.zentyDesktop
-            ? "datos de acceso de Spotify se guardan cifrados en tu perfil de Windows para recordar la conexión."
-            : "datos de acceso de Spotify se conservan en este navegador para recordar la conexión."}
-          {" "}Google se conserva solo en memoria. Las credenciales no se incluyen en tus respaldos.
-        </p>
+          {tr("IntegrationsPanel.edd7ce357b")}{window.zentyDesktop
+            ? tr("IntegrationsPanel.9ba8042bf9")
+            : tr("IntegrationsPanel.f08d665ff8")}
+          {" "}{tr("IntegrationsPanel.cba3ba287c")}</p>
       </div>
       <section className="integration-card">
         <div className="integration-heading">
@@ -94,63 +96,57 @@ export function IntegrationsPanel() {
             <Music2 size={24} />
           </span>
           <div>
-            <h3>Spotify</h3>
+            <h3>{tr("IntegrationsPanel.7005c0064b")}</h3>
             <p>
               {i.spotifyConnected
-                ? i.spotifyName || "Cuenta autorizada"
-                : "Tu música, dentro de tu espacio"}
+                ? i.spotifyName || tr("IntegrationsPanel.7b35a0a0b9")
+                : tr("IntegrationsPanel.cf50d64a80")}
             </p>
           </div>
           <span
             className={`status-pill ${i.spotifyConnected ? "connected" : ""}`}
           >
-            {i.spotifyConnected ? "Conectado" : "Sin conectar"}
+            {i.spotifyConnected ? tr("IntegrationsPanel.7444e37ea6") : tr("IntegrationsPanel.48e64302cb")}
           </span>
         </div>
         <p className="muted">
-          Conecta tu cuenta para ver qué está sonando, o pega una playlist en el
-          widget para usar el reproductor oficial.
-        </p>
+          {tr("IntegrationsPanel.b6858505fe")}</p>
         <ClientIdField
-          label="Client ID público de Spotify"
+          label={tr("IntegrationsPanel.ab9b9f6058")}
           value={settings.spotifyClientId}
           onChange={(value) =>
             setSettings((p) => ({ ...p, spotifyClientId: value }))
           }
-          placeholder="Client ID de tu aplicación"
+          placeholder={tr("IntegrationsPanel.1ca9675394")}
         />
         <details>
-          <summary>Configurar mi aplicación de Spotify</summary>
+          <summary>{tr("IntegrationsPanel.ae5bff8c9c")}</summary>
           <ol>
             <li>
-              Crea una aplicación en{" "}
+              {tr("IntegrationsPanel.3f462607bd")}{" "}
               <a
                 href="https://developer.spotify.com/dashboard"
                 target="_blank"
                 rel="noreferrer"
               >
-                Spotify for Developers <ExternalLink size={12} />
+                {tr("IntegrationsPanel.5113c89ca9")}<ExternalLink size={12} />
               </a>
               .
             </li>
             <li>
-              Activa Web API y añade esta Redirect URI exacta:{" "}
-              <code>{redirect}</code>. Para desarrollo usa{" "}
-              <code>http://127.0.0.1:5173/</code>; Spotify no acepta localhost.
-            </li>
-            <li>Copia el Client ID aquí. No uses un Client Secret.</li>
+              {tr("IntegrationsPanel.b6b40d588c")}{" "}
+              <code>{redirect}</code>{tr("IntegrationsPanel.ccac7b4ec9")}{" "}
+              <code>{tr("IntegrationsPanel.f91f474a9c")}</code>{tr("IntegrationsPanel.73d669dc48")}</li>
+            <li>{tr("IntegrationsPanel.e2890d8f3f")}</li>
             <li>
-              Autoriza tu cuenta como usuario de prueba de la aplicación. El
-              acceso depende de las restricciones y del plan exigido por
-              Spotify.
-            </li>
+              {tr("IntegrationsPanel.5de8c61b0f")}</li>
           </ol>
           <a
             href="https://developer.spotify.com/documentation/web-api/concepts/quota-modes"
             target="_blank"
             rel="noreferrer"
           >
-            Consultar requisitos actuales <ExternalLink size={12} />
+            {tr("IntegrationsPanel.e8b44dc708")}<ExternalLink size={12} />
           </a>
         </details>
         {i.spotifyError && (
@@ -166,14 +162,12 @@ export function IntegrationsPanel() {
                 disabled={i.spotifyBusy}
                 onClick={() => void i.refreshSpotify()}
               >
-                <RefreshCw size={15} /> Actualizar
-              </button>
+                <RefreshCw size={15} /> {tr("IntegrationsPanel.56f0039eec")}</button>
               <button
                 className="text-button danger"
                 onClick={i.disconnectSpotify}
               >
-                <LogOut size={15} /> Desconectar
-              </button>
+                <LogOut size={15} /> {tr("IntegrationsPanel.4eb0ae820f")}</button>
             </>
           ) : (
             <button
@@ -182,21 +176,18 @@ export function IntegrationsPanel() {
               onClick={() => void i.connectSpotify()}
             >
               <LogIn size={16} />{" "}
-              {i.spotifyBusy ? "Conectando…" : "Ingresar con Spotify"}
+              {i.spotifyBusy ? tr("IntegrationsPanel.cc190ab9f5") : tr("IntegrationsPanel.153fbd6f3d")}
             </button>
           )}
         </div>
         <small>
-          Lectura del perfil y reproducción; el control de volumen solicita
-          permiso adicional al activarlo. Al desconectar se borra la sesión
-          local. Puedes revocar el permiso en{" "}
+          {tr("IntegrationsPanel.b79fd75140")}{" "}
           <a
             href="https://www.spotify.com/account/apps/"
             target="_blank"
             rel="noreferrer"
           >
-            tu cuenta de Spotify
-          </a>
+            {tr("IntegrationsPanel.def3ad31fd")}</a>
           .
         </small>
       </section>
@@ -206,60 +197,49 @@ export function IntegrationsPanel() {
             <CalendarDays size={24} />
           </span>
           <div>
-            <h3>Google Calendar</h3>
-            <p>Tu agenda de los próximos siete días</p>
+            <h3>{tr("IntegrationsPanel.b074310e91")}</h3>
+            <p>{tr("IntegrationsPanel.0f1d2c53cf")}</p>
           </div>
           <span
             className={`status-pill ${i.googleConnected ? "connected" : ""}`}
           >
-            {i.googleConnected ? "Conectado" : "Sin conectar"}
+            {i.googleConnected ? tr("IntegrationsPanel.7444e37ea6") : tr("IntegrationsPanel.48e64302cb")}
           </span>
         </div>
         <p className="muted">
-          Consulta los eventos de tu calendario principal. Tus bloques
-          personales continúan guardándose en {APP_NAME}.
+          {tr("IntegrationsPanel.ff1fb718de")}{APP_NAME}.
         </p>
         <ClientIdField
-          label="Client ID OAuth de Google"
+          label={tr("IntegrationsPanel.46f82d887a")}
           value={settings.googleClientId}
           onChange={(value) =>
             setSettings((p) => ({ ...p, googleClientId: value }))
           }
-          placeholder="….apps.googleusercontent.com"
+          placeholder={tr("IntegrationsPanel.a73b424993")}
         />
         <details>
-          <summary>Configurar mi aplicación de Google</summary>
+          <summary>{tr("IntegrationsPanel.0cb6b84273")}</summary>
           <ol>
             <li>
-              En{" "}
+              {tr("IntegrationsPanel.fb92c7e381")}{" "}
               <a
                 href="https://console.cloud.google.com/apis/credentials"
                 target="_blank"
                 rel="noreferrer"
               >
-                Google Cloud Console <ExternalLink size={12} />
+                {tr("IntegrationsPanel.187e622fcf")}<ExternalLink size={12} />
               </a>
-              , habilita Google Calendar API.
-            </li>
+              {tr("IntegrationsPanel.2054eaa4f5")}</li>
             <li>
-              Configura la pantalla de consentimiento y añade tu cuenta como
-              usuario de prueba si la aplicación está en pruebas.
-            </li>
+              {tr("IntegrationsPanel.b08ac404d0")}</li>
             <li>
-              Crea un Client ID OAuth de tipo Aplicación web. Añade{" "}
-              <code>{location.origin}</code> como origen de JavaScript
-              autorizado.
-            </li>
+              {tr("IntegrationsPanel.96d8ad855c")}{" "}
+              <code>{location.origin}</code> {tr("IntegrationsPanel.3dc28a20f4")}</li>
             <li>
-              Copia el Client ID aquí y autoriza la lectura de eventos. No se
-              necesita Client Secret.
-            </li>
+              {tr("IntegrationsPanel.8adbba130f")}</li>
           </ol>
           <p>
-            Google requiere renovar el acceso cuando vence. Para sincronización
-            continua y varias cuentas se necesita un servidor con almacenamiento
-            seguro de credenciales.
-          </p>
+            {tr("IntegrationsPanel.6be8d2eb49")}</p>
         </details>
         {i.googleError && (
           <p className="error-message" role="alert">
@@ -274,14 +254,12 @@ export function IntegrationsPanel() {
                 disabled={i.googleBusy}
                 onClick={() => void i.refreshCalendar()}
               >
-                <RefreshCw size={15} /> Actualizar
-              </button>
+                <RefreshCw size={15} /> {tr("IntegrationsPanel.56f0039eec")}</button>
               <button
                 className="text-button danger"
                 onClick={i.disconnectGoogle}
               >
-                <LogOut size={15} /> Desconectar
-              </button>
+                <LogOut size={15} /> {tr("IntegrationsPanel.4eb0ae820f")}</button>
             </>
           ) : (
             <button
@@ -293,26 +271,20 @@ export function IntegrationsPanel() {
             >
               <LogIn size={16} />{" "}
               {i.googleBusy
-                ? "Conectando…"
+                ? tr("IntegrationsPanel.cc190ab9f5")
                 : settings.googleClientId && !i.googleReady
-                  ? "Preparando Google…"
-                  : "Ingresar con Google"}
+                  ? tr("IntegrationsPanel.75ba5c5f9f")
+                  : tr("IntegrationsPanel.6549ed52d3")}
             </button>
           )}
         </div>
         <small>
-          Permiso de solo lectura de eventos. Desconectar revoca la autorización
-          de Google.
-        </small>
+          {tr("IntegrationsPanel.16d03e324c")}</small>
       </section>
       <div className="info-banner">
         <Link2 size={20} />
         <p>
-          Notion, GitHub, Gmail y otras aplicaciones pueden añadirse como
-          accesos rápidos. La sincronización de sus datos requiere una
-          integración específica; los accesos abren el servicio con tu sesión
-          habitual.
-        </p>
+          {tr("IntegrationsPanel.4d724de980")}</p>
       </div>
     </div>
   );
