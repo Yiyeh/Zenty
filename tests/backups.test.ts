@@ -1,0 +1,62 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { createRequire } from "node:module";
+import { spawn } from "node:child_process";
+import { defaultData, parseBackup } from "../src/lib/dashboard.ts";
+const { createBackupManager, recoverInterruptedRestore } = createRequire(import.meta.url)("../desktop/backup-manager.cjs");
+async function fixture(t: import("node:test").TestContext) {
+  const profile = await mkdtemp(join(tmpdir(), "zenty-backups-")); t.after(() => rm(profile, { recursive: true, force: true }));
+  await mkdir(join(profile, "data/dashboard-data"), { recursive: true });
+  await mkdir(join(profile, "data/library-data/documents"), { recursive: true });
+  await writeFile(join(profile, "data/dashboard-data/dashboard.json"), JSON.stringify({ ...defaultData, version: 2 }));
+  await writeFile(join(profile, "data/library-data/documents/example.txt"), "original document");
+  return profile;
+}
+test("respaldos: versiones completas, retención automática y restauración preservando una copia actual", async t => {
+  const profile = await fixture(t); let now = Date.now();
+  const manager = await createBackupManager(profile, { name: "Zenty", parseSnapshot: parseBackup, now: () => now });
+  await manager.configure({ automatic: true, keep: 2 });
+  assert.equal(await manager.automatic(), true); assert.equal(await manager.automatic(), false);
+  now += 86400010; await manager.automatic(); now += 86400010; await manager.automatic();
+  const state = await manager.status(); assert.equal(state.snapshots.length, 2);
+  const original = manager.internalPath(state.snapshots[0].id);
+  const changed = structuredClone(defaultData); changed.settings.userName = "Changed";
+  await writeFile(join(profile, "data/dashboard-data/dashboard.json"), JSON.stringify({ ...changed, version: 2 }));
+  await writeFile(join(profile, "data/library-data/documents/example.txt"), "changed document");
+  await manager.restore(original);
+  assert.equal(JSON.parse(await readFile(join(profile, "data/dashboard-data/dashboard.json"), "utf8")).settings.userName, defaultData.settings.userName);
+  assert.equal(await readFile(join(profile, "data/library-data/documents/example.txt"), "utf8"), "original document");
+  assert.equal((await manager.status()).snapshots.filter((item: { kind: string }) => item.kind === "manual").length, 1);
+});
+test("respaldos: una interrupción real del proceso se recupera en el siguiente inicio", async t => {
+  const profile = await fixture(t);
+  const manager = await createBackupManager(profile, { name: "Zenty", parseSnapshot: parseBackup });
+  await manager.create(); const backup = manager.internalPath((await manager.status()).snapshots[0].id);
+  const data = structuredClone(defaultData); data.settings.userName = "Current profile before interruption";
+  const current = JSON.stringify({ ...data, version: 2 });
+  await writeFile(join(profile, "data/dashboard-data/dashboard.json"), current);
+  const script = `const {createBackupManager}=require('./desktop/backup-manager.cjs');const {parseBackup}=require('./src/lib/dashboard.ts');createBackupManager(process.argv[1],{name:'Zenty',parseSnapshot:parseBackup,fault:name=>{if(name==='data')process.exit(23)}}).then(manager=>manager.restore(process.argv[2])).catch(()=>process.exit(24));`;
+  const child = spawn(process.execPath, ["-e", script, profile, backup], { windowsHide: true, stdio: "ignore" });
+  assert.equal(await new Promise(resolve => child.once("exit", resolve)), 23);
+  assert.equal(await recoverInterruptedRestore(profile), true);
+  assert.equal(await readFile(join(profile, "data/dashboard-data/dashboard.json"), "utf8"), current);
+  assert.equal(await recoverInterruptedRestore(profile), false);
+});
+test("respaldos: rechaza archivos manipulados y rutas externas; un fallo a mitad revierte los datos", async t => {
+  const profile = await fixture(t);
+  const manager = await createBackupManager(profile, { name: "Zenty", parseSnapshot: parseBackup });
+  await manager.create(); const backup = manager.internalPath((await manager.status()).snapshots[0].id);
+  const changed = structuredClone(defaultData); changed.settings.userName = "Do not lose me";
+  const current = JSON.stringify({ ...changed, version: 2 });
+  await writeFile(join(profile, "data/dashboard-data/dashboard.json"), current);
+  const broken = await createBackupManager(profile, { name: "Zenty", parseSnapshot: parseBackup, fault: async (name: string) => { if (name === "data") throw new Error("simulated disk failure"); } });
+  await assert.rejects(broken.restore(backup));
+  assert.equal(await readFile(join(profile, "data/dashboard-data/dashboard.json"), "utf8"), current);
+  const manifest = join(backup, "save-manifest.json"); const raw = JSON.parse(await readFile(manifest, "utf8"));
+  raw.files[0].path = "../outside.txt"; await writeFile(manifest, JSON.stringify(raw));
+  await assert.rejects(manager.inspect(backup), /backup.path/);
+  assert.equal(await readFile(join(profile, "data/dashboard-data/dashboard.json"), "utf8"), current);
+});

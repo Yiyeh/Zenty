@@ -478,5 +478,13 @@
   "news.e45111e5b1": "Markteinführungen, Konsolen, Analysen und Gamer-News",
   "news.edff70de39": "Aktuelle Nachrichten aus allen Quellen",
   "news.f040a3a67c": "Artikel gespeichert, um sie ruhig lesen zu können",
-  "news.f8bb82bbd6": "Wissenschaft"
+  "news.f8bb82bbd6": "Wissenschaft",
+  "spaces.label": "Raumprofil",
+  "spaces.personal": "Mitarbeiter",
+  "spaces.work": "Arbeit",
+  "spaces.gaming": "Gaming",
+  "spaces.reading": "Lesen",
+  "spaces.deviceHint": "Aussehen und Profil werden pro Gerät gespeichert. Dokumente und andere Inhalte werden geteilt.",
+  "spaces.bookmarkScope": "Im Bereich anzeigen",
+  "spaces.all": "Alle Profile"
 }

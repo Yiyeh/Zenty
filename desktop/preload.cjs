@@ -2,6 +2,14 @@ const { contextBridge, ipcRenderer } = require("electron");
 if (process.isMainFrame)
   contextBridge.exposeInMainWorld("zentyDesktop", {
     platform: process.platform,
+    backups: {
+      get: () => ipcRenderer.invoke("zenty:backups:get"),
+      configure: (value) => ipcRenderer.invoke("zenty:backups:configure", value),
+      create: () => ipcRenderer.invoke("zenty:backups:create"),
+      review: (id) => ipcRenderer.invoke("zenty:backups:review", id),
+      restore: (ticket) => ipcRenderer.invoke("zenty:backups:restore", ticket),
+    },
+    onMaintenanceResume: (listener) => { const callback = () => listener(); ipcRenderer.on("zenty:maintenance:resume", callback); return () => ipcRenderer.removeListener("zenty:maintenance:resume", callback); },
     setLocale: (language) => ipcRenderer.invoke("zenty:locale:set", language),
     security: {
       get: () => ipcRenderer.invoke("zenty:security:get"),
@@ -29,6 +37,7 @@ if (process.isMainFrame)
       set: (value) => ipcRenderer.invoke("zenty:spotify-session:set", value),
     },
     lan: {
+      manage: async (id, change) => { const result = await ipcRenderer.invoke("zenty:lan:manage", { id, change }); if (!result.ok) throw new Error(result.error); return result.value; },
       forget: async () => { const result = await ipcRenderer.invoke("zenty:lan:forget"); if (!result.ok) throw new Error(result.error); return result.value; },
       get: async () => { const result = await ipcRenderer.invoke("zenty:lan:get"); if (!result.ok) throw new Error(result.error); return result.value; },
       set: async (enabled) => { const result = await ipcRenderer.invoke("zenty:lan:set", enabled); if (!result.ok) throw new Error(result.error); return result.value; },
@@ -47,9 +56,9 @@ if (process.isMainFrame)
     },
     exportSave: (raw) => ipcRenderer.invoke("zenty:export-save", raw),
     onBeforeClose: (listener) => {
-      const callback = async () => {
+      const callback = async (_event, mode) => {
         let ok = false;
-        try { await listener(); ok = true; } catch { /* Main keeps the app open. */ }
+        try { await listener(mode); ok = true; } catch { /* Main keeps the app open. */ }
         ipcRenderer.send("zenty:save-ready", ok);
       };
       ipcRenderer.on("zenty:save-before-close", callback);

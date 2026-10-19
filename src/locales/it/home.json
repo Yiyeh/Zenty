@@ -478,5 +478,13 @@
   "news.e45111e5b1": "Lanci, console, analisi e notizie sui giocatori",
   "news.edff70de39": "Ultime notizie da tutte le fonti",
   "news.f040a3a67c": "Articoli salvati per essere letti con calma",
-  "news.f8bb82bbd6": "Scienza"
+  "news.f8bb82bbd6": "Scienza",
+  "spaces.label": "Profilo spaziale",
+  "spaces.personal": "Personale",
+  "spaces.work": "Lavoro",
+  "spaces.gaming": "Gioco",
+  "spaces.reading": "Lettura",
+  "spaces.deviceHint": "L'aspetto e il profilo vengono salvati per dispositivo. Documenti e altri contenuti vengono condivisi.",
+  "spaces.bookmarkScope": "Mostra nello spazio",
+  "spaces.all": "Tutti i profili"
 }

@@ -26,7 +26,7 @@ async function connect(url: string, code: string) {
 test("red local: desactivada por defecto, URL real, biblioteca y progreso compartidos sin filtrar credenciales", async () => {
   const { local, sharing, cleanup } = await setup();
   try {
-    assert.deepEqual(sharing.status(), { enabled: false, urls: [], connections: [], pairedDevices: 0, code: "", port: 0 });
+    assert.deepEqual(sharing.status(), { enabled: false, devices: [], urls: [], connections: [], pairedDevices: 0, code: "", port: 0 });
     const state = await sharing.set(true);
     assert.equal(state.enabled, true);
     assert.deepEqual(state.urls, lanAddresses().map((ip) => `http://${ip}:${state.port}`));
@@ -153,4 +153,23 @@ test("app completa: conexiones del anfitrión requieren sesión y un comando exp
     assert.equal((await fetch(url+"/api/remote/integrations",{method:"POST",headers:{cookie,"X-Zenty-Remote":"1"},body:JSON.stringify({action:"execute",input:"cmd"})})).status,400);
     assert.equal((await fetch(url+"/api/installed/manual",{method:"POST",headers:{cookie,"X-MIA-Games":"1"},body:JSON.stringify({executable:"C:/Windows/cmd.exe"})})).status,403);
   } finally { await sharing.stop(); await cleanup(); }
+});
+
+
+test("dispositivos: permisos individuales, nombre, revocación y lecturas sin comandos", async () => {
+  const { sharing, cleanup } = await setup();
+  try {
+    const state = await sharing.set(true), url = `http://127.0.0.1:${state.port}`;
+    const one = await connect(url, state.code), two = await connect(url, state.code);
+    const devices = sharing.status().devices; assert.equal(devices.length, 2);
+    await sharing.manage(devices[0].id, { name: "Mi tableta", permission: "read" });
+    const info = await (await fetch(url + "/api/remote/device", { headers: { cookie: one } })).json(); assert.equal(info.permission, "read"); assert.equal(info.name, "Mi tableta");
+    assert.equal((await fetch(url + "/api/library", { headers: { cookie: one } })).status, 200);
+    for (const endpoint of ["/api/library?name=x.txt", "/api/dashboard", "/api/installed/launch", "/api/remote/integrations"]) assert.equal((await fetch(url + endpoint, { method: "POST", headers: { cookie: one }, body: "{}" })).status, 403);
+    assert.match(await (await fetch(url, { headers: { cookie: one } })).text(), /name="zenty-permission" content="read"/);
+    await sharing.manage(devices[0].id, { revoke: true });
+    assert.equal((await fetch(url + "/api/library", { headers: { cookie: one } })).status, 401);
+    assert.equal((await fetch(url + "/api/library", { headers: { cookie: two } })).status, 200);
+    assert.doesNotMatch(JSON.stringify(sharing.status()), /"hash"|zenty_lan=/);
+  } finally { await cleanup(); }
 });

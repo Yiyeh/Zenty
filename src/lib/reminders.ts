@@ -244,5 +244,7 @@ export function createReminderEngine({
       stopped = true;
       clearTimer(timer);
     },
+    async suspend() { stopped = true; clearTimer(timer); await flight; },
+    resume() { stopped = false; return check(); },
   };
 }

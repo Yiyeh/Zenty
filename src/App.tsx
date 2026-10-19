@@ -1,6 +1,8 @@
+import { SpaceSwitcher } from "./components/SpaceSwitcher";
 import { useLocale as useInterfaceLocale } from "./context/Locale.tsx";
 import { translateMessage, tr, getFormatLocale } from "./lib/i18n.ts";
 import { UpdateNotice } from "./components/UpdateNotice";
+import { SyncStatus } from "./components/SyncStatus";
 import { PinGate } from "./components/PinSecurity";
 import { isRemoteLibrary } from "./lib/remote";
 import { RemoteIntegrationsProvider } from "./context/RemoteIntegrationsContext";
@@ -54,7 +56,7 @@ import { MusicWidget } from "./components/MusicWidget";
 import { GamingWidget } from "./components/GamingWidget";
 import { WeatherWidget } from "./components/WeatherWidget";
 import { Bookmarks } from "./components/Bookmarks";
-import { SettingsModal } from "./components/SettingsModal";
+const SettingsModal = lazy(() => import("./components/SettingsModal").then(module => ({ default: module.SettingsModal })));
 import type { SettingsTab } from "./components/SettingsModal";
 import { CommandPalette } from "./components/CommandPalette";
 import { localDate, widgetLabels, defaultSettings } from "./lib/dashboard";
@@ -449,7 +451,7 @@ function DashboardContent() {
               >
                 <Search size={17} />
               </button>
-              <UpdateNotice />
+              <SpaceSwitcher /><SyncStatus /><UpdateNotice />
               <span className="topbar-divider" />
               <button
                 className="customize-button"
@@ -815,11 +817,11 @@ function DashboardContent() {
       )}
         </main>
       </div>
-      <SettingsModal
+      {settingsOpen && <Suspense fallback={null}><SettingsModal
         isOpen={settingsOpen}
         onClose={() => setSettingsOpen(false)}
         initialTab={settingsTab}
-      />
+      /></Suspense>}
       <CommandPalette
         open={command}
         onClose={() => setCommand(false)}

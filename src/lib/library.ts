@@ -67,6 +67,13 @@ export interface MangaMetadata {
   totalPages?: number;
 }
 export interface LibraryDocument {
+  author?: string;
+  collection?: string;
+  tags?: string[];
+  series?: string;
+  volume?: string;
+  preferences?: ReaderPreferences;
+  mangaPreferences?: Record<string, string | number | boolean>;
   id: string;
   name: string;
   title: string;

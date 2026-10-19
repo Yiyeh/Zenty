@@ -478,5 +478,13 @@
   "news.e45111e5b1": "출시, 콘솔, 분석 및 게이머 뉴스",
   "news.edff70de39": "모든 출처의 최신 뉴스",
   "news.f040a3a67c": "차분하게 읽을 수 있도록 저장한 글",
-  "news.f8bb82bbd6": "과학"
+  "news.f8bb82bbd6": "과학",
+  "spaces.label": "공간 프로필",
+  "spaces.personal": "직원",
+  "spaces.work": "일",
+  "spaces.gaming": "게임",
+  "spaces.reading": "독서",
+  "spaces.deviceHint": "외모와 프로필은 기기별로 저장됩니다. 문서 및 기타 콘텐츠가 공유됩니다.",
+  "spaces.bookmarkScope": "표시할 공간",
+  "spaces.all": "모든 프로필"
 }

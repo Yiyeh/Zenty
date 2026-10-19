@@ -8,7 +8,9 @@ import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
 import { join } from "node:path";
 import { APP_NAME } from "../src/lib/brand.ts";
 
-export interface LanStatus { enabled: boolean; urls: string[]; connections: { name: string; url: string }[]; pairedDevices: number; code: string; port: number }
+export interface LanDevice { id: string; name: string; permission: "full" | "read"; createdAt: number; lastSeen: number; expiresAt: number }
+interface DeviceRecord extends LanDevice { hash: string }
+export interface LanStatus { devices: LanDevice[]; enabled: boolean; urls: string[]; connections: { name: string; url: string }[]; pairedDevices: number; code: string; port: number }
 function lanConnections() {
   return Object.entries(networkInterfaces()).flatMap(([name, items]) => (items || [])
     .filter((item) => !item.internal && item.family === "IPv4" && privateAddress(item.address))
@@ -20,7 +22,7 @@ function privateAddress(ip: string) {
   ip = ip.replace(/^::ffff:/, "");
   return /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip);
 }
-const loginPage = (failed = false) => `<!doctype html><html lang="${getLocale()}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="same-origin"><title>${APP_NAME} · ${escapeHtml(tr("lan.connect"))}</title><style>html{color-scheme:dark;font:16px system-ui;background:#17191f;color:#eee}body{margin:0;min-height:100dvh;display:grid;place-items:center}main{box-sizing:border-box;width:min(92vw,420px);padding:32px;border:1px solid #444252;border-radius:24px;background:#24232c}h1{margin-top:0}p{color:#bbb9c9;line-height:1.6}input,button{box-sizing:border-box;width:100%;font:inherit;padding:14px;border-radius:10px;border:1px solid #716285}input{background:#17191f;color:#fff;letter-spacing:.25em;margin:12px 0 18px}button{background:#8260ac;color:white;font-weight:600;cursor:pointer}label{font-size:14px}.remember{display:flex;gap:10px;align-items:center;margin-bottom:20px;line-height:1.5}input[type=checkbox]{width:18px;height:18px;margin:0;flex-shrink:0;accent-color:#8260ac}.error{color:#ffb7a6}</style><main><h1>${APP_NAME}</h1><p>${escapeHtml(tr("lan.welcome"))}<br>${escapeHtml(tr("lan.instructions"))}</p>${failed ? `<p class="error" role="alert">${escapeHtml(tr("lan.incorrect"))}</p>` : ''}<form method="post" action="/connect"><label for="code">${escapeHtml(tr("lan.code"))}</label><input id="code" name="code" inputmode="numeric" pattern="[0-9]{9}" maxlength="9" autocomplete="one-time-code" required autofocus><label class="remember"><input type="checkbox" name="remember" value="1" checked>${escapeHtml(tr("lan.remember"))}</label><button>${escapeHtml(tr("lan.enter"))}</button></form><p><small>${escapeHtml(tr("lan.keepOpen"))}</small></p></main></html>`;
+const loginPage = (failed = false) => `<!doctype html><html lang="${getLocale()}"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="same-origin"><title>${APP_NAME} · ${escapeHtml(tr("lan.connect"))}</title><style>html{color-scheme:dark;font:16px system-ui;background:#17191f;color:#eee}body{margin:0;min-height:100dvh;display:grid;place-items:center}main{box-sizing:border-box;width:min(92vw,420px);padding:32px;border:1px solid #444252;border-radius:24px;background:#24232c}h1{margin-top:0}p{color:#bbb9c9;line-height:1.6}input,button{box-sizing:border-box;width:100%;font:inherit;padding:14px;border-radius:10px;border:1px solid #716285}input{background:#17191f;color:#fff;letter-spacing:.25em;margin:12px 0 18px}button{background:#8260ac;color:white;font-weight:600;cursor:pointer}label{font-size:14px}.remember{display:flex;gap:10px;align-items:center;margin-bottom:20px;line-height:1.5}input[type=checkbox]{width:18px;height:18px;margin:0;flex-shrink:0;accent-color:#8260ac}.error{color:#ffb7a6}</style><main><h1>${APP_NAME}</h1><p>${escapeHtml(tr("lan.welcome"))}<br>${escapeHtml(tr("lan.instructions"))}</p>${failed ? `<p class="error" role="alert">${escapeHtml(tr("lan.incorrect"))}</p>` : ''}<form method="post" action="/connect"><label for="device">${escapeHtml(tr("devices.name"))}</label><input id="device" name="device" maxlength="60" autocomplete="nickname"><label for="code">${escapeHtml(tr("lan.code"))}</label><input id="code" name="code" inputmode="numeric" pattern="[0-9]{9}" maxlength="9" autocomplete="one-time-code" required autofocus><label class="remember"><input type="checkbox" name="remember" value="1" checked>${escapeHtml(tr("lan.remember"))}</label><button>${escapeHtml(tr("lan.enter"))}</button></form><p><small>${escapeHtml(tr("lan.keepOpen"))}</small></p></main></html>`;
 
 /** Authenticated gateway to the existing loopback library, never a second data store. */
 export function createLanSharing(targetOrigin: string, preferredPort = 17732, pairingDirectory?: string, integrationRequest?: (action: string, input: unknown) => Promise<unknown>) {
@@ -29,13 +31,13 @@ export function createLanSharing(targetOrigin: string, preferredPort = 17732, pa
   let server: Server | undefined;
   let code = "", port = 0;
   let transition: Promise<unknown> = Promise.resolve();
-  const sessions = new Map<string, number>();
-  let paired = new Map<string, number>();
+  const sessions = new Map<string, DeviceRecord>();
+  let paired = new Map<string, DeviceRecord>();
   let pendingSave: Promise<unknown> = Promise.resolve();
   const digest = (token: string) => createHash("sha256").update(token).digest("hex");
-  const prune = () => { for (const [key, until] of paired) if (until <= Date.now()) paired.delete(key); };
+  const prune = () => { for (const [key, until] of paired) if (until.expiresAt <= Date.now()) paired.delete(key); };
   const savePairs = () => {
-    const snapshot = JSON.stringify({ version: 1, devices: [...paired].map(([hash, expiresAt]) => ({ hash, expiresAt })) });
+    const snapshot = JSON.stringify({ version: 2, devices: [...paired.values()] });
     const work = pendingSave.catch(() => {}).then(async () => {
       if (!pairingDirectory) return;
       await mkdir(pairingDirectory, { recursive: true });
@@ -51,13 +53,13 @@ export function createLanSharing(targetOrigin: string, preferredPort = 17732, pa
       const raw = await readFile(join(pairingDirectory, "paired-devices.json"), "utf8");
       if (raw.length > 100_000) throw new Error("Archivo demasiado grande.");
       const value = JSON.parse(raw);
-      if (value.version !== 1 || !Array.isArray(value.devices) || value.devices.length > 128) throw new Error("Formato inválido.");
-      paired = new Map(value.devices.filter((entry: { hash: unknown; expiresAt: unknown }) => typeof entry.hash === "string" && /^[a-f0-9]{64}$/.test(entry.hash) && typeof entry.expiresAt === "number" && Number.isFinite(entry.expiresAt)).map((entry: { hash: string; expiresAt: number }) => [entry.hash, entry.expiresAt]));
+      if (![1, 2].includes(value.version) || !Array.isArray(value.devices) || value.devices.length > 128) throw new Error("Formato inválido.");
+      paired = new Map(value.devices.filter((entry: DeviceRecord) => typeof entry.hash === "string" && /^[a-f0-9]{64}$/.test(entry.hash) && Number.isFinite(entry.expiresAt)).map((entry: DeviceRecord) => [entry.hash, { hash: entry.hash, id: entry.hash.slice(0, 24), name: typeof entry.name === "string" ? entry.name.slice(0, 60) : tr("devices.unknown"), permission: entry.permission === "read" ? "read" : "full", createdAt: Number.isFinite(entry.createdAt) ? entry.createdAt : Date.now(), lastSeen: Number.isFinite(entry.lastSeen) ? entry.lastSeen : Date.now(), expiresAt: entry.expiresAt }]));
       prune();
     } catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw new Error("No se pudieron leer los dispositivos autorizados. Usa «Olvidar dispositivos» para restablecer el acceso."); }
   };
   const attempts = new Map<string, { count: number; until: number }>();
-  const status = (): LanStatus => ({ enabled: !!server?.listening, code, port, pairedDevices: [...paired.values()].filter((until) => until > Date.now()).length, connections: server?.listening ? lanConnections().map((item) => ({ name: item.name, url: `http://${item.address}:${port}` })) : [], urls: server?.listening ? lanAddresses().map((ip) => `http://${ip}:${port}`) : [] });
+  const status = (): LanStatus => ({ enabled: !!server?.listening, code, port, devices: [...paired.values(), ...sessions.values()].filter(item => item.expiresAt > Date.now()).map(({ hash: _hash, ...item }) => item), pairedDevices: [...paired.values()].filter((until) => until.expiresAt > Date.now()).length, connections: server?.listening ? lanConnections().map((item) => ({ name: item.name, url: `http://${item.address}:${port}` })) : [], urls: server?.listening ? lanAddresses().map((ip) => `http://${ip}:${port}`) : [] });
   const stop = async () => {
     const previous = server; server = undefined; sessions.clear(); attempts.clear(); code = ""; port = 0;
     await pendingSave.catch(() => {});
@@ -93,24 +95,31 @@ export function createLanSharing(targetOrigin: string, preferredPort = 17732, pa
           const input = new URLSearchParams(raw);
           const entered = input.get("code") || "";
           if (!server || !/^[0-9]{9}$/.test(entered) || entered.length !== code.length || !timingSafeEqual(Buffer.from(entered), Buffer.from(code))) { page(true); return; }
-          for (const [key, until] of sessions) if (until < Date.now()) sessions.delete(key);
+          for (const [key, until] of sessions) if (until.expiresAt < Date.now()) sessions.delete(key);
           prune();
           if (sessions.size >= 128 || paired.size >= 128) { fail(429, "Hay demasiados dispositivos conectados."); return; }
           const token = randomBytes(32).toString("hex");
           const remember = input.get("remember") === "1";
           const maxAge = remember ? 90 * 24 * 60 * 60 : 12 * 60 * 60;
-          if (remember) { paired.set(digest(token), Date.now() + maxAge * 1000); await savePairs(); }
-          else sessions.set(token, Date.now() + maxAge * 1000);
+          const hash = digest(token), ua = req.headers["user-agent"] || "";
+          const label = input.get("device")?.trim().replace(/[\p{Cc}<>]/gu, "").slice(0, 60) || (/iPad/i.test(ua) ? "iPad" : /iPhone/i.test(ua) ? "iPhone" : /Android/i.test(ua) ? "Android" : tr("devices.unknown"));
+          const device: DeviceRecord = { hash, id: hash.slice(0, 24), name: label, permission: "full", createdAt: now, lastSeen: now, expiresAt: now + maxAge * 1000 };
+          if (remember) { paired.set(hash, device); await savePairs(); }
+          else sessions.set(token, device);
           res.writeHead(303, { Location: "/", "Set-Cookie": `zenty_lan=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAge}` }); res.end();
         })().catch(() => fail(500, "No se pudo recordar el dispositivo. Vuelve a intentarlo.")); });
         return;
       }
       const token = /(?:^|;\s*)zenty_lan=([a-f0-9]{64})(?:;|$)/.exec(req.headers.cookie || "")?.[1] || "";
-      if (Math.max(sessions.get(token) || 0, paired.get(digest(token)) || 0) <= Date.now()) {
+      const device = sessions.get(token) || paired.get(digest(token));
+      if (!device || device.expiresAt <= Date.now()) {
         if (req.method === "GET" && ["/", "/connect"].includes(url.pathname)) page();
         else fail(401, "La sesión terminó. Recarga la página e introduce el código del PC.");
         return;
       }
+      if (Date.now() - device.lastSeen > 60_000) { device.lastSeen = Date.now(); if (paired.has(device.hash)) void savePairs().catch(() => {}); }
+      if (url.pathname === "/api/remote/device" && req.method === "GET") { res.writeHead(200, { "Content-Type": "application/json" }); res.end(JSON.stringify({ id: device.id, name: device.name, permission: device.permission })); return; }
+      if (device.permission === "read" && !["GET", "HEAD"].includes(req.method || "") && url.pathname !== "/disconnect") { fail(403, tr("devices.readOnly")); return; }
       if (url.pathname === "/disconnect" && req.method === "POST") {
         sessions.delete(token); paired.delete(digest(token));
         void savePairs().then(() => { res.writeHead(303, { Location: "/", "Set-Cookie": "zenty_lan=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0" }); res.end(); }).catch(() => fail(500, "No se pudo guardar la desconexión. Vuelve a intentarlo.")); return;
@@ -135,11 +144,11 @@ export function createLanSharing(targetOrigin: string, preferredPort = 17732, pa
       const read = req.method === "GET" || req.method === "HEAD";
       const library = /^\/api\/library(?:\/|$)/.test(url.pathname);
       const manga = read && /^\/api\/mangadex\//.test(url.pathname);
-      const dashboard = url.pathname === "/api/dashboard" && ["GET", "PATCH"].includes(req.method || "");
+      const dashboard = (url.pathname === "/api/dashboard" && ["GET", "PATCH"].includes(req.method || "")) || (/^\/api\/dashboard\/conflicts\/[a-f0-9-]{36}(\/ack)?$/.test(url.pathname) && ["GET", "POST"].includes(req.method || ""));
       const feeds = read && (/^\/api\/gaming\//.test(url.pathname) || ["/api/news", "/api/news/sources", "/api/news/image", "/api/game-assets/image", "/api/music/spotify"].includes(url.pathname));
       const installed = (req.method === "PATCH" && ["/api/installed/manual", "/api/installed/emulators", "/api/installed/artwork"].includes(url.pathname)) || (read && url.pathname === "/api/installed/scan") || (req.method === "POST" && ["/api/installed/scan", "/api/installed/metadata", "/api/installed/launch"].includes(url.pathname));
       const profile = req.method === "GET" && url.pathname === "/api/share-profile";
-      const asset = read && (url.pathname === "/" || /^\/(assets|pdfjs)\//.test(url.pathname) || /^\/(favicon\.svg|zenty-icon\.png)$/.test(url.pathname));
+      const asset = read && (url.pathname === "/" || /^\/(assets|pdfjs)\//.test(url.pathname) || /^\/(favicon\.(svg|ico)|zenty-icon\.png)$/.test(url.pathname));
       if (!(library || manga || profile || asset || dashboard || feeds || installed)) { fail(403, "Esta función está disponible en el PC anfitrión."); return; }
       if (library && !read && req.headers["x-mia-library"] !== "1") { fail(403, "Solicitud no autorizada."); return; }
       if (dashboard && req.headers["x-mia-dashboard"] !== "1") { fail(403, "Solicitud no autorizada."); return; }
@@ -158,7 +167,7 @@ export function createLanSharing(targetOrigin: string, preferredPort = 17732, pa
                 const settings = JSON.parse(content).data?.settings || {};
                 content = JSON.stringify({ settings: Object.fromEntries(["userName", "theme", "accentColor", "surfaceTone", "background", "density"].filter((key) => settings[key] !== undefined).map((key) => [key, settings[key]])) });
               } else if (library) { const state = JSON.parse(content); delete state.storagePath; content = JSON.stringify(state); }
-              else content = content.replace('<head>', '<head><meta name="zenty-remote" content="app">');
+              else content = content.replace('<head>', '<head><meta name="zenty-remote" content="app"><meta name="zenty-permission" content="' + device.permission + '">');
               const outputHeaders = { ...response.headers }; delete outputHeaders["content-length"]; delete outputHeaders["transfer-encoding"];
               res.writeHead(response.statusCode || 502, outputHeaders); res.end(content);
             } catch { fail(502, "No se pudo leer la biblioteca del PC."); }
@@ -179,6 +188,16 @@ export function createLanSharing(targetOrigin: string, preferredPort = 17732, pa
   }
   return {
     status,
+    manage(id: string, change: { name?: string; permission?: "full" | "read"; revoke?: boolean }) {
+      const work = transition.catch(() => {}).then(async () => {
+        if (!/^[a-f0-9]{24}$/.test(id) || !change || typeof change !== "object") throw new Error(tr("devices.invalid"));
+        for (const collection of [paired, sessions]) for (const [key, device] of collection) if (device.id === id) {
+          if (change.revoke === true) collection.delete(key);
+          else { if (typeof change.name === "string" && change.name.trim()) device.name = change.name.trim().replace(/[\p{Cc}<>]/gu, "").slice(0, 60); if (["read", "full"].includes(change.permission || "")) device.permission = change.permission!; }
+        }
+        await savePairs(); return status();
+      }); transition = work; return work;
+    },
     forget() {
       const work = transition.catch(() => {}).then(async () => { paired.clear(); sessions.clear(); await savePairs(); return status(); });
       transition = work; return work;

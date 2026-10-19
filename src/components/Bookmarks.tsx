@@ -1,3 +1,4 @@
+import { deviceId, spaceIds } from "../lib/spaces";
 import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
 import { translateMessage, tr } from "../lib/i18n.ts";
 import { newId } from "../lib/id";
@@ -22,15 +23,16 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
   const [group, setGroup] = useState("Todos");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Bookmark | null>(null);
-  const [draft, setDraft] = useState({
+  const [draft, setDraft] = useState<Omit<Bookmark, "id">>({
     title: "",
     url: "",
+    space: settings.devicePreferences[deviceId()]?.space || "personal",
     group: "Personal",
     color: "#39745b",
   });
   const [error, setError] = useState("");
   const accesses = bookmarks.filter(
-    (bookmark) => bookmark.group !== "Para leer",
+    (bookmark) => bookmark.group !== "Para leer" && (!bookmark.space || bookmark.space === (settings.devicePreferences[deviceId()]?.space || "personal")),
   );
   const groups = ["Todos", ...new Set(accesses.map((b) => b.group))];
   const selectedGroup = groups.includes(group) ? group : "Todos";
@@ -40,7 +42,8 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
       bookmark || {
         title: "",
         url: "",
-        group: "Personal",
+        space: settings.devicePreferences[deviceId()]?.space || "personal",
+    group: "Personal",
         color: settings.accentColor,
       },
     );
@@ -189,6 +192,7 @@ export function Bookmarks({ compact = false }: { compact?: boolean }) {
               />
             </div>
           </label>
+          <label>{tr("spaces.bookmarkScope")}<select value={draft.space || ""} onChange={event => setDraft({ ...draft, space: (event.target.value || undefined) as Bookmark["space"] })}><option value="">{tr("spaces.all")}</option>{spaceIds.map(space => <option key={space} value={space}>{tr(`spaces.${space}`)}</option>)}</select></label>
           <div className="form-row">
             <label>
               {tr("Bookmarks.399b037dab")}<input

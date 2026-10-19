@@ -349,5 +349,19 @@
   "mangadex_client.ba118bf7fc": "英语",
   "mangadex_client.cf48d3a374": "无法在 MangaDex 上搜索漫画。",
   "mangadex_client.d3b018a72f": "西班牙语（西班牙）",
-  "mangadex_client.e495d53b96": "法语"
+  "mangadex_client.e495d53b96": "法语",
+  "library.author": "作者",
+  "library.collection": "收藏",
+  "library.allCollections": "所有收藏",
+  "library.tags": "标签（以逗号分隔）",
+  "library.series": "系列",
+  "library.volume": "音量",
+  "reader.offline": "离线保存章节",
+  "reader.offlineHint": "仅当您有权下载时，才将 CBZ 的副本保存到您的 PC 库中。不下载外部字体。",
+  "reader.savedOffline": "章节保存在库中。只要 PC 可用，您就可以在没有 Internet 连接的情况下打开它。",
+  "reader.downloading": "正在从 {total} 页面下载 {done}...",
+  "reader.offlineTooLarge": "该章超出了 150 MB 的限制。",
+  "reader.cancelDownload": "取消下载",
+  "library.save": "保存更改",
+  "library.history": "历史记录"
 }

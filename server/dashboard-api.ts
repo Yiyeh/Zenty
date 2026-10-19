@@ -1,26 +1,45 @@
 import { tr } from "../src/lib/i18n.ts";
 import { APP_NAME } from "../src/lib/brand.ts";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
+import { mkdir, readFile, writeFile, rename, readdir, unlink, stat } from "node:fs/promises";
 import { randomUUID, createHash } from "node:crypto";
 import { join } from "node:path";
-import { mergeDashboard } from "../src/lib/dashboard-sync.ts";
+import { mergeDashboardWithConflicts } from "../src/lib/dashboard-sync.ts";
+import type { SyncConflict } from "../src/lib/sync.ts";
 import { parseBackup } from "../src/lib/dashboard.ts";
 export function createDashboardApi(directory: string) {
   const path = join(directory, "dashboard.json");
   let pending: Promise<unknown> = Promise.resolve();
+  const conflictDirectory = join(directory, "conflicts"), conflictState = join(conflictDirectory, "state.json");
+  const atomic = async (filename: string, value: unknown) => { await mkdir(conflictDirectory, { recursive: true }); const temporary = filename + "." + randomUUID() + ".tmp"; await writeFile(temporary, JSON.stringify(value)); await rename(temporary, filename); };
+  const readConflict = async (): Promise<SyncConflict | null> => {
+    try {
+      const value = JSON.parse(await readFile(conflictState, "utf8"));
+      return value && /^[a-f0-9-]{36}$/.test(value.id) && Number.isFinite(Date.parse(value.at)) && Array.isArray(value.fields) && value.fields.every((field: unknown) => typeof field === "string") ? value : null;
+    } catch { return null; }
+  };
+  const preserveConflict = async (previous: string, fields: string[]): Promise<SyncConflict> => {
+    const conflict = { id: randomUUID(), at: new Date().toISOString(), fields };
+    await atomic(join(conflictDirectory, `${conflict.id}.json`), { ...parseBackup(previous), version: 2 });
+    await atomic(conflictState, conflict);
+    const files = await Promise.all((await readdir(conflictDirectory)).filter(file => /^[a-f0-9-]{36}\.json$/.test(file)).map(async file => ({ file, time: (await stat(join(conflictDirectory, file))).mtimeMs })));
+    for (const file of files.filter(file => file.file !== `${conflict.id}.json`).sort((a, b) => b.time - a.time).slice(9)) await unlink(join(conflictDirectory, file.file));
+    return conflict;
+  };
   return async (
     req: IncomingMessage,
     res: ServerResponse,
     next: () => void,
   ) => {
-    if (req.url?.split("?")[0] !== "/api/dashboard") {
+    const pathname = req.url?.split("?")[0] || "";
+    const conflictPath = /^\/api\/dashboard\/conflicts\/([a-f0-9-]{36})(\/ack)?$/.exec(pathname);
+    if (pathname !== "/api/dashboard" && !conflictPath) {
       next();
       return;
     }
     const reply = (code: number, value: unknown) => {
       if (code === 200 && value && typeof value === "object" && "data" in value) {
-        const tag = `"${createHash("sha256").update(JSON.stringify(value.data)).digest("hex")}"`;
+        const tag = `"${createHash("sha256").update(JSON.stringify({ data: value.data, conflict: "conflict" in value ? value.conflict : null })).digest("hex")}"`;
         res.setHeader("ETag", tag);
         if (req.method === "GET" && req.headers["if-none-match"] === tag) {
           res.writeHead(304, { "Cache-Control": "no-store" }); res.end(); return;
@@ -49,15 +68,26 @@ export function createDashboardApi(directory: string) {
       return;
     }
     try {
+      if (conflictPath) {
+        await pending;
+        if (req.method === "GET" && !conflictPath[2]) {
+          try { const data = parseBackup(await readFile(join(conflictDirectory, `${conflictPath[1]}.json`), "utf8")); reply(200, { data: { ...data, version: 2 } }); }
+          catch { reply(404, { error: tr("sync.copyMissing") }); }
+        } else if (req.method === "POST" && conflictPath[2]) {
+          const work = pending.then(async () => { const conflict = await readConflict(); if (conflict?.id === conflictPath[1]) await atomic(conflictState, null); });
+          pending = work.catch(() => {}); await work; reply(200, { ok: true });
+        } else reply(405, { error: tr("dashboard_api.1bd43567cd") });
+        return;
+      }
       if (req.method === "GET") {
         await pending;
         try {
           const raw = await readFile(path, "utf8");
           const data = parseBackup(raw);
-          reply(200, { data: { ...data, version: 2 } });
+          reply(200, { data: { ...data, version: 2 }, conflict: await readConflict() });
         } catch (error) {
           if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-          reply(200, { data: null });
+          reply(200, { data: null, conflict: await readConflict() });
         }
         return;
       }
@@ -96,7 +126,11 @@ export function createDashboardApi(directory: string) {
         } catch (error) {
           if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
         }
-        if (base) data = parseBackup(JSON.stringify({ ...mergeDashboard(base, data, previous ? parseBackup(previous) : base), version: 2 }));
+        if (base) {
+          const merged = mergeDashboardWithConflicts(base, data, previous ? parseBackup(previous) : base);
+          if (merged.conflicts.length && previous) await preserveConflict(previous, merged.conflicts);
+          data = parseBackup(JSON.stringify({ ...merged.data, version: 2 }));
+        }
         const content = JSON.stringify({ ...data, version: 2 });
         if (content === previous) return;
         await mkdir(directory, { recursive: true });
@@ -111,7 +145,7 @@ export function createDashboardApi(directory: string) {
       });
       pending = work.catch(() => {});
       await work;
-      reply(200, { ok: true, data: { ...data, version: 2 } });
+      reply(200, { ok: true, data: { ...data, version: 2 }, conflict: await readConflict() });
     } catch {
       reply(500, {
         error:

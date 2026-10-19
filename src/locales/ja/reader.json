@@ -349,5 +349,19 @@
   "mangadex_client.ba118bf7fc": "英語",
   "mangadex_client.cf48d3a374": "マンガデックスでマンガを検索できませんでした。",
   "mangadex_client.d3b018a72f": "スペイン語 (スペイン)",
-  "mangadex_client.e495d53b96": "フランス語"
+  "mangadex_client.e495d53b96": "フランス語",
+  "library.author": "著者",
+  "library.collection": "コレクション",
+  "library.allCollections": "すべてのコレクション",
+  "library.tags": "タグ（カンマ区切り）",
+  "library.series": "シリーズ",
+  "library.volume": "ボリューム",
+  "reader.offline": "章をオフラインで保存する",
+  "reader.offlineHint": "ダウンロードする権限がある場合にのみ、CBZ のコピーを PC ライブラリに保存してください。外部フォントはダウンロードされません。",
+  "reader.savedOffline": "ライブラリに保存された章。 PC が利用可能な限り、インターネットに接続していなくても開くことができます。",
+  "reader.downloading": "{total} ページから {done} をダウンロードしています…",
+  "reader.offlineTooLarge": "チャプターが 150 MB の制限を超えています。",
+  "reader.cancelDownload": "ダウンロードを中止する",
+  "library.save": "変更を保存",
+  "library.history": "履歴"
 }

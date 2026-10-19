@@ -1,3 +1,5 @@
+import { newId } from "../lib/id";
+import { useGamepadNavigation } from "../lib/useGamepadNavigation";
 import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
 import { translateMessage, tr, getFormatLocale } from "../lib/i18n.ts";
 import { isRemoteLibrary } from "../lib/remote";
@@ -43,6 +45,9 @@ let cachedSnapshot: InstalledSnapshot | null = null;
 export function InstalledGames() {
   useInterfaceLocale();
   const { settings, setSettings, games, setGames, notify } = useDashboard();
+  const controllerRoot = useRef<HTMLDivElement>(null);
+  const [controller, setController] = useState(false);
+  useGamepadNavigation(controllerRoot, controller);
   const [snapshot, setSnapshot] = useState<InstalledSnapshot | null>(
     cachedSnapshot,
   );
@@ -237,6 +242,7 @@ export function InstalledGames() {
       });
       setSettings((s) => ({
         ...s,
+        gamingSessions: [...s.gamingSessions.map(session => !session.endedAt ? { ...session, endedAt: new Date().toISOString() } : session), { id: newId(), gameId: game.id, title: game.title, startedAt: new Date().toISOString(), endedAt: null }].slice(-10000),
         gamingRecentIds: [
           game.id,
           ...s.gamingRecentIds.filter((id) => id !== game.id),
@@ -364,7 +370,10 @@ export function InstalledGames() {
   const meta = detail ? metadata[detail.id] : undefined;
   const enabledEmulators = snapshot?.emulators.filter((e) => e.enabled) || [];
   return (
-    <section className="installed-library">
+    <section className="installed-library" ref={controllerRoot}>
+      <div className="gaming-session-toolbar"><button type="button" className="secondary-button" aria-pressed={controller} onClick={() => setController(value => !value)}><Gamepad2 size={16} />{tr("gaming.controller")}</button><small>{tr("gaming.sessionHint")}</small></div>
+      {settings.gamingSessions.filter(session => !session.endedAt).map(session => <div className="gaming-active-session" key={session.id}><span>{tr("gaming.activeSession", { title: session.title })}</span><button type="button" className="secondary-button" onClick={() => setSettings(previous => ({ ...previous, gamingSessions: previous.gamingSessions.map(item => item.id === session.id ? { ...item, endedAt: new Date().toISOString() } : item) }))}>{tr("gaming.endSession")}</button></div>)}
+
       <div className="installed-heading">
         <div>
           <h2>{tr("InstalledGames.a1b0d869f3")}</h2>
@@ -565,6 +574,8 @@ export function InstalledGames() {
                       <small>
                         {game.system || launcherNames[game.launcher]}
                       </small>
+                      <select aria-label={tr("gaming.progress")} value={settings.installedStatuses[game.id] || "pending"} onChange={event => setSettings(previous => ({ ...previous, installedStatuses: { ...previous.installedStatuses, [game.id]: event.target.value as "pending" | "playing" | "completed" } }))}>{(["pending", "playing", "completed"] as const).map(status => <option key={status} value={status}>{tr(`gaming.state.${status}`)}</option>)}</select>
+                      <small>{tr("gaming.recordedTime", { minutes: Math.round(settings.gamingSessions.filter(session => session.gameId === game.id && session.endedAt).reduce((sum, session) => sum + (Date.parse(session.endedAt!) - Date.parse(session.startedAt)) / 60000, 0)) })}</small>
                       <div className="installed-card-actions">
                         <button
                           className="installed-play"
@@ -666,6 +677,7 @@ export function InstalledGames() {
           </div>
         )}
       </details>
+      {!!settings.gamingSessions.length && <details className="gaming-history"><summary>{tr("gaming.history")}</summary><ol>{[...settings.gamingSessions].reverse().slice(0, 30).map(session => <li key={session.id}><strong>{session.title}</strong><time>{new Date(session.startedAt).toLocaleString(getFormatLocale())}</time><span>{session.endedAt ? tr("gaming.recordedTime", { minutes: Math.round((Date.parse(session.endedAt) - Date.parse(session.startedAt)) / 60000) }) : tr("gaming.openSession")}</span></li>)}</ol></details>}
       <Dialog
         open={!!detail}
         onClose={() => setDetail(null)}

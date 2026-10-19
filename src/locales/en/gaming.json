@@ -347,5 +347,16 @@
   "installed_client.b605ae8a76": "Could not connect to your games. Check that {v0} is running.",
   "installed_games.406b46cd7c": "Another emulator",
   "installed_games.87bf6ca375": "Added by you",
-  "installed_games.a98e85e311": "Emulator"
+  "installed_games.a98e85e311": "Emulator",
+  "gaming.controller": "Controller navigation",
+  "gaming.sessionHint": "Time is recorded from launching a game until you end the session here. End it when you stop playing.",
+  "gaming.activeSession": "Open session: {title}",
+  "gaming.endSession": "End session",
+  "gaming.progress": "Game progress",
+  "gaming.recordedTime": "{minutes} min recorded",
+  "gaming.state.pending": "Backlog",
+  "gaming.state.playing": "Playing",
+  "gaming.state.completed": "Completed",
+  "gaming.history": "Session history",
+  "gaming.openSession": "Open session"
 }

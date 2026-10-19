@@ -35,7 +35,7 @@ export async function libraryRequest<T>(
 export const loadLibrary = () => libraryRequest<LibraryResponse>();
 export const updateDocument = (
   id: string,
-  patch: Partial<Pick<LibraryDocument, "title" | "favorite" | "totalUnits">> & {
+  patch: Partial<Pick<LibraryDocument, "title" | "favorite" | "totalUnits" | "author" | "collection" | "tags" | "series" | "volume" | "preferences" | "mangaPreferences">> & {
     position?: ReadingPosition;
     restore?: boolean;
     bookmark?: { label: string; position: ReadingPosition };

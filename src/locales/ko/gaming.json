@@ -347,5 +347,16 @@
   "installed_client.b605ae8a76": "게임에 연결할 수 없습니다. {v0}가 실행 중인지 확인하세요.",
   "installed_games.406b46cd7c": "또 다른 에뮬레이터",
   "installed_games.87bf6ca375": "귀하가 추가함",
-  "installed_games.a98e85e311": "에뮬레이터"
+  "installed_games.a98e85e311": "에뮬레이터",
+  "gaming.controller": "컨트롤러를 이용한 네비게이션",
+  "gaming.sessionHint": "게임을 실행한 후 로그아웃할 때까지의 시간이 기록됩니다. 플레이를 멈추면 종료하세요.",
+  "gaming.activeSession": "오픈 세션: {title}",
+  "gaming.endSession": "세션 종료",
+  "gaming.progress": "게임 상태",
+  "gaming.recordedTime": "{minutes} 분 기록됨",
+  "gaming.state.pending": "보류 중",
+  "gaming.state.playing": "연주 중",
+  "gaming.state.completed": "완료",
+  "gaming.history": "세션 기록",
+  "gaming.openSession": "세션 열기"
 }

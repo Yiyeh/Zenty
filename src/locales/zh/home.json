@@ -478,5 +478,13 @@
   "news.e45111e5b1": "发布、游戏机、分析和玩家新闻",
   "news.edff70de39": "各种来源的最新消息",
   "news.f040a3a67c": "已保存文章以便冷静阅读",
-  "news.f8bb82bbd6": "科学"
+  "news.f8bb82bbd6": "科学",
+  "spaces.label": "空间剖面",
+  "spaces.personal": "员工",
+  "spaces.work": "工作",
+  "spaces.gaming": "游戏",
+  "spaces.reading": "阅读",
+  "spaces.deviceHint": "外观和配置文件按设备保存。共享文档和其他内容。",
+  "spaces.bookmarkScope": "显示空间",
+  "spaces.all": "所有配置"
 }

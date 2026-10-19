@@ -7,6 +7,9 @@ export type Setter<K extends keyof DashboardData> = Dispatch<
 >;
 export interface ContextValue extends DashboardData {
   ready: boolean;
+  sync: import("../lib/sync").SyncState;
+  retrySync: () => Promise<void>;
+  acknowledgeConflict: () => Promise<void>;
   setTasks: Setter<"tasks">;
   setHabits: Setter<"habits">;
   setNotes: Setter<"notes">;

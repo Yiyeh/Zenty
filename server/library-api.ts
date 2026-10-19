@@ -358,6 +358,10 @@ export function createLibraryApi(directory = resolve("library-data")) {
           const state = await read();
           const item = state.documents.find((d) => d.id === id);
           if (!item) throw new ApiError(404, tr("library_api.779483553b"));
+          for (const key of ["author", "collection", "series", "volume"] as const) if (typeof input[key] === "string") item[key] = input[key].trim().slice(0, 200);
+          if (Array.isArray(input.tags)) item.tags = [...new Set(input.tags.filter((tag: unknown): tag is string => typeof tag === "string").map((tag: string) => tag.trim().slice(0, 50)).filter(Boolean))].slice(0, 30) as string[];
+          if (input.preferences && typeof input.preferences === "object") item.preferences = normalizeReaderPreferences({ ...(item.preferences || state.preferences), ...input.preferences });
+          if (input.mangaPreferences && typeof input.mangaPreferences === "object") item.mangaPreferences = Object.fromEntries(Object.entries({ ...item.mangaPreferences, ...input.mangaPreferences }).filter(([key, value]) => /^zenty-manga-[a-z-]{1,40}$/.test(key) && ((typeof value === "string" && value.length < 100) || typeof value === "boolean" || (typeof value === "number" && Number.isFinite(value)))).slice(0, 50)) as LibraryDocument["mangaPreferences"];
           if (typeof input.title === "string" && input.title.trim())
             item.title = input.title.trim().slice(0, 200);
           if (typeof input.favorite === "boolean")

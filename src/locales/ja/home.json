@@ -478,5 +478,13 @@
   "news.e45111e5b1": "発売、コンソール、分析、ゲーマーニュース",
   "news.edff70de39": "あらゆる情報源からの最新ニュース",
   "news.f040a3a67c": "落ち着いて読める記事を保存",
-  "news.f8bb82bbd6": "科学"
+  "news.f8bb82bbd6": "科学",
+  "spaces.label": "宇宙プロファイル",
+  "spaces.personal": "スタッフ",
+  "spaces.work": "仕事",
+  "spaces.gaming": "ゲーム",
+  "spaces.reading": "読書",
+  "spaces.deviceHint": "外観とプロフィールはデバイスごとに保存されます。ドキュメントやその他のコンテンツは共有されます。",
+  "spaces.bookmarkScope": "表示するスペース",
+  "spaces.all": "すべてのプロフィール"
 }

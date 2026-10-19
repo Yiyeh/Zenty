@@ -347,5 +347,16 @@
   "installed_client.b605ae8a76": "No se pudo conectar con tus juegos. Comprueba que {v0} esté en ejecución.",
   "installed_games.406b46cd7c": "Otro emulador",
   "installed_games.87bf6ca375": "Añadido por ti",
-  "installed_games.a98e85e311": "Emulador"
+  "installed_games.a98e85e311": "Emulador",
+  "gaming.controller": "Navegación con mando",
+  "gaming.sessionHint": "El tiempo se registra desde que lanzas un juego hasta que terminas la sesión aquí. Finalízala al dejar de jugar.",
+  "gaming.activeSession": "Sesión abierta: {title}",
+  "gaming.endSession": "Terminar sesión",
+  "gaming.progress": "Estado del juego",
+  "gaming.recordedTime": "{minutes} min registrados",
+  "gaming.state.pending": "Pendiente",
+  "gaming.state.playing": "Jugando",
+  "gaming.state.completed": "Terminado",
+  "gaming.history": "Historial de sesiones",
+  "gaming.openSession": "Sesión abierta"
 }

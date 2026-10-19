@@ -2,6 +2,14 @@ declare global {
   interface Window {
     zentyDesktop?: {
       platform: string;
+      backups: {
+        get: () => Promise<import("./lib/backups").BackupStatus>;
+        configure: (value: { automatic: boolean; keep: number }) => Promise<void>;
+        create: () => Promise<unknown>;
+        review: (id?: string) => Promise<import("./lib/backups").BackupReview | null>;
+        restore: (ticket: string) => Promise<void>;
+      };
+      onMaintenanceResume: (listener: () => void) => () => void;
       setLocale: (language: string) => Promise<void>;
       security: {
         get: () => Promise<import("./lib/security").PinState>;
@@ -25,6 +33,7 @@ declare global {
         set: (value: import("./context/IntegrationsStore").Session | null) => Promise<void>;
       };
       lan: {
+        manage: (id: string, change: { name?: string; permission?: "full" | "read"; revoke?: boolean }) => Promise<import("../server/lan-server").LanStatus>;
         forget: () => Promise<import("../server/lan-server").LanStatus>;
         get: () => Promise<import("../server/lan-server").LanStatus>;
         set: (enabled: boolean) => Promise<import("../server/lan-server").LanStatus>;
@@ -34,7 +43,7 @@ declare global {
         set: (enabled: boolean) => Promise<{ supported: boolean; enabled: boolean }>;
       };
       exportSave: (raw: string) => Promise<{ path: string; files: number; bytes: number } | null>;
-      onBeforeClose: (listener: () => Promise<void>) => () => void;
+      onBeforeClose: (listener: (mode?: "close" | "maintenance") => Promise<void>) => () => void;
       reminders?: {
         sync: (
           plan: import("./lib/reminders").ReminderPlan,

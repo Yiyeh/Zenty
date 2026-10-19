@@ -478,5 +478,13 @@
   "news.e45111e5b1": "Launches, consoles, analysis and gamer news",
   "news.edff70de39": "Latest news from all sources",
   "news.f040a3a67c": "Articles saved to read calmly",
-  "news.f8bb82bbd6": "Science"
+  "news.f8bb82bbd6": "Science",
+  "spaces.label": "Space profile",
+  "spaces.personal": "Personal",
+  "spaces.work": "Work",
+  "spaces.gaming": "Gaming",
+  "spaces.reading": "Reading",
+  "spaces.deviceHint": "Appearance and space are saved per device. Documents and other content stay shared.",
+  "spaces.bookmarkScope": "Show in space",
+  "spaces.all": "All profiles"
 }

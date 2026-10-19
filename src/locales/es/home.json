@@ -478,5 +478,13 @@
   "news.e45111e5b1": "Lanzamientos, consolas, análisis y novedades gamer",
   "news.edff70de39": "Últimas noticias de todas las fuentes",
   "news.f040a3a67c": "Artículos guardados para leer con calma",
-  "news.f8bb82bbd6": "Ciencia"
+  "news.f8bb82bbd6": "Ciencia",
+  "spaces.label": "Perfil de espacio",
+  "spaces.personal": "Personal",
+  "spaces.work": "Trabajo",
+  "spaces.gaming": "Gaming",
+  "spaces.reading": "Lectura",
+  "spaces.deviceHint": "El aspecto y el perfil se guardan por dispositivo. Los documentos y demás contenidos se comparten.",
+  "spaces.bookmarkScope": "Mostrar en el espacio",
+  "spaces.all": "Todos los perfiles"
 }

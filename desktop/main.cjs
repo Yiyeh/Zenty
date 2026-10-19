@@ -122,6 +122,11 @@ async function migrateData(destination) {
   );
 }
 async function startup() {
+  const { createBackupManager, recoverInterruptedRestore } = require("./backup-manager.cjs");
+  await fs.mkdir(currentProfile, { recursive: true });
+  await recoverInterruptedRestore(currentProfile);
+  let maintenanceActive = false;
+  const desktopWrites = new Set();
   const dataDirectory = path.join(app.getPath("userData"), "data");
   await migrateData(dataDirectory);
   const { setLocale, validLanguage } = require("./locale.cjs");
@@ -139,7 +144,13 @@ async function startup() {
   });
   const handleProtected = (channel, listener) => ipcMain.handle(channel, (event, ...args) => {
     if (pinSecurity.isLocked()) throw new Error("security.locked");
-    return listener(event, ...args);
+    if (maintenanceActive && !channel.startsWith("zenty:spotify-session:")) throw new Error("backup.busy");
+    const result = listener(event, ...args);
+    if (/^zenty:(audio:set|startup:set|reminders:sync|spotify-session:set)$/.test(channel)) {
+      const work = Promise.resolve(result); desktopWrites.add(work);
+      void work.finally(() => desktopWrites.delete(work)).catch(() => {}); return work;
+    }
+    return result;
   });
   const { startLocalServer } = await import(
     pathToFileURL(
@@ -170,13 +181,13 @@ async function startup() {
     if (result.ok) pending.resolve(result.value); else pending.reject(new Error(tr("main.4d8c09fb8e")));
   });
   lanSharing = createLanSharing(origin, 17732, path.join(dataDirectory, "lan-sharing"), requestIntegration);
-  for (const action of ["get", "set", "forget"])
+  for (const action of ["get", "set", "forget", "manage"])
     handleProtected(`zenty:lan:${action}`, async (event, enabled) => {
       if (!trustedFrame(event, origin) || event.sender !== mainWindow.webContents)
         throw new Error(tr("main.2134334888"));
       try {
         if (action === "set" && typeof enabled !== "boolean") throw new Error(tr("main.10225406ca"));
-        return { ok: true, value: action === "get" ? lanSharing.status() : action === "forget" ? await lanSharing.forget() : await lanSharing.set(enabled) };
+        return { ok: true, value: action === "get" ? lanSharing.status() : action === "forget" ? await lanSharing.forget() : action === "manage" ? await lanSharing.manage(enabled?.id, enabled?.change) : await lanSharing.set(enabled) };
       } catch (error) { return { ok: false, error: error.message }; }
     });
   let saved = {};
@@ -369,7 +380,7 @@ async function startup() {
       audioTimers.forEach(clearTimeout);
       audioTimers = [0, 300, 1200].map((delay) =>
         setTimeout(() => {
-          void audio.reapply().catch(() => {});
+          if (!maintenanceActive) void audio.reapply().catch(() => {});
         }, delay),
       );
     });
@@ -495,16 +506,73 @@ async function startup() {
   ipcMain.on("zenty:save-ready", (event, ok) => {
     if (trustedFrame(event, origin) && event.sender === mainWindow.webContents) saveAcknowledged?.(ok === true);
   });
-  const flushForUpdate = async () => {
+  const flushForUpdate = async (mode = "close") => {
     if (!saveHandlerReady) throw new Error(tr("main.2f02507cee"));
     const ok = await new Promise((resolve) => {
       const timeout = setTimeout(() => { saveAcknowledged=undefined; resolve(false); },10000);
       saveAcknowledged=(ok)=>{clearTimeout(timeout);saveAcknowledged=undefined;resolve(ok);};
-      mainWindow.webContents.send("zenty:save-before-close");
+      mainWindow.webContents.send("zenty:save-before-close", mode);
     });
     if (!ok) throw new Error(tr("main.49769798e6"));
     await spotifySessionStore.flush();
   };
+  const { parseBackup: parseSnapshot } = require("../desktop-server/src/lib/dashboard.js");
+  const backups = await createBackupManager(currentProfile, { name: APP_NAME, parseSnapshot });
+  const backupTickets = new Map();
+  for (const action of ["get", "configure", "create", "review", "restore"]) handleProtected(`zenty:backups:${action}`, async (event, value) => {
+    if (!trustedFrame(event, origin) || event.sender !== mainWindow.webContents) throw new Error("Untrusted desktop request");
+    if (action === "get") return backups.status();
+    if (action === "configure") return backups.configure(value);
+    if (action === "review") {
+      let source;
+      if (value !== undefined) source = backups.internalPath(value);
+      else {
+        const selection = await dialog.showOpenDialog(mainWindow, { title: tr("backup.choose"), properties: ["openDirectory"] });
+        if (selection.canceled || !selection.filePaths[0]) return null;
+        source = selection.filePaths[0];
+      }
+      const review = await backups.inspect(source), ticket = require("node:crypto").randomUUID();
+      for (const [id, item] of backupTickets) if (item.expiresAt < Date.now()) backupTickets.delete(id);
+      if (backupTickets.size >= 16) backupTickets.clear();
+      backupTickets.set(ticket, { source: review.source, expiresAt: Date.now() + 5 * 60000 });
+      return { ticket, files: review.files, bytes: review.bytes, createdAt: review.createdAt };
+    }
+    const selected = action === "restore" ? backupTickets.get(value) : null;
+    if (action === "restore" && (!selected || selected.expiresAt < Date.now())) throw new Error("backup.expired");
+    maintenanceActive = true; mainWindow.setEnabled(false);
+    let restarting = false;
+    try {
+      await flushForUpdate("maintenance");
+      await Promise.allSettled([...desktopWrites]);
+      await reminderEngine.suspend();
+      await local.pause();
+      if (action === "create") return await backups.create();
+      await lanSharing.stop();
+      await backups.restore(selected.source);
+      backupTickets.delete(value);
+      restarting = true; quitting = true;
+      app.relaunch(); mainWindow.destroy(); localServer.close(); app.quit();
+    } finally {
+      if (!restarting) {
+        const needsRecovery = await fs.access(path.join(currentProfile, "backups/restore-journal.json")).then(() => true, () => false);
+        if (needsRecovery) {
+          quitting = true;
+          dialog.showErrorBox(APP_NAME, tr("backup.recovery"));
+          mainWindow.destroy(); localServer.close(); app.quit();
+        } else {
+          local.resume(); await reminderEngine.resume(); maintenanceActive = false;
+          if (!mainWindow.isDestroyed()) { mainWindow.webContents.send("zenty:maintenance:resume"); mainWindow.setEnabled(true); }
+        }
+      }
+    }
+  });
+  const automaticBackup = async () => {
+    if (maintenanceActive || pinSecurity.isLocked() || closing || !saveHandlerReady) return;
+    try { await flushForUpdate(); await backups.automatic(); } catch { /* The previous snapshots remain intact and the data panel reports the error. */ }
+  };
+  const backupTimer = setTimeout(() => void automaticBackup(), 60000); backupTimer.unref();
+  const backupInterval = setInterval(() => void automaticBackup(), 30 * 60000); backupInterval.unref();
+  mainWindow.on("closed", () => { clearTimeout(backupTimer); clearInterval(backupInterval); });
   const {createUpdateController,backupUpdateMetadata}=require("./update-controller.cjs");
   const updateSupported=app.isPackaged && require("node:fs").existsSync(path.join(process.resourcesPath,"app-update.yml"));
   const updates=createUpdateController({
@@ -540,6 +608,7 @@ async function startup() {
   const updateInterval=setInterval(()=>void updates.check(),6*60*60*1000);updateInterval.unref();
   mainWindow.on("closed",()=>{clearTimeout(updateTimer);clearInterval(updateInterval);});
   mainWindow.on("close", (event) => {
+    if (maintenanceActive) { event.preventDefault(); return; }
     if (closing || installingUpdate) return;
     event.preventDefault();
     closing = true;

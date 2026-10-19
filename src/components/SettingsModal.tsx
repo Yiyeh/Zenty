@@ -2,6 +2,7 @@ import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
 import { translateMessage, tr } from "../lib/i18n.ts";
 import { UpdateSettings } from "./UpdateSettings";
 import { PinSettings } from "./PinSecurity";
+import { BackupSettings } from "./BackupSettings";
 import { LanguageSelector } from "./LanguageSelector";
 import { LanSettings } from "./LanSettings";
 import { APP_NAME, APP_SLUG } from "../lib/brand.ts";
@@ -215,6 +216,7 @@ export function SettingsModal({
         {tab === "appearance" && (
           <div className="form-stack">
             <LanguageSelector onChange={language => update("language", language)} />
+            <p className="muted">{tr("spaces.deviceHint")}</p>
             <div className="settings-section-title">
               <span className="eyebrow">{tr("SettingsModal.77e3f84b31")}</span>
               <h3>{tr("SettingsModal.13717416e0")}</h3>
@@ -742,6 +744,7 @@ export function SettingsModal({
         {tab === "integrations" && <IntegrationsPanel />}
         {tab === "data" && (
           <div className="form-stack">
+            <BackupSettings />
             <div className="settings-section-title">
               <span className="eyebrow">{tr("SettingsModal.7d22bff842")}</span>
               <h3>{tr("SettingsModal.d814e8cd06")}</h3>

@@ -3,7 +3,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const { createReadStream } = require('node:fs');
 const { createHash, randomUUID } = require('node:crypto');
-const allowed = ['data', 'audio.json', 'window.json', 'startup.json', 'reminders'];
+const allowed = ['data', 'audio.json', 'window.json', 'startup.json', 'reminders', 'backup-settings.json'];
 const inside = (parent, child) => {
   const relative = path.relative(parent, child);
   return !relative || (!relative.startsWith('..') && !path.isAbsolute(relative));
@@ -26,10 +26,10 @@ async function inventory(root) {
   for (const name of allowed) await visit(name);
   return files;
 }
-async function exportUserSave(profile, destination, snapshot, name) {
+async function exportUserSave(profile, destination, snapshot, name, options = {}) {
   profile = await fs.realpath(profile);
   destination = await fs.realpath(destination);
-  if (inside(profile, destination)) throw new Error(tr("user_save.d0779473c8"));
+  if (inside(profile, destination) && !(options.internal === true && inside(path.join(profile, 'backups'), destination) && destination !== path.join(profile, 'backups'))) throw new Error(tr("user_save.d0779473c8"));
   const folder = path.join(destination, `${name}-save-${new Date().toISOString().replace(/[:.]/g, '-')}-${randomUUID().slice(0, 8)}`);
   const staging = folder + '.partial';
   await fs.mkdir(staging);
@@ -38,7 +38,7 @@ async function exportUserSave(profile, destination, snapshot, name) {
     for (const file of before) {
       const target = path.join(staging, file.path);
       await fs.mkdir(path.dirname(target), { recursive: true });
-      await fs.copyFile(path.join(profile, file.path), target);
+      await fs.copyFile(path.join(profile, file.path), target, require("node:fs").constants.COPYFILE_FICLONE);
     }
     if (JSON.stringify(before) !== JSON.stringify(await inventory(profile)))
       throw new Error(tr("user_save.012a06d204"));
@@ -73,7 +73,7 @@ async function migrateProfile(legacy, target) {
     throw error;
   }
 }
-module.exports = { exportUserSave, migrateProfile };
+module.exports = { exportUserSave, migrateProfile, saveRoots: allowed };
 module.exports.migrateProfileSync = (legacy, target) => {
   const sync = require('node:fs');
   if (sync.existsSync(target) || !sync.existsSync(legacy)) return false;

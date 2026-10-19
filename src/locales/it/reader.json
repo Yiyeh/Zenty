@@ -349,5 +349,19 @@
   "mangadex_client.ba118bf7fc": "Inglese",
   "mangadex_client.cf48d3a374": "Impossibile cercare manga su MangaDex.",
   "mangadex_client.d3b018a72f": "Spagnolo (Spagna)",
-  "mangadex_client.e495d53b96": "Francese"
+  "mangadex_client.e495d53b96": "Francese",
+  "library.author": "Autore",
+  "library.collection": "Raccolta",
+  "library.allCollections": "Tutte le collezioni",
+  "library.tags": "Tag (separati da virgole)",
+  "library.series": "Serie",
+  "library.volume": "Volume",
+  "reader.offline": "Salva il capitolo offline",
+  "reader.offlineHint": "Salva una copia di CBZ nella libreria del tuo PC solo se hai il permesso di scaricarlo. I caratteri esterni non vengono scaricati.",
+  "reader.savedOffline": "Capitolo salvato nella libreria. Puoi aprirlo senza una connessione Internet purché il PC sia disponibile.",
+  "reader.downloading": "Download di {done} dalle pagine {total}...",
+  "reader.offlineTooLarge": "Il capitolo supera il limite di 150 MB.",
+  "reader.cancelDownload": "Annulla il download",
+  "library.save": "Salva modifiche",
+  "library.history": "Cronologia"
 }

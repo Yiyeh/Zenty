@@ -347,5 +347,16 @@
   "installed_client.b605ae8a76": "无法连接到您的游戏。检查 {v0} 是否正在运行。",
   "installed_games.406b46cd7c": "另一个模拟器",
   "installed_games.87bf6ca375": "由您添加",
-  "installed_games.a98e85e311": "模拟器"
+  "installed_games.a98e85e311": "模拟器",
+  "gaming.controller": "使用控制器导航",
+  "gaming.sessionHint": "此处记录的时间是从您启动游戏到您退出游戏的时间。当你停止玩的时候就结束它。",
+  "gaming.activeSession": "公开赛：{title}",
+  "gaming.endSession": "结束会议",
+  "gaming.progress": "游戏状态",
+  "gaming.recordedTime": "{minutes} 分钟记录",
+  "gaming.state.pending": "待定",
+  "gaming.state.playing": "演奏",
+  "gaming.state.completed": "完成",
+  "gaming.history": "会话历史",
+  "gaming.openSession": "公开会议"
 }

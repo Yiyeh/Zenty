@@ -478,5 +478,13 @@
   "news.e45111e5b1": "Lancements, consoles, analyses et actualités gamers",
   "news.edff70de39": "Dernières nouvelles de toutes sources",
   "news.f040a3a67c": "Articles enregistrés pour lire sereinement",
-  "news.f8bb82bbd6": "Sciences"
+  "news.f8bb82bbd6": "Sciences",
+  "spaces.label": "Profil spatial",
+  "spaces.personal": "Personnel",
+  "spaces.work": "Travail",
+  "spaces.gaming": "Jeux",
+  "spaces.reading": "Lecture",
+  "spaces.deviceHint": "L'apparence et le profil sont enregistrés par appareil. Les documents et autres contenus sont partagés.",
+  "spaces.bookmarkScope": "Afficher dans l’espace",
+  "spaces.all": "Tous les profils"
 }

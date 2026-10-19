@@ -1,3 +1,4 @@
+import { pairingQr } from "../lib/pairing-qr";
 import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
 import { translateMessage, tr } from "../lib/i18n.ts";
 import { useEffect, useState } from "react";
@@ -8,6 +9,7 @@ export function LanSettings() {
   const [state, setState] = useState<LanStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [qr, setQr] = useState("");
   const [copied, setCopied] = useState("");
   useEffect(() => {
     let active = true;
@@ -15,6 +17,8 @@ export function LanSettings() {
     load(); const timer = setInterval(load, 5000);
     return () => { active = false; clearInterval(timer); };
   }, []);
+  const qrUrl = state?.enabled ? state.urls[0] : undefined;
+  useEffect(() => { let active = true; setQr(""); if (qrUrl) void pairingQr(qrUrl).then(value => { if (active) setQr(value); }).catch(() => {}); return () => { active = false; }; }, [qrUrl]);
   if (!window.zentyDesktop?.lan) return null;
   return <fieldset className="lan-settings"><legend><Wifi size={16} /> {tr("LanSettings.413927a28c")}</legend>
     <label className="switch-row"><span>{tr("LanSettings.cb124d2647")}</span><input type="checkbox" role="switch" checked={state?.enabled || false} disabled={!state || busy} onChange={async (event) => {
@@ -29,6 +33,10 @@ export function LanSettings() {
       <p className="muted">{tr("LanSettings.ad4ccc6fdb")}</p>
       {copied && <p role="status">{tr("LanSettings.71ec1e3877")}</p>}
     </div>}
+    {qr && <figure className="lan-qr"><img src={qr} alt={tr("devices.qrAlt")} width="200" height="200" /><figcaption>{tr("devices.qr")}</figcaption></figure>}
+    {!!state?.devices.length && <div className="lan-devices"><h4>{tr("devices.title")}</h4>{state.devices.map(device => <div className="lan-device" key={device.id}>
+      <strong>{device.name}</strong><select aria-label={device.name} value={device.permission} disabled={busy} onChange={async event => { setBusy(true); try { setState(await window.zentyDesktop!.lan.manage(device.id, { permission: event.target.value as "full" | "read" })); } catch (e) { setError((e as Error).message); } finally { setBusy(false); } }}><option value="full">{tr("devices.full")}</option><option value="read">{tr("devices.read")}</option></select>
+      <button type="button" className="secondary-button" disabled={busy} onClick={async () => { setBusy(true); try { setState(await window.zentyDesktop!.lan.manage(device.id, { revoke: true })); } catch (e) { setError((e as Error).message); } finally { setBusy(false); } }}>{tr("devices.revoke")}</button></div>)}</div>}
     {state && <button type="button" className="secondary-button" disabled={busy} onClick={async () => {
         setBusy(true); setError("");
         try { setState(await window.zentyDesktop!.lan.forget()); setCopied(""); }

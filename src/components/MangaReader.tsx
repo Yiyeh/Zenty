@@ -1,3 +1,4 @@
+import { isReadOnly } from "../lib/remote";
 import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
 import { translateMessage, tr } from "../lib/i18n.ts";
 import { mangaSwipe } from "../lib/manga-gestures";
@@ -31,6 +32,7 @@ import {
   MANGA_LANGUAGES,
   type MangaChapter,
 } from "../lib/mangadex-client";
+import { saveChapterOffline } from "../lib/offline-chapter";
 import { updateDocument } from "../lib/library-client";
 
 interface MangaReaderProps {
@@ -66,17 +68,21 @@ export function MangaReader({
 
   // Settings & Navigation
   const [language, setLanguage] = useState(mangaMeta?.language || "es-all");
-  const [readingMode, setReadingMode] = useReaderPreference<"rtl" | "ltr" | "webtoon">("zenty-manga-mode", "rtl", (v): v is "rtl" | "ltr" | "webtoon" => v === "rtl" || v === "ltr" || v === "webtoon");
-  const [fit, setFit] = useReaderPreference<"width" | "page">("zenty-manga-fit", initialPreferences.fit || "width", (v): v is "width" | "page" => v === "width" || v === "page");
-  const [zoom, setZoom] = useReaderPreference<number>("zenty-manga-zoom", 1, (v): v is number => typeof v === "number" && v >= 0.5 && v <= 2.5);
-  const [theme, setTheme] = useReaderPreference<"night" | "sepia" | "paper">("zenty-manga-theme", "night", (v): v is "night" | "sepia" | "paper" => v === "night" || v === "sepia" || v === "paper");
-  const [invertNav, setInvertNav] = useReaderPreference<boolean>("zenty-manga-invert-nav", false, (v): v is boolean => typeof v === "boolean");
+  const [readingMode, setReadingMode] = useReaderPreference<"rtl" | "ltr" | "webtoon">("zenty-manga-mode", "rtl", (v): v is "rtl" | "ltr" | "webtoon" => v === "rtl" || v === "ltr" || v === "webtoon", document.id);
+  const [fit, setFit] = useReaderPreference<"width" | "page">("zenty-manga-fit", initialPreferences.fit || "width", (v): v is "width" | "page" => v === "width" || v === "page", document.id);
+  const [zoom, setZoom] = useReaderPreference<number>("zenty-manga-zoom", 1, (v): v is number => typeof v === "number" && v >= 0.5 && v <= 2.5, document.id);
+  const [theme, setTheme] = useReaderPreference<"night" | "sepia" | "paper">("zenty-manga-theme", "night", (v): v is "night" | "sepia" | "paper" => v === "night" || v === "sepia" || v === "paper", document.id);
+  const [invertNav, setInvertNav] = useReaderPreference<boolean>("zenty-manga-invert-nav", false, (v): v is boolean => typeof v === "boolean", document.id);
   const navReversed = (readingMode === "rtl") !== invertNav;
   const gesture = useRef<{x:number; y:number; at:number} | null>(null);
   const lastSwipe = useRef(0);
-  const [dataSaver, setDataSaver] = useReaderPreference<boolean>("zenty-manga-data-saver", false, (v): v is boolean => typeof v === "boolean");
+  const [dataSaver, setDataSaver] = useReaderPreference<boolean>("zenty-manga-data-saver", false, (v): v is boolean => typeof v === "boolean", document.id);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [downloadStatus, setDownloadStatus] = useState("");
+  const downloadAbort = useRef<AbortController | null>(null);
+  useEffect(() => () => downloadAbort.current?.abort(), []);
+  const [downloading, setDownloading] = useState(false);
   const [chapterSearch, setChapterSearch] = useState("");
   const [saveStatus, setSaveStatus] = useState(tr("MangaReader.3a660ff5fb"));
   const [fullscreen, setFullscreen] = useState(false);
@@ -222,11 +228,12 @@ export function MangaReader({
 
   // 3. Preload adjacent pages for instantaneous flipping
   useEffect(() => {
-    if (!chapterPages.length) return;
+    if (!chapterPages.length || dataSaver) return;
+    const images: HTMLImageElement[] = [];
     const preload = (url?: string) => {
       if (url) {
         const img = new Image();
-        img.src = url;
+        img.src = url; images.push(img);
       }
     };
     // Preload next 2 pages
@@ -234,11 +241,13 @@ export function MangaReader({
     preload(chapterPages[currentPageIndex + 2]);
     // Preload previous page
     if (currentPageIndex > 0) preload(chapterPages[currentPageIndex - 1]);
-  }, [chapterPages, currentPageIndex]);
+    return () => images.forEach(image => { image.src = ""; });
+  }, [chapterPages, currentPageIndex, dataSaver]);
 
   // 4. Debounced save progress
   const persistProgress = useCallback(
     (chIdx: number, pIdx: number) => {
+      if (isReadOnly()) { setSaveStatus(tr("devices.readOnly")); return; }
       if (!chapters.length || chIdx < 0 || chIdx >= chapters.length) return;
       const ch = chapters[chIdx];
       const totalCh = chapters.length;
@@ -288,7 +297,7 @@ export function MangaReader({
   // Flush save on unmount or blur
   useEffect(() => {
     const flush = () => {
-      if (chapters.length && currentChapterIndex < chapters.length) {
+      if (!isReadOnly() && chapters.length && currentChapterIndex < chapters.length) {
         const ch = chapters[currentChapterIndex];
         const totalCh = chapters.length;
         const totalPg = ch.pages || chapterPages.length || 1;
@@ -331,7 +340,7 @@ export function MangaReader({
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       flush();
     };
-  }, [chapters, currentChapterIndex, currentPageIndex, chapterPages.length, document.id, language]);
+  }, [chapters, currentChapterIndex, currentPageIndex, chapterPages, document.id, language]);
 
   // Page navigation helpers
   const goNextPage = useCallback(() => {
@@ -1004,6 +1013,12 @@ export function MangaReader({
                 />
               </div>
 
+              <div className="setting-group"><p>{tr("reader.offlineHint")}</p><button type="button" className="secondary-button" disabled={!chapterPages.length || downloading || isReadOnly()} onClick={async () => {
+                const controller = new AbortController(); downloadAbort.current = controller; setDownloading(true); setDownloadStatus("");
+                try { await saveChapterOffline(chapterPages, `${document.title} - ${chapters[currentChapterIndex]?.chapter || currentChapterIndex + 1}`, controller.signal, done => setDownloadStatus(tr("reader.downloading", { done, total: chapterPages.length }))); setDownloadStatus(tr("reader.savedOffline")); }
+                catch (error) { if (!controller.signal.aborted) setDownloadStatus((error as Error).message); }
+                finally { setDownloading(false); downloadAbort.current = null; }
+              }}>{tr("reader.offline")}</button>{downloading && <button type="button" className="secondary-button" onClick={() => downloadAbort.current?.abort()}>{tr("reader.cancelDownload")}</button>}{downloadStatus && <p role="status">{downloadStatus}</p>}</div>
               {/* Data Saver Mode Toggle */}
               <div className="setting-group toggle-group">
                 <div>

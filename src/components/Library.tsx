@@ -1,5 +1,5 @@
 import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
-import { translateMessage, tr } from "../lib/i18n.ts";
+import { getFormatLocale, translateMessage, tr } from "../lib/i18n.ts";
 import { isRemoteLibrary } from "../lib/remote";
 import { useReaderPreference } from "../lib/useReaderPreference";
 import { useDashboard } from "../context/DashboardStore";
@@ -107,7 +107,7 @@ export function Library() {
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [filter, setFilter] = useState<
-    "all" | "reading" | "favorites" | "finished" | "trash"
+    "all" | "reading" | "favorites" | "finished" | "trash" | "history"
   >("all");
   const [sourceFilter, setSourceFilter] = useState<"all" | "local" | "manga">("all");
   const [mangaCoverMode, setMangaCoverMode] = useReaderPreference<"official" | "lastPage">("zenty-manga-cover-mode", "official", (v): v is "official" | "lastPage" => v === "official" || v === "lastPage");
@@ -124,6 +124,8 @@ export function Library() {
   const [selected, setSelected] = useState<string | null>(null);
   const [actions, setActions] = useState<LibraryDocument | null>(null);
   const [mangaModalOpen, setMangaModalOpen] = useState(false);
+  const [collection, setCollection] = useState("");
+  const [metadata, setMetadata] = useState({ author: "", collection: "", tags: "", series: "", volume: "" });
   const [rename, setRename] = useState("");
   const [remove, setRemove] = useState<LibraryDocument | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
@@ -255,7 +257,7 @@ export function Library() {
   const visible = documents
     .filter((d) => (filter === "trash" ? !!d.deletedAt : !d.deletedAt))
     .filter((d) =>
-      filter === "reading"
+      filter === "history" ? !!d.lastReadAt : filter === "reading"
         ? !!d.lastReadAt && d.position.progress < 0.995
         : filter === "favorites"
           ? d.favorite
@@ -271,13 +273,14 @@ export function Library() {
     .filter(
       (d) =>
         (format === "all" || d.format === format) &&
-        `${d.title} ${d.name}`
+        `${d.title} ${d.name} ${d.author || d.manga?.author || ""} ${d.series || ""} ${(d.tags || []).join(" ")}`
           .toLocaleLowerCase()
           .includes(query.toLocaleLowerCase()),
     )
+    .filter(d => !collection || d.collection === collection)
     .sort((a, b) =>
-      sort === "title"
-        ? a.title.localeCompare(b.title, "es")
+      sort === "series" ? (a.series || "").localeCompare(b.series || "", getFormatLocale()) || (a.volume || "").localeCompare(b.volume || "", getFormatLocale(), { numeric: true }) : sort === "title"
+        ? a.title.localeCompare(b.title, getFormatLocale())
         : sort === "added"
           ? b.addedAt.localeCompare(a.addedAt)
           : (b.lastReadAt || b.addedAt).localeCompare(
@@ -462,6 +465,7 @@ export function Library() {
           {(
             [
               { id: "all", label: tr("Library.79d4e64cf6"), count: active.length },
+              { id: "history", label: tr("library.history"), count: active.filter(document => document.lastReadAt).length },
               { id: "reading", label: tr("Library.5cbb853b1f"), count: reading.length },
               {
                 id: "favorites",
@@ -584,6 +588,7 @@ export function Library() {
             </option>
           ))}
         </select>
+        <select aria-label={tr("library.collection")} value={collection} onChange={event => setCollection(event.target.value)}><option value="">{tr("library.allCollections")}</option>{[...new Set(documents.map(document => document.collection).filter(Boolean))].map(value => <option key={value} value={value}>{value}</option>)}</select>
         <select
           aria-label={tr("Library.a6181501c1")}
           value={sort}
@@ -591,6 +596,7 @@ export function Library() {
         >
           <option value="recent">{tr("Library.0b0a936a7d")}</option>
           <option value="added">{tr("Library.a991f6ac15")}</option>
+          <option value="series">{tr("library.series")}</option>
           <option value="title">{tr("Library.5b3d39a6af")}</option>
         </select>
       </div>
@@ -669,6 +675,7 @@ export function Library() {
                     onClick={() => {
                       setActions(document);
                       setRename(document.title);
+                      setMetadata({ author: document.author || document.manga?.author || "", collection: document.collection || "", tags: (document.tags || []).join(", "), series: document.series || "", volume: document.volume || "" });
                     }}
                   >
                     <MoreHorizontal size={17} />
@@ -689,6 +696,9 @@ export function Library() {
                             : tr("Library.21fab5755e")
                       }`}
                 </p>
+                {(document.author || document.manga?.author) && <p className="library-book-author">{document.author || document.manga?.author}</p>}
+                {(document.series || document.collection) && <p className="library-book-metadata">{[document.collection, document.series, document.volume].filter(Boolean).join(" · ")}</p>}
+                {filter === "history" && document.lastReadAt && <time className="library-book-metadata">{new Date(document.lastReadAt).toLocaleString(getFormatLocale(), { dateStyle: "medium", timeStyle: "short" })}</time>}
                 <div className="book-progress">
                   <div>
                     <i
@@ -831,17 +841,18 @@ export function Library() {
               onChange={(e) => setRename(e.target.value)}
             />
           </label>
+          {(["author", "collection", "tags", "series", "volume"] as const).map(key => <label key={key}>{tr(`library.${key}`)}<input value={metadata[key]} maxLength={key === "tags" ? 1500 : 200} onChange={event => setMetadata(previous => ({ ...previous, [key]: event.target.value }))} /></label>)}
           <button
             className="primary-button"
             disabled={actionBusy || !rename.trim()}
             onClick={() =>
               void mutate(async () => {
-                await updateDocument(actions!.id, { title: rename });
+                await updateDocument(actions!.id, { title: rename, ...metadata, tags: metadata.tags.split(",").map(tag => tag.trim()).filter(Boolean) });
               })
             }
           >
             <Pencil size={14} />
-            {tr("Library.ec75893e43")}</button>
+            {tr("library.save")}</button>
           {actions?.format === "manga" ? (
             <a
               className="secondary-button"

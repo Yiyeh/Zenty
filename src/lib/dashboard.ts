@@ -50,6 +50,7 @@ export interface FocusSession {
   minutes: number;
 }
 export interface Bookmark {
+  space?: import("./spaces.ts").SpaceId;
   id: string;
   title: string;
   url: string;
@@ -81,7 +82,12 @@ export const widgetLabels = {
   get gaming() { return tr("dashboard.7fbc76dea3"); },
 };
 export type WidgetId = keyof typeof widgetLabels;
+export interface GameSession { id: string; gameId: string; title: string; startedAt: string; endedAt: string | null }
 export interface DashboardSettings {
+  gamingSessions: GameSession[];
+  installedStatuses: Record<string, "pending" | "playing" | "completed">;
+  spaces: Partial<Record<import("./spaces.ts").SpaceId, import("./spaces.ts").SpacePreferences>>;
+  devicePreferences: Record<string, import("./spaces.ts").DevicePreferences>;
   language: import("./i18n.ts").Language;
   readerPreferences: Record<string, string | number | boolean>;
   mangaCoverOverrides: Record<string, "official" | "lastPage">;
@@ -202,6 +208,10 @@ export function spotifyEmbed(value: string): string | null {
 }
 export const defaultSettings: DashboardSettings = {
   language: "es",
+  gamingSessions: [],
+  installedStatuses: {},
+  spaces: {},
+  devicePreferences: {},
   readerPreferences: {},
   mangaCoverOverrides: {},
   surfaceTone: "stone",
@@ -393,6 +403,7 @@ const validators: Record<string, (v: unknown) => boolean> = {
     textFields(v, ["date"]) && validDate(v.date) && finite(v.minutes),
   bookmarks: (v) =>
     textFields(v, ["id", "title", "url", "group", "color"]) &&
+    (v.space === undefined || ["personal", "work", "gaming", "reading"].includes(String(v.space))) &&
     !!safeUrl(v.url) &&
     /^#[\da-f]{6}$/i.test(v.color),
 };
@@ -404,14 +415,29 @@ export function normalizeSettings(input: unknown): DashboardSettings {
   result.welcomeCompleted = typeof input.welcomeCompleted === "boolean"
     ? input.welcomeCompleted
     : typeof input.userName === "string" && !!input.userName.trim();
+  if (Array.isArray(input.gamingSessions)) result.gamingSessions = input.gamingSessions.filter((value): value is GameSession => isRecord(value) && textFields(value, ["id", "gameId", "title", "startedAt"]) && Number.isFinite(Date.parse(value.startedAt as string)) && (value.endedAt === null || (typeof value.endedAt === "string" && Number.isFinite(Date.parse(value.endedAt)) && Date.parse(value.endedAt) >= Date.parse(value.startedAt as string)))).slice(-10000);
+  if (isRecord(input.installedStatuses)) for (const [id, status] of Object.entries(input.installedStatuses).slice(0, 10000)) if (id.length < 200 && ["pending", "playing", "completed"].includes(String(status))) result.installedStatuses[id] = status as "pending" | "playing" | "completed";
+  if (isRecord(input.devicePreferences)) for (const [id, raw] of Object.entries(input.devicePreferences).slice(0, 128)) {
+    if (!/^[a-z0-9-]{8,64}$/i.test(id) || !isRecord(raw)) continue;
+    const validated = normalizeSettings(Object.fromEntries(Object.entries(raw).filter(([key]) => key !== "devicePreferences" && key !== "spaces")));
+    const device: import("./spaces.ts").DevicePreferences = {};
+    for (const key of ["homeLayout", "density", "theme", "accentColor", "surfaceTone", "background", "showSidebarFocus", "showBookmarks", "showSummary", "showClock", "showSeconds", "clock24"] as const) if (key in raw) Object.assign(device, { [key]: validated[key] });
+    if (["personal", "work", "gaming", "reading"].includes(String(raw.space))) device.space = raw.space as import("./spaces.ts").SpaceId;
+    result.devicePreferences[id] = device;
+  }
+  if (isRecord(input.spaces)) for (const id of ["personal", "work", "gaming", "reading"] as const) {
+    const raw = input.spaces[id]; if (!isRecord(raw)) continue;
+    const validated = normalizeSettings({ enabledWidgets: raw.enabledWidgets, columnLayout: raw.columnLayout });
+    result.spaces[id] = { ...(isRecord(raw.enabledWidgets) ? { enabledWidgets: validated.enabledWidgets } : {}), ...(Array.isArray(raw.columnLayout) ? { columnLayout: validated.columnLayout } : {}) };
+  }
   if (isRecord(input.mangaCoverOverrides)) {
     for (const [key, value] of Object.entries(input.mangaCoverOverrides).slice(0, 10000))
       if (/^[a-zA-Z0-9_-]{1,100}$/.test(key) && (value === "official" || value === "lastPage"))
         result.mangaCoverOverrides[key] = value;
   }
   if (isRecord(input.readerPreferences)) {
-    for (const [key, value] of Object.entries(input.readerPreferences)) {
-      if (/^zenty-manga-[a-z-]{1,40}$/.test(key) &&
+    for (const [key, value] of Object.entries(input.readerPreferences).slice(0, 10000)) {
+      if (/^zenty-manga-[a-z-]{1,40}(--[a-f0-9-]{36})?$/.test(key) &&
           ((typeof value === "string" && value.length < 100) ||
            typeof value === "boolean" ||
            (typeof value === "number" && Number.isFinite(value))))

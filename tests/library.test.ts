@@ -93,6 +93,10 @@ test("biblioteca en disco: importar, duplicados, progreso, reinicio, papelera y 
   assert.equal(upload.status, 201);
   const { document: doc } = await upload.json();
   assert.equal(doc.name, "Lectura.txt");
+  const metadata = await (await request(`/${doc.id}`, "PATCH", JSON.stringify({ author: "Autora", collection: "Clásicos", tags: ["manga", "manga", "lectura"], series: "Saga", volume: "2", preferences: { theme: "night", zoom: 99 } }))).json();
+  assert.equal(metadata.author, "Autora"); assert.deepEqual(metadata.tags, ["manga", "lectura"]); assert.equal(metadata.preferences.theme, "night"); assert.equal(metadata.preferences.zoom, 3);
+  assert.equal((await (await request()).json()).preferences.theme, readerDefaults.theme);
+
   assert.equal(
     await readFile(join(directory, "documents", `${doc.id}.txt`), "utf8"),
     content,

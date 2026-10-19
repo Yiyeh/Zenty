@@ -36,6 +36,17 @@ La biblioteca guarda documentos en una carpeta real del equipo. Consulta [format
 - Buscar accesos, tareas, notas y acciones con **Ctrl/Cmd K**. **/** enfoca el buscador web; **Esc** cierra ventanas y sale del enfoque.
 - Exportar y restaurar respaldos JSON, recuperar el estado anterior a la última importación y descargar datos originales si se detecta corrupción.
 
+## Espacios, dispositivos y recuperación (1.1)
+
+- El selector superior cambia entre Personal, Trabajo, Gaming y Lectura. Cada perfil conserva sus widgets y distribución; cada acceso puede mostrarse en todos o en un perfil concreto.
+- El aspecto (paleta, tema, densidad, reloj e inicio compacto/panorámico) y el perfil activo se guardan por dispositivo dentro del save. El móvil usa un inicio compacto por defecto. Los libros, tareas y notas permanecen compartidos.
+- **Personalizar → Tus datos → Respaldos y restauración** permite crear versiones completas y recuperar una carpeta exportada o una versión anterior. Antes de restaurar se crea una copia del estado actual. Se verifican rutas, tamaños y SHA-256; una interrupción de la restauración recupera el estado previo al iniciar.
+- Los respaldos automáticos están activados por defecto, se intentan diariamente mientras la app está abierta y conservan tres versiones (configurable entre 1 y 10). Viven en `%APPDATA%\Zenty\backups`, incluyen documentos y pueden ocupar varias veces el tamaño de la biblioteca. Las copias manuales se conservan por separado. PIN y credenciales no se exportan.
+- El indicador superior confirma guardado, cambios pendientes o falta de conexión. Los cambios del dashboard permanecen en el dispositivo y se reintentan; cuando hay ediciones incompatibles se conserva una copia del dashboard anterior para descargarla antes de confirmar el aviso. No sustituye los respaldos completos de los documentos.
+- En las opciones del servidor local hay un QR generado en el equipo (sin transmitir el código de acceso), nombres de dispositivos, revocación individual y permisos completos o de solo lectura. El servidor aplica estos permisos a las escrituras y comandos. En solo lectura no se modifica el progreso compartido.
+- La biblioteca incorpora autor, colecciones, etiquetas, series, volúmenes y un historial de lecturas. Los ajustes se recuerdan por libro. MangaDex precarga pocas páginas y omite esa precarga al ahorrar datos; los capítulos internos pueden guardarse como CBZ, con cancelación y límite de 150 MB, cuando se tenga permiso para descargarlos. Las fuentes externas no se copian. La copia del PC puede leerse sin Internet, también por Wi-Fi mientras el anfitrión esté accesible.
+- Los juegos instalados tienen estados y un historial de sesiones con tiempo registrado. El registro empieza al lanzarlos y se termina con **Terminar sesión**: no se deduce automáticamente que un juego de Steam/Epic se cerró, porque esos lanzadores no ofrecen un proceso fiable en todos los casos. La navegación con mando se activa explícitamente y requiere un navegador compatible con Gamepad API.
+
 ## Conectar cuentas
 
 En **Personalizar → Conexiones** hay instrucciones y campos para los Client ID públicos. No se deben introducir contraseñas, Client Secret ni tokens manualmente.

@@ -347,5 +347,16 @@
   "installed_client.b605ae8a76": "ゲームに接続できませんでした。 {v0} が実行されていることを確認します。",
   "installed_games.406b46cd7c": "別のエミュレータ",
   "installed_games.87bf6ca375": "あなたが追加しました",
-  "installed_games.a98e85e311": "エミュレータ"
+  "installed_games.a98e85e311": "エミュレータ",
+  "gaming.controller": "コントローラーによるナビゲーション",
+  "gaming.sessionHint": "ゲームを起動してからログアウトするまでの時間が記録されます。プレイをやめたら終了します。",
+  "gaming.activeSession": "オープンセッション: {title}",
+  "gaming.endSession": "セッションを終了する",
+  "gaming.progress": "ゲームステータス",
+  "gaming.recordedTime": "{minutes} 分を記録しました",
+  "gaming.state.pending": "保留中",
+  "gaming.state.playing": "遊ぶ",
+  "gaming.state.completed": "完成",
+  "gaming.history": "セッション履歴",
+  "gaming.openSession": "オープンセッション"
 }

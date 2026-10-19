@@ -1,3 +1,7 @@
+import { applySettings, deviceId, effectiveSettings } from "../lib/spaces";
+import { isReadOnly } from "../lib/remote";
+import type { SyncState } from "../lib/sync";
+import { readSyncBase, writeSyncBase } from "../lib/sync-cache";
 import { useLocale as useInterfaceLocale } from "./Locale.tsx";
 import { tr } from "../lib/i18n.ts";
 import { mergeDashboard } from "../lib/dashboard-sync";
@@ -6,7 +10,7 @@ import { isRemoteLibrary } from "../lib/remote";
 import { DashboardContext } from "./DashboardStore";
 import type { ContextValue, Setter } from "./DashboardStore";
 import type { DashboardData } from "../lib/dashboard";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import {
   defaultData,
@@ -42,39 +46,64 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   const [storageWarning, setStorageWarning] = useState(initial.warning);
   const [diskWarning, setDiskWarning] = useState("");
   const [diskReady, setDiskReady] = useState(false);
+  const [bootstrap, setBootstrap] = useState(0);
+  const [sync, setSync] = useState<SyncState>({ phase: "loading", lastSavedAt: null, conflict: null });
+  const [cacheWarning, setCacheWarning] = useState("");
+  const cacheBase = useCallback(async (value: DashboardData) => {
+    try { await writeSyncBase(JSON.stringify({ ...value, version: 2 })); setCacheWarning(""); }
+    catch { setCacheWarning(tr("sync.cacheUnavailable")); }
+  }, []);
   const diskReadyRef = useRef(diskReady);
   diskReadyRef.current = diskReady;
   const dataRef = useRef(data);
   dataRef.current = data;
   const diskTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pendingDiskWrite = useRef<Promise<void>>(Promise.resolve());
+  const maintenance = useRef(false);
+  useEffect(() => window.zentyDesktop?.onMaintenanceResume?.(() => { maintenance.current = false; }), []);
   const diskTag = useRef<string | null>(null);
   const confirmed = useRef<DashboardData | null>(null);
-  const writeDisk = (_raw?: string) => {
-    const next = pendingDiskWrite.current.catch(() => {}).then(async () => {
-      const base = confirmed.current;
-      if (!base) return;
-      const local = dataRef.current;
-      const changed = JSON.stringify(base) !== JSON.stringify(local);
+  const syncFlight = useRef<Promise<void> | null>(null);
+  const writeDisk = useCallback(function synchronize(_raw?: string): Promise<void> {
+    if (maintenance.current) return Promise.resolve();
+    if (syncFlight.current) return syncFlight.current.then(() => {
+      if (!isReadOnly() && confirmed.current && JSON.stringify(confirmed.current) !== JSON.stringify(dataRef.current)) return synchronize();
+    });
+    const next = (async () => {
+      const base = confirmed.current; if (!base) return;
+      const local = dataRef.current, changed = !isReadOnly() && JSON.stringify(base) !== JSON.stringify(local);
+      if (changed) setSync(previous => ({ ...previous, phase: "syncing" }));
       const response = await fetch("/api/dashboard", {
         method: changed ? "PATCH" : "GET",
         headers: { "X-MIA-Dashboard": "1", "Content-Type": "application/json", ...(!changed && diskTag.current ? { "If-None-Match": diskTag.current } : {}) },
         body: changed ? JSON.stringify({ base, data: local }) : undefined,
+        signal: AbortSignal.timeout(10000),
       });
-      if (response.status === 304) return;
-      diskTag.current = response.headers.get("ETag");
+      if (response.status === 304) { setSync(previous => previous.phase === "saved" ? previous : { ...previous, phase: "saved" }); return; }
       if (!response.ok) throw new Error(response.status === 401 ? tr("DashboardContext.ffde58d1e8") : tr("DashboardContext.8801cf28f1"));
+      diskTag.current = response.headers.get("ETag");
       const body = await response.json();
       const remote = body.data ? parseBackup(JSON.stringify(body.data)) : base;
-      confirmed.current = remote;
-      setData((previous) => {
-        const merged = mergeDashboard(local, previous, remote);
-        dataRef.current = merged;
-        return JSON.stringify(previous) === JSON.stringify(merged) ? previous : merged;
-      });
+      confirmed.current = remote; await cacheBase(remote);
+      setData(previous => { const merged = isReadOnly() ? remote : mergeDashboard(local, previous, remote); dataRef.current = merged; return JSON.stringify(previous) === JSON.stringify(merged) ? previous : merged; });
+      setSync(previous => ({ phase: "saved", lastSavedAt: changed ? new Date().toISOString() : previous.lastSavedAt, conflict: body.conflict || null }));
+    })().catch(error => {
+      setSync(previous => ({ ...previous, phase: error instanceof TypeError || error?.name === "TimeoutError" || !navigator.onLine ? "offline" : "error" }));
+      throw error;
     });
-    pendingDiskWrite.current = next;
+    syncFlight.current = next; pendingDiskWrite.current = next;
+    void next.finally(() => { if (syncFlight.current === next) syncFlight.current = null; }).catch(() => {});
     return next;
+  }, [cacheBase]);
+  const retrySync = async () => {
+    if (!diskReadyRef.current) { setBootstrap(value => value + 1); return; }
+    await writeDisk(); setDiskWarning("");
+  };
+  const acknowledgeConflict = async () => {
+    if (!sync.conflict) return;
+    const response = await fetch(`/api/dashboard/conflicts/${sync.conflict.id}/ack`, { method: "POST", headers: { "X-MIA-Dashboard": "1" }, signal: AbortSignal.timeout(10000) });
+    if (!response.ok) throw new Error(tr("sync.retryError"));
+    setSync(previous => ({ ...previous, conflict: null }));
   };
   const canSave = useRef(!initial.warning);
   const [activeTaskId, setActiveTaskId] = useState<string | null>(null);
@@ -89,7 +118,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
   }, [toast]);
   const setter =
     <K extends keyof DashboardData>(key: K): Setter<K> =>
-    (value) =>
+    (value) => {
+      if (isReadOnly()) { notify(tr("devices.readOnly")); return; }
       setData((prev) => ({
         ...prev,
         [key]:
@@ -97,6 +127,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
             ? (value as (old: DashboardData[K]) => DashboardData[K])(prev[key])
             : value,
       }));
+    };
   useEffect(() => {
     if (!canSave.current) return;
     try {
@@ -117,8 +148,12 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     let active = true;
     void (async () => {
       try {
+        setSync(previous => previous.phase === "offline" || previous.phase === "error" ? previous : ({ ...previous, phase: "loading" }));
+        const storedBase = await readSyncBase();
+        let savedBase: DashboardData | null = null;
+        try { if (storedBase) savedBase = parseBackup(storedBase); } catch { /* Corrupt checkpoints never replace actual dashboard data. */ }
         const response = await fetch("/api/dashboard", {
-          headers: { "X-MIA-Dashboard": "1" },
+          headers: { "X-MIA-Dashboard": "1" }, signal: AbortSignal.timeout(10000),
         });
         if (!response.ok) {
           if (response.status === 500 || window.zentyDesktop)
@@ -129,20 +164,32 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         const body = await response.json();
         if (!active) return;
         const restored = body.data ? parseBackup(JSON.stringify(body.data)) : (isRemoteLibrary ? structuredClone(defaultData) : initial.data);
-        confirmed.current = restored;
-        setData((previous) => mergeDashboard(initial.data, previous, restored));
-        setDiskReady(true);
+        const hasPending = !isReadOnly() && savedBase && JSON.stringify(savedBase) !== JSON.stringify(initial.data);
+        confirmed.current = hasPending ? savedBase : restored;
+        if (!hasPending) await cacheBase(restored);
+        if (!active) return;
+        setData(previous => isReadOnly() ? restored : mergeDashboard(hasPending ? savedBase! : initial.data, previous, restored));
+        setSync(previous => ({ ...previous, phase: hasPending ? "pending" : "saved", conflict: body.conflict || null }));
+        setDiskWarning(""); setDiskReady(true);
       } catch (error) {
-        if (active)
+        if (active) {
           setDiskWarning((error as Error).message);
+          setSync(previous => ({ ...previous, phase: error instanceof TypeError || !navigator.onLine ? "offline" : "error" }));
+        }
       }
     })();
     return () => {
       active = false;
     };
-  }, [initial.data]);
+  }, [initial.data, bootstrap, cacheBase]);
+  useEffect(() => {
+    const retry = () => { if (!diskReadyRef.current) setBootstrap(value => value + 1); };
+    const timer = setInterval(retry, 15000);
+    window.addEventListener("online", retry); return () => { clearInterval(timer); window.removeEventListener("online", retry); };
+  }, []);
   useEffect(() => {
     if (!diskReady || !canSave.current) return;
+    if (!isReadOnly() && confirmed.current && JSON.stringify(confirmed.current) !== JSON.stringify(data)) setSync(previous => ({ ...previous, phase: "pending" }));
     const timer = setTimeout(() => {
       void writeDisk(JSON.stringify({ ...data, version: 2 }))
         .then(() => {
@@ -152,12 +199,13 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     }, 500);
     diskTimer.current = timer;
     return () => clearTimeout(timer);
-  }, [data, diskReady]);
-  useEffect(() => window.zentyDesktop?.onBeforeClose(async () => {
+  }, [data, diskReady, writeDisk]);
+  useEffect(() => window.zentyDesktop?.onBeforeClose(async (mode) => {
     clearTimeout(diskTimer.current);
     if (!canSave.current || !diskReadyRef.current) throw new Error(tr("DashboardContext.194cd6db30"));
     await writeDisk(JSON.stringify({ ...dataRef.current, version: 2 }));
-  }), []);
+    if (mode === "maintenance") maintenance.current = true;
+  }), [writeDisk]);
   useEffect(() => {
     const sync = (event: StorageEvent) => {
       if (event.key !== "mia_dashboard_v2" || !event.newValue) return;
@@ -184,6 +232,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     window.addEventListener("focus", sync);
     window.addEventListener("online", sync);
     const flush = () => {
+      if (maintenance.current) return;
+      if (isReadOnly()) return;
       const base = confirmed.current, local = dataRef.current;
       if (!base || JSON.stringify(base) === JSON.stringify(local)) return;
       const body = JSON.stringify({ base, data: local });
@@ -193,8 +243,10 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     window.addEventListener("pagehide", flush);
     document.addEventListener("visibilitychange", hidden);
     return () => { clearInterval(timer); window.removeEventListener("focus", sync); window.removeEventListener("online", sync); window.removeEventListener("pagehide", flush); document.removeEventListener("visibilitychange", hidden); };
-  }, [diskReady]);
-  const settings = data.settings;
+  }, [diskReady, writeDisk]);
+  const [currentDeviceId] = useState(deviceId);
+  const mobileDevice = matchMedia("(max-width: 700px)").matches;
+  const settings = effectiveSettings(data.settings, currentDeviceId, mobileDevice);
   useEffect(() => {
     const media = matchMedia("(prefers-color-scheme: dark)");
     const apply = () => {
@@ -295,6 +347,8 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
     <DashboardContext.Provider
       value={{
         ...data,
+        settings,
+        sync, retrySync, acknowledgeConflict,
         ready: diskReady || (!window.zentyDesktop && !isRemoteLibrary),
         setTasks: setter("tasks"),
         setHabits: setter("habits"),
@@ -303,7 +357,10 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
         setTimeBlocks: setter("timeBlocks"),
         setReminders: setter("reminders"),
         setFocusSessions: setter("focusSessions"),
-        setSettings: setter("settings"),
+        setSettings: value => {
+          if (isReadOnly()) { notify(tr("devices.readOnly")); return; }
+          setData(previous => { const effective = effectiveSettings(previous.settings, currentDeviceId, mobileDevice); const next = typeof value === "function" ? value(effective) : value; return { ...previous, settings: applySettings(previous.settings, next, currentDeviceId, mobileDevice) }; });
+        },
         setBookmarks: setter("bookmarks"),
         setGames: setter("games"),
         activeTaskId,
@@ -316,7 +373,7 @@ export function DashboardProvider({ children }: { children: ReactNode }) {
             null,
             2,
           ),
-        storageWarning: storageWarning || diskWarning,
+        storageWarning: storageWarning || cacheWarning || (sync.phase === "offline" ? "" : diskWarning),
         toast,
         notify,
         dismissToast,

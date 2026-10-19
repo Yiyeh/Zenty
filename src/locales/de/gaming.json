@@ -347,5 +347,16 @@
   "installed_client.b605ae8a76": "Es konnte keine Verbindung zu Ihren Spielen hergestellt werden. Überprüfen Sie, ob {v0} ausgeführt wird.",
   "installed_games.406b46cd7c": "Ein weiterer Emulator",
   "installed_games.87bf6ca375": "Von Ihnen hinzugefügt",
-  "installed_games.a98e85e311": "Emulator"
+  "installed_games.a98e85e311": "Emulator",
+  "gaming.controller": "Navigation mit Controller",
+  "gaming.sessionHint": "Die Zeit wird vom Start eines Spiels bis zur Abmeldung hier aufgezeichnet. Beenden Sie es, wenn Sie aufhören zu spielen.",
+  "gaming.activeSession": "Offene Sitzung: {title}",
+  "gaming.endSession": "Sitzung beenden",
+  "gaming.progress": "Spielstatus",
+  "gaming.recordedTime": "{minutes} min aufgezeichnet",
+  "gaming.state.pending": "Ausstehend",
+  "gaming.state.playing": "Spielen",
+  "gaming.state.completed": "Fertig",
+  "gaming.history": "Sitzungsverlauf",
+  "gaming.openSession": "Offene Sitzung"
 }

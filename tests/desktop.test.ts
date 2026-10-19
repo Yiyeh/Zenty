@@ -116,7 +116,7 @@ test("espacio en disco: reinicio, copia previa y protección de datos corruptos"
     403,
   );
   assert.deepEqual(await (await fetch(url, { headers })).json(), {
-    data: null,
+    data: null, conflict: null,
   });
   const first = { ...structuredClone(defaultData), version: 2 };
   assert.equal(

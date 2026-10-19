@@ -1,3 +1,4 @@
+import { isReadOnly } from "../lib/remote";
 import { useLocale as useInterfaceLocale } from "../context/Locale.tsx";
 import { translateMessage, tr } from "../lib/i18n.ts";
 import { useEffect, useRef, useState } from "react";
@@ -22,7 +23,7 @@ import type {
 } from "../lib/library";
 import type { ReaderBook } from "../lib/book-parser";
 import { openBook } from "../lib/book-parser";
-import { updateDocument, updateReaderPreferences } from "../lib/library-client";
+import { updateDocument } from "../lib/library-client";
 function PdfPage({
   book,
   index,
@@ -179,7 +180,7 @@ export function DocumentReader({
   const [book, setBook] = useState<ReaderBook | null>(null);
   const [unit, setUnit] = useState(document.position.unit);
   const [html, setHtml] = useState("");
-  const [preferences, setPreferences] = useState(initialPreferences);
+  const [preferences, setPreferences] = useState(document.preferences || initialPreferences);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [contentsOpen, setContentsOpen] = useState(false);
   const [busy, setBusy] = useState(true);
@@ -203,6 +204,7 @@ export function DocumentReader({
   const updateRef = useRef(onUpdate);
   updateRef.current = onUpdate;
   const writePosition = (position: ReadingPosition) => {
+    if (isReadOnly()) { setSaveStatus(tr("devices.readOnly")); return Promise.resolve(true); }
     if (JSON.stringify(position) === JSON.stringify(queuedPosition.current))
       return queue.current;
     queuedPosition.current = { ...position };
@@ -254,6 +256,7 @@ export function DocumentReader({
         setUnit(index);
         if (index !== document.position.unit)
           latest.current = { unit: index, anchor: 0, fraction: 0, progress: 0 };
+        if (isReadOnly()) { setSaveStatus(tr("devices.readOnly")); return; }
         void updateDocument(document.id, { totalUnits: value.total })
           .then((doc) => {
             setCurrentDoc(doc);
@@ -297,7 +300,7 @@ export function DocumentReader({
   );
   useEffect(() => {
     const flush = () => {
-      if (!book) return;
+      if (!book || isReadOnly()) return;
       const position = latest.current;
       if (JSON.stringify(position) === JSON.stringify(saved.current)) return;
       void fetch(`/api/library/${document.id}`, {
@@ -390,10 +393,11 @@ export function DocumentReader({
   const apply = (patch: Partial<ReaderPreferences>) => {
     const next = { ...preferences, ...patch };
     setPreferences(next);
+    if (isReadOnly()) return;
     setSaveStatus(tr("DocumentReader.93eb9cc78b"));
     if (prefTimer.current) clearTimeout(prefTimer.current);
     prefTimer.current = setTimeout(() => {
-      void updateReaderPreferences(next)
+      void updateDocument(document.id, { preferences: next })
         .then(() => setSaveStatus(tr("DocumentReader.b4429f8ed0")))
         .catch(() => setSaveStatus(tr("DocumentReader.fd8ae3d3f2")));
     }, 400);
@@ -402,9 +406,9 @@ export function DocumentReader({
     if (saveTimer.current) clearTimeout(saveTimer.current);
     const stored = await writeRef.current({ ...latest.current });
     if (!stored) return;
-    if (prefTimer.current) {
+    if (prefTimer.current && !isReadOnly()) {
       clearTimeout(prefTimer.current);
-      await updateReaderPreferences(preferences).catch(() => {});
+      await updateDocument(document.id, { preferences }).catch(() => {});
     }
     if (window.document.fullscreenElement)
       await window.document.exitFullscreen();
@@ -512,7 +516,7 @@ export function DocumentReader({
       }
     >
       <header className="reader-toolbar">
-        <button className="secondary-button" onClick={() => void close()}>
+        <button className="secondary-button" aria-label={tr("DocumentReader.dbfb33f5ae")} onClick={() => void close()}>
           <ArrowLeft size={16} />
           <span>{tr("DocumentReader.dbfb33f5ae")}</span>
         </button>
@@ -611,7 +615,7 @@ export function DocumentReader({
             <BookOpen size={32} />
             <h2>{tr("DocumentReader.45b1dd1466")}</h2>
             <p>{translateMessage(error)}</p>
-            <button className="secondary-button" onClick={() => void close()}>
+            <button className="secondary-button" aria-label={tr("DocumentReader.dbfb33f5ae")} onClick={() => void close()}>
               {tr("DocumentReader.183b5a7e67")}</button>
           </div>
         ) : (
