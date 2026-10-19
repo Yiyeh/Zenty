@@ -1,0 +1,615 @@
+.home-compact .main-content {
+  padding-top: 24px;
+}
+.home-compact .home-intro {
+  display: grid;
+  grid-template-columns: 1fr minmax(320px, 1fr);
+  gap: 32px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.home-compact .welcome-hero {
+  min-height: 80px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  gap: 16px;
+  overflow: visible;
+}
+.home-compact .hero-date {
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin: 0;
+  color: var(--muted);
+}
+.home-compact .welcome-hero h1 {
+  font: 600 28px/1.25 var(--font-sans);
+  letter-spacing: -1px;
+  margin: 8px 0 0;
+}
+.home-compact .hero-copy > p:not(.eyebrow),
+.home-compact .hero-note,
+.home-compact .hero-landscape,
+.home-compact .hero-clock small {
+  display: none;
+}
+.home-compact .hero-clock {
+  align-self: center;
+  padding: 0;
+  flex-shrink: 0;
+}
+.home-compact .hero-clock > span {
+  font-size: 26px;
+  color: var(--muted);
+}
+.home-compact .search-section {
+  margin: 0;
+  max-width: none;
+  min-width: 0;
+}
+.home-compact .search-bar {
+  padding: 2px 6px 2px 14px;
+  gap: 10px;
+  min-height: 48px;
+}
+.home-compact .search-bar > input {
+  min-width: 0;
+}
+.home-compact .search-bar > select {
+  width: 100px;
+  min-height: 40px;
+}
+.home-compact .search-submit {
+  min-width: 40px;
+  min-height: 40px;
+}
+.home-compact .bookmarks-section {
+  margin-bottom: 8px;
+}
+.home-compact .bookmarks-section > .section-heading {
+  margin-bottom: 8px;
+  min-height: 32px;
+}
+.home-compact .bookmark-grid {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+.home-compact .bookmark > a {
+  min-height: 52px;
+  padding: 8px 12px;
+  flex-direction: row;
+  gap: 10px;
+  text-align: left;
+}
+.home-compact .bookmark-icon {
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  flex-shrink: 0;
+  border-radius: 8px;
+}
+.home-compact .bookmark > a > span:nth-child(2) {
+  font-size: 12px;
+  min-width: 0;
+}
+.home-compact .bookmark small,
+.home-compact .bookmark-arrow {
+  display: none;
+}
+.home-compact .bookmark-edit {
+  left: auto;
+  right: 3px;
+  top: 6px;
+  min-height: 40px;
+  min-width: 32px;
+  background: var(--surface);
+}
+.home-compact .home-status-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin: 4px 0;
+}
+.home-compact .day-summary {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.home-compact .intention-toggle {
+  min-height: 40px;
+  flex-shrink: 0;
+  font-size: 11px;
+}
+.home-compact .intention-bar {
+  margin-top: 12px;
+}
+.home-compact .dashboard-heading {
+  margin: 8px 0 12px;
+  min-height: 40px;
+}
+.home-compact .dashboard-heading h2 > span {
+  display: none;
+}
+.news-widget .widget-heading {
+  margin-bottom: 12px;
+  gap: 12px;
+}
+.news-widget .widget-heading h3 {
+  min-width: 0;
+}
+.news-widget select {
+  max-width: 145px;
+  min-height: 36px;
+  font-size: 12px;
+}
+.news-widget-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.news-widget-tabs button {
+  padding: 8px 10px;
+  min-height: 40px;
+  color: var(--muted);
+  font-size: 12px;
+  border-bottom: 2px solid transparent;
+}
+.news-widget-tabs button[aria-pressed="true"] {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+.news-widget-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.news-widget-list > li {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+.news-widget-list > li:last-child {
+  border-bottom: 0;
+}
+.news-widget-list a {
+  display: grid;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+.news-widget-list small {
+  color: var(--muted);
+  font-size: 11px;
+}
+.news-widget-list strong {
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 550;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.news-widget-list a:hover strong {
+  color: var(--accent-color);
+}
+.news-widget-list .icon-button {
+  min-width: 36px;
+  min-height: 40px;
+  flex-shrink: 0;
+}
+.news-widget-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.news-widget-footer .text-button {
+  font-size: 12px;
+  min-height: 36px;
+}
+.news-widget-status {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 10px 0;
+}
+.news-widget-empty {
+  padding: 28px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+.spotify-mode-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.spotify-mode-select select {
+  min-width: 0;
+  max-width: 240px;
+  font-size: 12px;
+  min-height: 40px;
+}
+.spotify-connect-track {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin: 18px 0;
+}
+.spotify-connect-track > div:last-child {
+  min-width: 0;
+}
+.spotify-connect-cover {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent-color);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.spotify-connect-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.spotify-connect-track small {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.spotify-connect-track h4 {
+  margin: 6px 0;
+  font-size: 17px;
+  line-height: 1.4;
+}
+.spotify-connect-track p,
+.spotify-connect-setup p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+.spotify-connect-setup .primary-button {
+  margin: 16px 0;
+}
+.spotify-device-select {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.spotify-device-select select {
+  width: 100%;
+  min-height: 40px;
+}
+.spotify-connect-transport {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin: 20px 0 14px;
+}
+.spotify-connect-transport .icon-button {
+  width: 44px;
+  height: 44px;
+}
+.spotify-connect-play {
+  border-radius: 50%;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  justify-content: center;
+}
+.spotify-connect-progress input,
+.spotify-connect-volume input {
+  width: 100%;
+  padding: 0;
+  height: 24px;
+  background: transparent;
+  accent-color: var(--accent-color);
+  cursor: pointer;
+}
+.spotify-connect-progress > div {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 11px;
+}
+.spotify-connect-volume {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 16px 0;
+}
+.spotify-connect-volume > label {
+  flex: 1;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.spotify-connect-volume output {
+  min-width: 32px;
+  font-size: 12px;
+  text-align: right;
+}
+.spotify-play-link {
+  margin: 16px 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+.spotify-play-link summary {
+  cursor: pointer;
+  padding: 8px 0;
+}
+.spotify-play-link form {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+.spotify-play-link input {
+  min-width: 0;
+  width: 100%;
+  font-size: 12px;
+}
+.reminders-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.reminders-status .text-button {
+  min-height: 40px;
+  font-size: 12px;
+}
+.reminders-status .check-label,
+.reminder-advance .check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+.check-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent-color);
+}
+.form-stack > label.check-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.reminders-description,
+.reminders-footnote {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 12px 0;
+}
+.reminders-footnote {
+  font-size: 11px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  margin-bottom: 0;
+}
+.reminders-list {
+  margin: 8px 0;
+  padding: 0;
+  list-style: none;
+}
+.reminders-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.reminders-list li:last-child {
+  border-bottom: 0;
+}
+.reminder-time {
+  display: grid;
+  gap: 4px;
+  min-width: 50px;
+}
+.reminder-time strong {
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+.reminder-time small,
+.reminder-main small {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.reminder-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+.reminder-main > strong {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.reminder-actions {
+  display: flex;
+}
+.reminder-actions .icon-button {
+  min-height: 36px;
+  min-width: 30px;
+}
+.reminder-disabled {
+  opacity: 0.6;
+}
+.reminders-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  padding: 24px 0;
+  font-size: 12px;
+}
+.reminders-paused {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.reminder-advance {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+.reminder-advance > label:not(.check-label) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+.reminder-advance input[type="number"] {
+  width: 90px;
+}
+.reminder-advance small {
+  font-size: 11px;
+}
+.task-form details > label {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.task-form input[type="time"] {
+  max-width: 150px;
+}
+.section-calendar {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-width: 1100px;
+  align-items: start;
+}
+@media (max-width: 950px) {
+  .section-calendar {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 680px;
+  }
+}
+@media (max-width: 650px) {
+  .reminders-list li {
+    flex-wrap: wrap;
+  }
+  .reminder-actions {
+    margin-left: auto;
+  }
+  .reminder-actions .icon-button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+@media (max-width: 450px) {
+  .spotify-mode-select {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .spotify-mode-select select {
+    max-width: none;
+    width: 100%;
+  }
+}
+@media (max-width: 1150px) {
+  .home-compact .home-intro {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .home-compact .welcome-hero {
+    min-height: 64px;
+  }
+  .home-compact .daily-progress {
+    display: none;
+  }
+}
+@media (max-width: 650px) {
+  .home-compact .main-content {
+    padding-top: 16px;
+  }
+  .home-compact .welcome-hero h1 {
+    font-size: 23px;
+  }
+  .home-compact .hero-clock {
+    display: block;
+  }
+  .home-compact .hero-clock > span {
+    font-size: 22px;
+  }
+  .home-compact .bookmark-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .home-compact .bookmarks-section > .section-heading {
+    align-items: center;
+    gap: 8px;
+  }
+  .home-compact .bookmark-tabs {
+    margin: 0;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .home-compact .bookmark-tabs > button {
+    min-height: 40px;
+    font-size: 11px;
+  }
+  .home-compact .home-status-row {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+  .home-compact .day-summary {
+    flex-basis: 100%;
+    margin: 12px 0 0;
+    gap: 8px 12px;
+  }
+  .home-compact .day-summary > span {
+    font-size: 10px;
+  }
+  .home-compact .day-summary > i {
+    display: none;
+  }
+  .home-compact .intention-bar {
+    flex-wrap: wrap;
+  }
+  .home-compact .intention-bar > input {
+    flex-basis: 100%;
+    border: 0;
+    padding-left: 0;
+  }
+  .home-compact .search-bar {
+    gap: 6px;
+  }
+  .home-compact .search-bar > select {
+    width: 90px;
+  }
+}

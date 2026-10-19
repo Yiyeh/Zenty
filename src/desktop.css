@@ -1,0 +1,95 @@
+.desktop-app {
+  --desktop-titlebar-height: 35px;
+}
+.desktop-titlebar {
+  position: fixed;
+  inset: 0 0 auto;
+  height: var(--desktop-titlebar-height);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--sidebar);
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+  -webkit-app-region: drag;
+  app-region: drag;
+}
+.desktop-titlebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 16px;
+  font-size: 11px;
+  pointer-events: none;
+}
+.desktop-titlebar-brand strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.desktop-titlebar-brand span {
+  margin-left: 8px;
+  font-size: 10px;
+}
+.desktop-titlebar-controls {
+  display: flex;
+  height: var(--desktop-titlebar-height);
+  -webkit-app-region: no-drag;
+  app-region: no-drag;
+}
+.desktop-titlebar-controls button {
+  width: 43px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 0;
+  color: var(--text);
+}
+.desktop-titlebar-controls button:hover {
+  background: var(--border);
+}
+.desktop-titlebar-controls .desktop-close:hover {
+  background: #c74545;
+  color: #fff;
+}
+.desktop-titlebar.window-inactive .desktop-titlebar-brand {
+  opacity: 0.6;
+}
+.desktop-app .app-shell {
+  padding-top: var(--desktop-titlebar-height);
+}
+.desktop-app .sidebar {
+  top: var(--desktop-titlebar-height);
+  height: calc(100dvh - var(--desktop-titlebar-height));
+}
+.desktop-app .topbar {
+  position: sticky;
+  top: var(--desktop-titlebar-height);
+}
+.desktop-app .mobile-menu {
+  top: calc(var(--desktop-titlebar-height) + 14px);
+}
+.desktop-app .mobile-overlay {
+  top: var(--desktop-titlebar-height);
+}
+.desktop-app .app-dialog {
+  max-height: calc(100dvh - 80px);
+}
+.desktop-app .document-reader {
+  top: var(--desktop-titlebar-height);
+  height: calc(100dvh - var(--desktop-titlebar-height));
+}
+/* Modal readers live in the top layer; body padding cannot reserve this space. */
+.desktop-app .manga-reader-dialog {
+  position: fixed;
+  inset: var(--desktop-titlebar-height) 0 0;
+  height: calc(100dvh - var(--desktop-titlebar-height));
+  max-height: calc(100dvh - var(--desktop-titlebar-height));
+}
+@media (max-width: 600px) {
+  .desktop-titlebar-brand span {
+    display: none;
+  }
+}

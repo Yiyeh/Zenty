@@ -1,0 +1,834 @@
+.installed-library {
+  padding-top: 28px;
+}
+.installed-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.installed-heading h2 {
+  font-size: 26px;
+  font-weight: 550;
+  letter-spacing: -0.7px;
+  margin: 0 0 8px;
+}
+.installed-heading p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+.installed-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.installed-actions > button {
+  min-height: 44px;
+  font-size: 13px;
+}
+.installed-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.installed-search {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 16px;
+  flex: 1;
+  min-width: 0;
+  color: var(--muted);
+}
+.installed-search input {
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+  padding: 12px 0;
+  flex: 1;
+  width: 100%;
+}
+.installed-search:focus-within {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+.installed-search input:focus-visible {
+  outline: none;
+}
+.installed-toolbar > button {
+  min-height: 52px;
+  font-size: 13px;
+}
+.installed-filterbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 14px 0 22px;
+}
+.installed-filterbar > button {
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--muted);
+  min-height: 42px;
+  font-size: 12px;
+}
+.installed-filterbar > button.active {
+  color: var(--text);
+  background: var(--surface);
+  border-color: var(--border);
+}
+.installed-filterbar > select {
+  font-size: 12px;
+  max-width: 220px;
+  min-height: 42px;
+}
+.installed-view {
+  margin-left: auto;
+  display: flex;
+  gap: 2px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+.installed-view button {
+  display: grid;
+  place-items: center;
+  border-radius: 5px;
+  width: 38px;
+  height: 36px;
+  color: var(--muted);
+}
+.installed-view button.active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+.installed-count {
+  margin: 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--muted);
+}
+.installed-count small {
+  font-size: 11px;
+}
+.installed-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.installed-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface);
+  min-width: 0;
+  contain: layout style;
+}
+.installed-cover {
+  width: 100%;
+  aspect-ratio: 16/9;
+  position: relative;
+  background: linear-gradient(135deg, #343948, #282433);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 0;
+}
+.installed-placeholder {
+  color: #bbc0d16b;
+}
+.installed-cover img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.2s;
+}
+.installed-cover:hover img {
+  transform: scale(1.025);
+}
+.installed-cover > span {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  color: #f5f5fa;
+  background: #141923eb;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+.installed-card-info {
+  padding: 16px;
+}
+.installed-title {
+  display: block;
+  text-align: left;
+  padding: 0;
+  width: 100%;
+}
+.installed-title h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  font-weight: 550;
+  line-height: 1.5;
+  letter-spacing: -0.2px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  min-height: 48px;
+}
+.installed-card-info > small {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+.installed-card-actions {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin-top: 16px;
+}
+.installed-play {
+  background: var(--accent-color);
+  color: var(--on-accent);
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 42px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 10px 17px;
+  flex: 1;
+}
+.installed-play:hover {
+  filter: brightness(1.08);
+}
+.installed-card-actions > .icon-button {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.installed-card-actions > .icon-button[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-color);
+}
+.installed-list {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+}
+.installed-list .installed-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 9px 14px 9px 9px;
+  border-radius: 11px;
+}
+.installed-list .installed-cover {
+  width: 125px;
+  height: 70px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+.installed-list .installed-cover > span {
+  display: none;
+}
+.installed-list .installed-card-info {
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  width: 100%;
+  column-gap: 15px;
+}
+.installed-list .installed-title h3 {
+  min-height: 0;
+  margin-bottom: 4px;
+  font-size: 15px;
+  -webkit-line-clamp: 1;
+}
+.installed-list .installed-card-info > small {
+  grid-column: 1;
+}
+.installed-list .installed-card-actions {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  margin: 0;
+}
+.installed-list .installed-play {
+  min-width: 95px;
+}
+.installed-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 28px;
+  text-align: center;
+  color: var(--muted);
+}
+.installed-loading h3 {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--text);
+  margin: 18px 0 8px;
+}
+.installed-loading p {
+  font-size: 14px;
+  line-height: 1.6;
+  max-width: 450px;
+}
+.installed-warning {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  border-left: 2px solid #b68c4b;
+  padding-left: 12px;
+}
+.installed-help {
+  margin-top: 28px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+}
+.installed-help summary {
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 40px;
+}
+.installed-help p {
+  max-width: 85ch;
+  margin-top: 12px;
+}
+.installed-path {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.installed-path summary {
+  cursor: pointer;
+}
+.installed-path p {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+  color: var(--muted);
+  margin: 12px 0;
+}
+.installed-add label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  font-size: 14px;
+}
+.installed-add label.gamer-check {
+  flex-direction: row;
+}
+.installed-add summary {
+  cursor: pointer;
+  font-size: 13px;
+  padding: 8px 0;
+}
+.installed-add p {
+  font-size: 12px;
+  line-height: 1.7;
+}
+.installed-add input,
+.installed-add select {
+  font-size: 14px;
+  min-height: 44px;
+}
+.installed-add > .primary-button {
+  min-height: 46px;
+}
+.installed-path-input {
+  display: flex;
+  gap: 8px;
+}
+.installed-path-input > input {
+  flex: 1;
+  width: 100%;
+}
+.installed-path-input > button {
+  flex-shrink: 0;
+}
+.installed-emulator {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.installed-emulator > div {
+  flex: 1;
+  min-width: 0;
+}
+.installed-emulator strong {
+  display: block;
+  font-size: 15px;
+}
+.installed-emulator small,
+.installed-emulator span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+/* The library is the primary task. Keep decoration compact and metadata readable. */
+.gamer-hero {
+  min-height: 174px;
+  padding: 27px 32px;
+}
+.gamer-hero h1 {
+  font-size: 36px;
+  margin: 12px 0 8px;
+}
+.gamer-hero p {
+  font-size: 14px;
+}
+.gamer-hero-actions {
+  position: absolute;
+  right: -34%;
+  bottom: 12px;
+  margin: 0;
+}
+.gamer-hero-actions button {
+  min-height: 44px;
+  font-size: 12px;
+}
+.gamer-hero-art {
+  width: 200px;
+  height: 200px;
+  right: 20px;
+  top: -68px;
+  opacity: 0.32;
+}
+.gamer-hero-art > svg {
+  width: 125px;
+  height: 125px;
+}
+.gamer-hero-art > i {
+  width: 190px;
+  height: 190px;
+}
+.gamer-hero-art > i:nth-child(2) {
+  width: 140px;
+  height: 140px;
+}
+.gamer-hero-art > span {
+  display: none;
+}
+.gamer-quick-links {
+  padding: 15px 0;
+}
+.gamer-quick-links > span {
+  font-size: 10px;
+}
+.gamer-quick-links > a {
+  font-size: 12px;
+  min-height: 30px;
+}
+.gamer-tabs > button {
+  font-size: 13px;
+  min-height: 52px;
+}
+.gamer-section-heading p {
+  font-size: 14px;
+}
+.gamer-section-heading > button,
+.gamer-filters > select,
+.gamer-search input {
+  font-size: 13px;
+  min-height: 44px;
+}
+.gamer-source-line {
+  font-size: 11px;
+}
+.gamer-platforms {
+  font-size: 11px;
+}
+.gamer-title h3 {
+  font-size: 16px;
+  min-height: 50px;
+}
+.gamer-card-meta {
+  font-size: 12px;
+}
+.gamer-card-bottom button {
+  font-size: 13px;
+  min-height: 36px;
+}
+.gamer-card-bottom small {
+  font-size: 11px;
+}
+.gamer-result-count,
+.gamer-footnote {
+  font-size: 12px;
+}
+.gamer-kind {
+  font-size: 11px;
+}
+.gamer-save {
+  width: 40px;
+  height: 40px;
+}
+.gamer-detail p,
+.gamer-detail h3 {
+  font-size: 14px;
+}
+.gamer-detail small,
+.gamer-detail-tags > span {
+  font-size: 12px;
+}
+.gamer-detail-actions > button,
+.gamer-detail-actions > a {
+  min-height: 44px;
+}
+.gamer-saved-editor label {
+  font-size: 14px;
+}
+.gamer-console-links > a {
+  min-height: 44px;
+  font-size: 12px;
+}
+.gamer-bottom-panel h3 {
+  font-size: 15px;
+}
+.gamer-bottom-panel p {
+  font-size: 13px;
+}
+@media (min-width: 1750px) {
+  .installed-grid:not(.installed-list) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1250px) {
+  .installed-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .installed-grid:not(.installed-list) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .gamer-hero-actions {
+    position: static;
+    margin-top: 18px;
+  }
+  .gamer-hero-copy {
+    width: 85%;
+  }
+  .gamer-hero-art {
+    top: 0;
+  }
+  .gamer-tabs {
+    gap: 18px;
+  }
+}
+@media (max-width: 700px) {
+  .gaming-page {
+    padding-bottom: 16px;
+  }
+  .gamer-hero {
+    padding: 23px;
+    min-height: 150px;
+  }
+  .gamer-hero-copy {
+    width: 100%;
+  }
+  .gamer-hero h1 {
+    font-size: 32px;
+  }
+  .gamer-hero p {
+    font-size: 14px;
+  }
+  .gamer-eyebrow {
+    font-size: 10px;
+    max-width: none;
+  }
+  .gamer-hero-actions {
+    display: none;
+  }
+  .gamer-hero-art {
+    right: -85px;
+    top: 6px;
+    opacity: 0.14;
+  }
+  .gamer-quick-links {
+    gap: 15px;
+    flex-wrap: nowrap;
+    overflow: auto;
+  }
+  .gamer-quick-links > span {
+    display: none;
+  }
+  .gamer-quick-links > a {
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .gamer-tabbar > .icon-button {
+    width: 44px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+  .gamer-tabs {
+    gap: 24px;
+  }
+  .gamer-tabs > button {
+    font-size: 13px;
+    min-height: 52px;
+  }
+  .installed-library {
+    padding-top: 22px;
+  }
+  .installed-heading h2 {
+    font-size: 23px;
+  }
+  .installed-heading p {
+    font-size: 14px;
+  }
+  .installed-actions {
+    width: 100%;
+  }
+  .installed-actions > button {
+    flex: 1;
+    font-size: 12px;
+    justify-content: center;
+  }
+  .installed-toolbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .installed-search {
+    flex-basis: 100%;
+    padding-left: 13px;
+  }
+  .installed-search input {
+    font-size: 14px;
+    min-height: 45px;
+  }
+  .installed-toolbar > button {
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .installed-filterbar {
+    gap: 8px;
+  }
+  .installed-filterbar > select {
+    max-width: none;
+    flex: 1 1 145px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .installed-filterbar > button {
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .installed-view {
+    margin-left: 0;
+  }
+  .installed-view button {
+    width: 40px;
+    height: 38px;
+  }
+  .installed-grid {
+    gap: 12px;
+  }
+  .installed-card-info {
+    padding: 13px;
+  }
+  .installed-title h3 {
+    font-size: 15px;
+  }
+  .installed-card-actions {
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .installed-play {
+    min-height: 44px;
+    font-size: 13px;
+  }
+  .installed-card-actions > .icon-button {
+    width: 44px;
+    height: 44px;
+  }
+  .installed-card-actions > .installed-play {
+    flex-basis: 100%;
+  }
+  .installed-count {
+    font-size: 12px;
+  }
+  .installed-list .installed-card {
+    gap: 12px;
+    padding: 9px;
+  }
+  .installed-list .installed-cover {
+    width: 82px;
+    height: 82px;
+  }
+  .installed-list .installed-card-info {
+    display: block;
+  }
+  .installed-list .installed-title h3 {
+    font-size: 14px;
+    min-height: 0;
+    -webkit-line-clamp: 2;
+  }
+  .installed-list .installed-card-actions {
+    margin-top: 9px;
+    flex-wrap: nowrap;
+  }
+  .installed-list .installed-play {
+    min-width: 78px;
+  }
+  .installed-list .installed-card-actions > .icon-button {
+    border: 0;
+  }
+  .gamer-title h3 {
+    font-size: 16px;
+  }
+  .gamer-card-meta {
+    font-size: 12px;
+  }
+  .gamer-kind {
+    font-size: 11px;
+  }
+  .gamer-save {
+    width: 44px;
+    height: 44px;
+  }
+  .gamer-card-bottom small {
+    display: block;
+  }
+  .gamer-card-bottom button {
+    min-height: 44px;
+  }
+  .gamer-console-links > a {
+    font-size: 12px;
+    padding: 10px;
+  }
+}
+@media (max-width: 430px) {
+  .installed-grid:not(.installed-list) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .installed-card-actions {
+    flex-wrap: nowrap;
+  }
+  .installed-card-actions > .installed-play {
+    flex-basis: auto;
+  }
+  .installed-title h3 {
+    min-height: 0;
+    font-size: 16px;
+  }
+  .installed-cover {
+    aspect-ratio: 16/8;
+  }
+  .installed-heading h2 {
+    font-size: 22px;
+  }
+  .installed-count small {
+    font-size: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .installed-cover:hover img {
+    transform: none;
+  }
+}
+@media (max-width: 700px) {
+  .gaming-library-active .gamer-quick-links {
+    display: none;
+  }
+  .gaming-library-active .gamer-tabbar {
+    margin-top: 8px;
+  }
+  .installed-heading p {
+    display: none;
+  }
+  .installed-toolbar {
+    flex-wrap: nowrap;
+  }
+  .installed-search {
+    flex-basis: auto;
+  }
+  .installed-toolbar > .secondary-button {
+    flex-shrink: 0;
+    width: 46px;
+    height: 52px;
+    min-height: 44px;
+    padding: 13px;
+    font-size: 0;
+    justify-content: center;
+  }
+  .installed-toolbar > .secondary-button > svg {
+    display: block;
+  }
+}
+
+.gamer-saved-play {
+  margin: 0 0 12px;
+  flex: none;
+  width: 100%;
+}
+.gaming-library-active .gamer-hero {
+  min-height: 100px;
+  padding: 24px 30px;
+}
+.gaming-library-active .gamer-hero h1 {
+  margin: 0;
+  font-size: 30px;
+}
+.gaming-library-active .gamer-hero-copy > p,
+.gaming-library-active .gamer-eyebrow,
+.gaming-library-active .gamer-hero-actions {
+  display: none;
+}
+.gaming-library-active .gamer-hero-art {
+  top: -54px;
+}
+.gaming-library-active .gamer-quick-links {
+  padding: 10px 0;
+}
+.gaming-library-active .installed-heading h2 {
+  font-size: 23px;
+}
+@media (max-width: 700px) {
+  .gaming-library-active .gamer-hero {
+    min-height: 86px;
+    padding: 22px;
+  }
+  .gaming-library-active .gamer-hero h1 {
+    font-size: 28px;
+  }
+}

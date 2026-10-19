@@ -1,0 +1,598 @@
+@media (min-width: 1600px) {
+  .main-content {
+    padding-top: 40px;
+  }
+  .welcome-hero {
+    min-height: 220px;
+  }
+  .welcome-hero h1 {
+    font-size: 47px;
+  }
+  .hero-clock > span {
+    font-size: 37px;
+  }
+  .bookmark > a {
+    flex-direction: row;
+    text-align: left;
+    padding: 18px 12px;
+  }
+  .bookmark-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+  .bookmark small {
+    display: block;
+    font-size: 7px;
+    color: var(--muted);
+    margin-top: 3px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bookmark > a > span:nth-child(2) {
+    width: auto;
+    flex: 1;
+  }
+  .bookmark-add {
+    min-height: 80px;
+    flex-direction: row;
+  }
+  .widget-heading h3 {
+    font-size: 15px;
+  }
+  .glass-panel {
+    padding: 25px;
+  }
+}
+@media (max-width: 1200px) {
+  .sidebar {
+    width: 195px;
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .main-shell {
+    margin-left: 195px;
+  }
+  .main-content {
+    padding: 25px 24px 0;
+  }
+  .topbar {
+    padding: 0 24px;
+  }
+  .welcome-hero h1 {
+    font-size: 34px;
+  }
+  .welcome-hero {
+    padding: 25px;
+  }
+  .hero-clock > span {
+    font-size: 25px;
+  }
+  .intention-end {
+    display: none;
+  }
+  .day-summary {
+    gap: 11px;
+  }
+  .daily-progress > span {
+    display: none;
+  }
+  .glass-panel {
+    padding: 17px;
+  }
+  .dashboard-grid {
+    gap: 13px;
+  }
+  .widget-column {
+    gap: 13px;
+  }
+  .timer-circle {
+    width: 180px;
+    height: 180px;
+  }
+  .timer-digits {
+    font-size: 37px;
+  }
+  .widget-heading h3 {
+    font-size: 12px;
+    gap: 6px;
+  }
+  .timer-controls {
+    gap: 6px;
+  }
+  .music-empty {
+    gap: 10px;
+  }
+  .music-art {
+    width: 62px;
+    height: 80px;
+  }
+  .music-empty h4 {
+    font-size: 12px;
+  }
+  .section-heading h2 {
+    font-size: 14px;
+  }
+  .bookmarks-section .section-heading {
+    gap: 10px;
+  }
+  .bookmark-grid {
+    gap: 7px;
+  }
+  .bookmark-tabs > button {
+    font-size: 8px;
+    padding: 4px;
+  }
+  .task-tabs {
+    gap: 12px;
+  }
+  .task-tabs > button {
+    font-size: 9px;
+  }
+  .task-actions .icon-button {
+    min-width: 18px;
+  }
+  .music-empty .eyebrow {
+    font-size: 6px;
+  }
+}
+@media (max-width: 1000px) and (min-width: 761px) {
+  .sidebar {
+    width: 76px;
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .main-shell {
+    margin-left: 76px;
+  }
+  .brand-word,
+  .nav-caption,
+  .sidebar nav > button > span,
+  .sidebar nav > button > small,
+  .sidebar-focus,
+  .profile-button > span:nth-child(2),
+  .profile-button > svg,
+  .collapse-button {
+    display: none;
+  }
+  .sidebar nav > button {
+    padding: 12px;
+  }
+  .sidebar-divider {
+    margin: 22px 0;
+  }
+  .profile-button {
+    justify-content: center;
+  }
+  .hero-clock {
+    display: none;
+  }
+  .welcome-hero {
+    min-height: 190px;
+  }
+  .hero-landscape {
+    width: 55%;
+  }
+  .dashboard-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .widget-column:last-child {
+    grid-column: 1/-1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+@media (max-width: 760px) {
+  .sidebar,
+  .sidebar-collapsed .sidebar {
+    width: 230px;
+    transform: translateX(-100%);
+    padding: 30px 20px 16px;
+    transition: transform 0.2s;
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .sidebar-collapsed .sidebar.mobile-open .brand-word,
+  .sidebar-collapsed .sidebar.mobile-open .nav-caption,
+  .sidebar-collapsed .sidebar.mobile-open nav > button > span,
+  .sidebar-collapsed .sidebar.mobile-open .sidebar-focus {
+    display: block;
+  }
+  .main-shell,
+  .sidebar-collapsed .main-shell {
+    margin-left: 0;
+  }
+  .main-content {
+    padding: 20px 18px 0;
+  }
+  .topbar {
+    height: 61px;
+    padding: 0 18px 0 57px;
+  }
+  .mobile-menu {
+    display: flex;
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 20;
+  }
+  .mobile-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: #17221966;
+    z-index: 29;
+  }
+  .private-label {
+    display: none;
+  }
+  .topbar-actions {
+    gap: 9px;
+  }
+  .topbar-divider {
+    display: none;
+  }
+  .welcome-hero {
+    min-height: 195px;
+    padding: 24px;
+  }
+  .welcome-hero h1 {
+    font-size: 34px;
+  }
+  .hero-clock {
+    display: none;
+  }
+  .hero-landscape {
+    width: 67%;
+    opacity: 0.45;
+  }
+  .hero-copy {
+    max-width: 100%;
+  }
+  .hero-note {
+    margin-top: 23px;
+    font-size: 8px;
+  }
+  .search-section {
+    margin: 20px auto 24px;
+  }
+  .search-bar {
+    padding-left: 13px;
+    gap: 9px;
+  }
+  .search-bar > input {
+    font-size: 11px;
+  }
+  .search-bar > select {
+    width: 85px;
+    padding-left: 8px;
+    font-size: 9px;
+  }
+  .search-bar > .icon-button {
+    min-width: 28px;
+  }
+  .bookmark-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .bookmark > a {
+    padding: 13px 8px;
+  }
+  .bookmark-tabs {
+    order: 3;
+    width: 100%;
+    margin: 0;
+  }
+  .bookmark-tabs > button {
+    font-size: 10px;
+    padding: 5px 9px;
+  }
+  .bookmarks-section > .section-heading {
+    row-gap: 10px;
+  }
+  .section-heading h2 > span {
+    font-size: 10px;
+  }
+  .intention-bar {
+    flex-wrap: wrap;
+    padding: 13px;
+    gap: 8px;
+  }
+  .intention-bar > input {
+    flex-basis: 100%;
+    border-left: 0;
+    border-top: 1px solid var(--border);
+    padding: 10px 0 0;
+    font-size: 12px;
+  }
+  .intention-bar > label {
+    font-size: 12px;
+  }
+  .intention-icon {
+    width: 24px;
+    height: 24px;
+  }
+  .day-summary {
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 17px 0 23px;
+  }
+  .day-summary > span {
+    font-size: 9px;
+  }
+  .day-summary > i,
+  .daily-progress {
+    display: none;
+  }
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 17px;
+  }
+  .widget-column {
+    gap: 17px;
+  }
+  .widget-column:empty {
+    display: none;
+  }
+  .glass-panel {
+    padding: 22px;
+  }
+  .widget-heading h3 {
+    font-size: 14px;
+  }
+  .timer-circle {
+    width: 210px;
+    height: 210px;
+  }
+  .timer-digits {
+    font-size: 44px;
+  }
+  .timer-circle .eyebrow {
+    font-size: 9px;
+  }
+  .timer-controls {
+    gap: 20px;
+  }
+  .timer-controls > .primary-button {
+    font-size: 12px;
+  }
+  .timer-task > select {
+    font-size: 12px;
+  }
+  .segmented > button {
+    font-size: 11px;
+    padding: 9px;
+  }
+  .section-heading-actions {
+    gap: 10px;
+  }
+  .dashboard-heading .text-button {
+    font-size: 9px;
+  }
+  .dashboard-heading {
+    gap: 10px;
+  }
+  .section-heading h2 {
+    font-size: 15px;
+  }
+  .task-title {
+    font-size: 13px;
+  }
+  .task-meta > span {
+    font-size: 10px;
+  }
+  .task-tabs > button {
+    font-size: 11px;
+  }
+  .task-tabs {
+    gap: 20px;
+  }
+  .task-form .inline-form > input {
+    font-size: 12px;
+  }
+  .task-actions {
+    opacity: 1;
+  }
+  .task-actions .icon-button {
+    min-width: 26px;
+    min-height: 30px;
+  }
+  .bookmark-edit {
+    opacity: 1;
+  }
+  .habit-title > strong {
+    font-size: 12px;
+  }
+  .habit-days > div > span:first-child {
+    font-size: 10px;
+  }
+  .habit-days button,
+  .habit-day {
+    max-height: 40px;
+    font-size: 12px;
+  }
+  .music-art {
+    width: 85px;
+    height: 95px;
+  }
+  .music-empty h4 {
+    font-size: 15px;
+  }
+  .music-empty .eyebrow {
+    font-size: 8px;
+  }
+  .music-empty p {
+    font-size: 11px;
+  }
+  .music-empty .text-button {
+    font-size: 11px;
+  }
+  .music-footer,
+  .music-footer .text-button {
+    font-size: 10px;
+  }
+  .calendar-days > button {
+    max-height: 40px;
+    font-size: 12px;
+  }
+  .calendar-weekdays {
+    font-size: 11px;
+  }
+  .calendar-month > strong {
+    font-size: 14px;
+  }
+  .agenda-item strong {
+    font-size: 12px;
+  }
+  .calendar-connect {
+    font-size: 12px;
+  }
+  .note-item p {
+    font-size: 12px;
+  }
+  .section-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .footer {
+    flex-direction: column;
+    gap: 14px;
+  }
+  .dialog-header,
+  .dialog-body {
+    padding: 21px;
+  }
+  .settings-tabs {
+    padding-left: 10px;
+    padding-right: 10px;
+    gap: 0;
+  }
+  .settings-tabs > button {
+    padding: 12px 8px;
+    flex: 1;
+    font-size: 10px;
+    gap: 5px;
+  }
+  .settings-tabs > button > svg {
+    width: 14px;
+  }
+  .settings-footer {
+    padding: 15px 20px;
+  }
+  .settings-footer > span {
+    display: none;
+  }
+  .settings-footer > .primary-button {
+    width: 100%;
+  }
+  .settings-body {
+    max-height: 60dvh;
+  }
+  .settings-switches {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .switch-row {
+    font-size: 12px;
+    padding: 11px;
+  }
+  .accent-options {
+    gap: 8px;
+  }
+  .accent-swatch,
+  .custom-color {
+    width: 31px;
+    height: 31px;
+  }
+  .form-row {
+    gap: 8px;
+  }
+  .form-row > label {
+    font-size: 10px;
+  }
+  .form-row input,
+  .form-row select {
+    font-size: 12px;
+    padding: 9px 7px;
+  }
+  .widget-setting {
+    gap: 3px;
+  }
+  .widget-setting > select {
+    width: 86px;
+    font-size: 9px;
+  }
+  .widget-setting > label {
+    font-size: 11px;
+    gap: 5px;
+  }
+  .integration-card {
+    padding: 14px;
+  }
+  .integration-heading {
+    gap: 8px;
+  }
+  .integration-heading h3 {
+    font-size: 13px;
+  }
+  .integration-heading p {
+    font-size: 9px;
+  }
+  .service-logo {
+    width: 32px;
+    height: 36px;
+  }
+  .status-pill {
+    font-size: 7px;
+    padding: 4px 6px;
+  }
+  .form-stack > small {
+    font-size: 11px;
+  }
+  .immersive-content > h1 {
+    font-size: 35px;
+  }
+  .immersive-top > .secondary-button {
+    font-size: 10px;
+    padding: 8px;
+  }
+  .immersive-top kbd {
+    display: none;
+  }
+  .organize-banner,
+  .storage-warning {
+    flex-wrap: wrap;
+  }
+  .organize-banner > .text-button {
+    margin: 0;
+  }
+  .toast {
+    width: calc(100% - 30px);
+    font-size: 11px;
+  }
+  .note-actions .icon-button {
+    min-height: 32px;
+    min-width: 32px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Keep secondary navigation legible across the appearance palettes. */
+.nav-caption {
+  font-size: 10px;
+}
+.sidebar nav > button {
+  min-height: 44px;
+  font-size: 13px;
+}
+.private-label {
+  font-size: 11px;
+}

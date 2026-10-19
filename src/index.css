@@ -1,0 +1,46 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;450;500;550;600;650;700&display=swap");
+@import "tailwindcss";
+@import "./premium.css";
+@import "./responsive.css";
+@import "./library.css";
+@import "./palettes.css";
+@import "./gaming.css";
+@import "./installed.css";
+@import "./desktop.css";
+@import "./home.css";
+@custom-variant dark (&:where(.dark, .dark *));
+@theme {
+  --font-sans: "DM Sans", "Segoe UI", sans-serif;
+  --color-purple-400: var(--accent-color);
+  --color-purple-500: var(--accent-color);
+  --color-purple-600: var(--accent-color);
+}
+
+/* Shared library: comfortable touch targets without the desktop sidebar. */
+.remote-library { max-width: 1500px; margin: auto; padding: clamp(14px, 3vw, 40px); }
+.remote-library-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 20px; }
+.remote-library-header strong { font-size: 26px; }
+.remote-library-header span { display: block; font-size: 13px; opacity: .65; margin-top: 4px; }
+.remote-library-notice { font-size: 13px; line-height: 1.7; opacity: .75; margin-bottom: 24px; }
+.lan-settings legend { display: flex; gap: 8px; align-items: center; }
+.lan-details { margin-top: 16px; padding: 16px; border: 1px solid var(--border-color, #5555); border-radius: 12px; }
+.lan-url { display: flex; align-items: center; gap: 8px; justify-content: space-between; padding: 8px 0; }
+.lan-url a { overflow-wrap: anywhere; font-family: monospace; font-size: 16px; user-select: all; }
+.lan-code { font-family: monospace; font-size: 22px; letter-spacing: .15em; user-select: all; }
+
+.lan-url small { display: block; opacity: .65; font-size: 12px; margin-bottom: 4px; }
+
+.remote-app-banner { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:8px 16px; background:var(--accent-soft); font-size:12px; border-bottom:1px solid #8883; }
+.remote-app-banner button { padding:5px 12px; border:1px solid #8885; border-radius:8px; cursor:pointer; }
+
+.remote-app .mobile-menu { top: 55px; }
+
+.update-settings legend { display:flex; gap:8px; align-items:center; }
+.update-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+.update-notes { white-space:pre-wrap; line-height:1.6; }
+.update-settings progress { width:100%; margin:10px 0; accent-color:var(--accent-color); }
+
+.settings-tabs { overflow-x:auto; }
+.settings-tabs > button { flex-shrink:0; white-space:nowrap; }
+.update-notice { display:flex; align-items:center; gap:6px; color:var(--accent-color); font-size:12px; cursor:pointer; }
+@media(max-width:760px) { .update-notice span { display:none; } .settings-tabs > button { flex:0 0 auto; } }

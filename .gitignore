@@ -1,0 +1,57 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Personal documents and reading positions are private local data.
+library-data/
+gaming-data/
+dashboard-data/
+desktop-server/
+release/
+releases/
+desktop/icon.png
+desktop/icon.ico
+desktop/native-audio/*.exe
+desktop/native-audio/*.sha256
+public/pdfjs/
+
+# Local previews, diagnostics, backups and credentials never belong in the repository.
+artifacts/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.enc
+*.tsbuildinfo
+coverage/
+playwright-report/
+test-results/
+
+/data/
+/connections/
+/reminders/
+/backups/
