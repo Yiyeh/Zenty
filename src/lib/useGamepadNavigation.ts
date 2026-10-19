@@ -2,11 +2,16 @@ import { useEffect } from "react";
 import type { RefObject } from "react";
 export function useGamepadNavigation(root: RefObject<HTMLElement | null>, enabled: boolean) {
   useEffect(() => {
-    if (!enabled) return; let frame = 0, last = 0, pressed = false;
+    if (!enabled) return; let frame = 0, last = 0, pressed = false, backPressed = false;
     const tick = (now: number) => {
       const pad = navigator.getGamepads?.().find(Boolean);
-      if (pad && root.current && !document.querySelector("dialog[open]")) {
-        const buttons = [...root.current.querySelectorAll<HTMLElement>('button:not(:disabled),select,input,a[href]')].filter(element => element.getClientRects().length && element.tabIndex >= 0);
+      const modal = document.querySelector<HTMLDialogElement>("dialog[open]");
+      const scope = modal ? root.current?.contains(modal) ? modal : null : root.current;
+      if (pad && scope) {
+        const back = !!pad.buttons[1]?.pressed;
+        if (back && !backPressed && modal) modal.querySelector<HTMLButtonElement>(".dialog-header > button")?.click();
+        backPressed = back;
+        const buttons = [...scope.querySelectorAll<HTMLElement>('button:not(:disabled),select,input,a[href]')].filter(element => element.getClientRects().length && element.tabIndex >= 0);
         const current = document.activeElement as HTMLElement;
         const direction = pad.buttons[15]?.pressed || pad.axes[0] > .6 ? [1, 0] : pad.buttons[14]?.pressed || pad.axes[0] < -.6 ? [-1, 0] : pad.buttons[13]?.pressed || pad.axes[1] > .6 ? [0, 1] : pad.buttons[12]?.pressed || pad.axes[1] < -.6 ? [0, -1] : null;
         if (direction && now - last > 190) {
